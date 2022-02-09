@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pedestrian>
+    <start x="3" y="-2"/>
+    <path>
+        <point x="5" y="-2"/>
+        <point x="11" y="-2"/>
+    </path>
+    <path>
+        <point x="5" y="-2"/>
+        <point x="5" y="12"/>
+    </path>
+    <path>
+        <point x="5" y="-2"/>
+        <point x="7" y="8"/>
+        <point x="7" y="12"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="11" y="2"/>
+    <path>
+        <point x="7" y="2"/>
+        <point x="7" y="-12"/>
+    </path>
+    <path>
+        <point x="7" y="2"/>
+        <point x="-3" y="2"/>
+    </path>    
+    <path>
+        <point x="7" y="2"/>
+        <point x="5" y="-2"/>
+        <point x="0" y="-2"/>
+    </path>
+</pedestrian>
