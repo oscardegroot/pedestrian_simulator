@@ -3,7 +3,7 @@
 void XMLReader::Read()
 {
 
-    std::string map_file = ros::package::getPath("pedestrian_simulator") + "/scenarios/one_ped.xml";
+    std::string map_file = ros::package::getPath("pedestrian_simulator") + "/scenarios/" + CONFIG.scenario_file_;
     ROS_INFO_STREAM("XMLReader: Reading " << map_file << " for pedestrian positions.");
     Read(map_file);
 }
@@ -22,6 +22,16 @@ void XMLReader::Read(const std::string &file_name)
 
     // Read the file with the correct file extension
     ReadXML(map_file);
+}
+
+void XMLReader::GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs)
+{
+    pedestrian_ptrs.clear();
+    for (auto &ped : pedestrians_)
+    {
+        pedestrian_ptrs.emplace_back();
+        pedestrian_ptrs.back().reset((Pedestrian *)(&ped)); // Set the pointer as the address of the current ped
+    }
 }
 
 void XMLReader::ReadXML(const std::string &file)

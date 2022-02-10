@@ -12,14 +12,13 @@
     <path>
         <point x="5" y="-2"/>
         <point x="7" y="8"/>
-        <point x="7" y="12"/>
     </path>
 </pedestrian>
 <pedestrian>
     <start x="11" y="2"/>
     <path>
         <point x="7" y="2"/>
-        <point x="7" y="-12"/>
+        <point x="7" y="-8"/>
     </path>
     <path>
         <point x="7" y="2"/>

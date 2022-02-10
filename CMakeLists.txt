@@ -56,6 +56,7 @@ include_directories(
 add_library(pedestrian_simulator
    src/pedestrian_simulator.cpp
    src/xml_reader.cpp
+   src/configuration.cpp
 )
 add_dependencies(pedestrian_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

@@ -11,9 +11,9 @@
 #include "rapidxml_utils.hpp"
 
 #include "lmpcc_tools/helpers.h"
-#include "pedestrian_simulator.h"
+#include "pedestrian.h"
+#include "pedestrian_simulator/configuration.h"
 
-class Pedestrian;
 class XMLReader
 {
 
@@ -27,7 +27,9 @@ public:
         Read();
     }
 
-    std::vector<Pedestrian> pedestrians_;
+    std::vector<WaypointPedestrian> pedestrians_;
+
+    void GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs);
 
 public:
     /**

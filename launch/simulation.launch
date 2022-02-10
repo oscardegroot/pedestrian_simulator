@@ -2,7 +2,7 @@
 
 <launch>
 
-    <!-- <rosparam command="load" file="$(find lmpcc)/config/jackal_simulator_parameters.yaml"/> -->
+    <rosparam command="load" file="$(find pedestrian_simulator)/config/configuration.yaml"/>
 
     <node pkg="pedestrian_simulator" type="pedestrian_simulator_node" name="pedestrian_simulator_node" cwd="node" respawn="false" output="screen"/>
 
