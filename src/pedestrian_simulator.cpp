@@ -66,7 +66,8 @@ void PedestrianSimulator::Reset()
 
 void PedestrianSimulator::Poll(const ros::TimerEvent &event)
 {
-    ROS_INFO("PedestrianSimulator: Update");
+    if (CONFIG.debug_output_)
+        ROS_INFO("PedestrianSimulator: Update");
 
     for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
     {

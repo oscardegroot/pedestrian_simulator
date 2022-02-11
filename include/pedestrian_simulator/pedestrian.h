@@ -94,8 +94,10 @@ public:
             new_pose.pose.position.y += twist_.linear.y * DELTA_T_PREDICT;
             gaussian_msg.mean.poses.push_back(new_pose);
 
-            major += CONFIG.process_noise_[0] * DELTA_T_PREDICT;
-            minor += CONFIG.process_noise_[1] * DELTA_T_PREDICT;
+            // major += CONFIG.process_noise_[0] * DELTA_T_PREDICT;
+            // minor += CONFIG.process_noise_[1] * DELTA_T_PREDICT;
+            major = CONFIG.process_noise_[0] * DELTA_T_PREDICT; // TEST: Just add the per stage variance and integrate on the controller side
+            minor = CONFIG.process_noise_[1] * DELTA_T_PREDICT;
 
             gaussian_msg.major_semiaxis.push_back(major);
             gaussian_msg.minor_semiaxis.push_back(minor);

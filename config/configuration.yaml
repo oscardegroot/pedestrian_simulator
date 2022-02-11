@@ -1,9 +1,10 @@
 pedestrian_simulator:
   node:
     debug_output: false
-    scenario: 6_peds.xml
+    scenario: 4_crossing.xml
     update_frequency: 20
   pedestrians:
     type: gaussian
-    process_noise: [0.05, 0.05]
+    #process_noise: [.6, 0.6]
+    process_noise: [.3, .3]
     velocity: 1.3
