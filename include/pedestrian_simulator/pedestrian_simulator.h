@@ -35,6 +35,7 @@ public:
     void Publish();
     void PublishPredictions();
     void PublishTrajectoryPredictions();
+    void PublishBinomialTrajectoryPredictions();
     Helpers::RandomGenerator random_generator_;
 
     void PublishDebugVisuals();

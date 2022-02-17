@@ -109,31 +109,95 @@ void PedestrianSimulator::Publish()
 
 void PedestrianSimulator::PublishPredictions()
 {
+    // lmpcc_msgs::obstacle_array prediction_array;
+
+    // unsigned int id = 0;
+    // for (auto &ped : pedestrians_)
+    // {
+    //     lmpcc_msgs::obstacle_gmm gmm_msg;
+    //     gmm_msg.id = id;
+
+    //     gmm_msg.pose.position.x = ped->position_.x;
+    //     gmm_msg.pose.position.y = ped->position_.y;
+
+    //     ped->PredictPath(gmm_msg);
+
+    //     prediction_array.obstacles.push_back(gmm_msg);
+    //     id++;
+    // }
+
+    // prediction_array.header.stamp = ros::Time::now();
+    // prediction_array.header.frame_id = "map";
+
+    // obstacle_prediction_pub_.publish(prediction_array);
+}
+
+void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
+{
     lmpcc_msgs::obstacle_array prediction_array;
 
     unsigned int id = 0;
-    for (auto &ped : pedestrians_)
+    for (auto &general_ped : pedestrians_)
     {
+        BinomialPedestrian *ped = (BinomialPedestrian *)(general_ped.get());
         lmpcc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
         gmm_msg.pose.position.x = ped->position_.x;
         gmm_msg.pose.position.y = ped->position_.y;
 
-        ped->PredictPath(gmm_msg);
+        // For each state in the horizon we need to define a Gaussian + the case where the ped does not cross
+        for (int k_mode = 0; k_mode < HORIZON_N + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
+        {
+            lmpcc_msgs::gaussian gaussian_msg;
+            // We simply load the uncertainty, to be integrated on the controller side
+            geometry_msgs::PoseStamped pose;
+            pose.pose = gmm_msg.pose;
+
+            double prob;
+
+            for (int k = 0; k < HORIZON_N; k++)
+            {
+                if ((k_mode == HORIZON_N) || (k_mode < k)) // If this is the last mode OR we are not crossing yet
+                {
+                    prob *= (1.0 - ped->p); // We did not start crossing yet
+                    pose.pose.position.x += ped->B_straight(0) * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
+                    pose.pose.position.y += ped->B_straight(1) * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
+                }
+                else // If we are crossing
+                {
+                    if (k_mode == k)
+                        prob *= ped->p; // We cross from here
+
+                    pose.pose.position.x += ped->B_cross(0) * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
+                    pose.pose.position.y += ped->B_cross(1) * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
+                }
+
+                // We simply add the mean so that we can determine the samples in the controller
+                gaussian_msg.mean.poses.push_back(pose);
+
+                // The variance is simply the uncertainty per stage
+                gaussian_msg.major_semiaxis.push_back(CONFIG.process_noise_[0]);
+                gaussian_msg.minor_semiaxis.push_back(CONFIG.process_noise_[1]);
+            }
+            gmm_msg.gaussians.push_back(gaussian_msg);
+            gmm_msg.probabilities.push_back(prob);
+        }
 
         prediction_array.obstacles.push_back(gmm_msg);
         id++;
     }
-
-    prediction_array.header.stamp = ros::Time::now();
-    prediction_array.header.frame_id = "map";
-
-    obstacle_prediction_pub_.publish(prediction_array);
 }
 
 void PedestrianSimulator::PublishTrajectoryPredictions()
 {
+    if (CONFIG.ped_type_ == PedestrianType::BINOMIAL)
+    {
+
+        PublishBinomialTrajectoryPredictions();
+        return;
+    }
+
     lmpcc_msgs::obstacle_array prediction_array;
 
     unsigned int id = 0;

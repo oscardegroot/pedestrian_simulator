@@ -80,30 +80,28 @@ public:
 
     virtual void PredictPath(lmpcc_msgs::obstacle_gmm &msg) override
     {
-        lmpcc_msgs::gaussian gaussian_msg;
-        geometry_msgs::PoseStamped new_pose;
-        new_pose.pose.position.x = position_.x;
-        new_pose.pose.position.y = position_.y;
+        // lmpcc_msgs::gaussian gaussian_msg;
+        // geometry_msgs::PoseStamped new_pose;
+        // new_pose.pose.position.x = position_.x;
+        // new_pose.pose.position.y = position_.y;
 
-        double major = 0.;
-        double minor = 0.;
+        // double major = 0.;
+        // double minor = 0.;
 
-        for (int k = 0; k < HORIZON_N; k++)
-        {
-            new_pose.pose.position.x += twist_.linear.x * DELTA_T_PREDICT;
-            new_pose.pose.position.y += twist_.linear.y * DELTA_T_PREDICT;
-            gaussian_msg.mean.poses.push_back(new_pose);
+        // for (int k = 0; k < HORIZON_N; k++)
+        // {
+        //     new_pose.pose.position.x += twist_.linear.x * DELTA_T_PREDICT;
+        //     new_pose.pose.position.y += twist_.linear.y * DELTA_T_PREDICT;
+        //     gaussian_msg.mean.poses.push_back(new_pose);
 
-            // major += CONFIG.process_noise_[0] * DELTA_T_PREDICT;
-            // minor += CONFIG.process_noise_[1] * DELTA_T_PREDICT;
-            major = CONFIG.process_noise_[0] * DELTA_T_PREDICT; // TEST: Just add the per stage variance and integrate on the controller side
-            minor = CONFIG.process_noise_[1] * DELTA_T_PREDICT;
+        //     major = CONFIG.process_noise_[0] * DELTA_T_PREDICT; // TEST: Just add the per stage variance and integrate on the controller side
+        //     minor = CONFIG.process_noise_[1] * DELTA_T_PREDICT;
 
-            gaussian_msg.major_semiaxis.push_back(major);
-            gaussian_msg.minor_semiaxis.push_back(minor);
-        }
-        msg.gaussians.push_back(gaussian_msg);
-        msg.probabilities.push_back(1.0);
+        //     gaussian_msg.major_semiaxis.push_back(major);
+        //     gaussian_msg.minor_semiaxis.push_back(minor);
+        // }
+        // msg.gaussians.push_back(gaussian_msg);
+        // msg.probabilities.push_back(1.0);
     }
 
 public:
@@ -116,10 +114,22 @@ public:
 class BinomialPedestrian : public Pedestrian
 {
 public:
+    Eigen::Vector2d B_straight;
+    Eigen::Vector2d B_cross;
+    PedState state;
+    double p = 0.05;
+    int counter;
+
     BinomialPedestrian(const Waypoint &start)
         : Pedestrian(start)
     {
         Reset();
+
+        // Set the dynamics
+
+        B_straight = Eigen::Vector2d(1., 0.);
+        B_cross = Eigen::Vector2d(0., 1.);
+        state = PedState::STRAIGHT;
     }
 
     virtual void Update() override
@@ -131,25 +141,32 @@ public:
         {
         case PedState::STRAIGHT:
 
-            twist_.linear.x = CONFIG.ped_velocity_ * direction_;
-            twist_.linear.y = 0.;
+            twist_.linear.x = B_straight(0) * CONFIG.ped_velocity_ * direction_;
+            twist_.linear.y = B_straight(1) * CONFIG.ped_velocity_ * direction_;
 
             // Transition
-            if (random_generator.Double() > 0.999995)
+            if ((counter % 4 == 0) && (random_generator.Double() <= p)) // Do this only once every 4 times
                 state_ = PedState::CROSS;
+
+            counter = (counter + 1) % 4;
 
             break;
         case PedState::CROSS:
 
-            twist_.linear.x = 0.;
-            twist_.linear.y = CONFIG.ped_velocity_ * direction_;
+            twist_.linear.x = B_cross(0) * CONFIG.ped_velocity_ * direction_;
+            twist_.linear.y = B_cross(1) * CONFIG.ped_velocity_ * direction_;
 
             break;
         }
 
-        position_.x += twist_.linear.x * DELTA_T;
-        position_.y += twist_.linear.y * DELTA_T;
-        // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
+        Eigen::Vector2d process_noise_realization = random_generator.BivariateGaussian(Eigen::Vector2d(0., 0.),
+                                                                                       CONFIG.process_noise_[0],
+                                                                                       CONFIG.process_noise_[1],
+                                                                                       0.);
+
+        // Update the position using the velocity and Gaussian process noise
+        position_.x += twist_.linear.x * DELTA_T + process_noise_realization(0) * DELTA_T;
+        position_.y += twist_.linear.y * DELTA_T + process_noise_realization(1) * DELTA_T;
     }
 
     virtual void PredictPath(lmpcc_msgs::obstacle_gmm &msg) override
@@ -167,6 +184,8 @@ public:
             direction_ = -1;
         else
             direction_ = 1;
+
+        counter = 0;
     }
 
     PedState state_;
