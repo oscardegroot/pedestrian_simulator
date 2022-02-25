@@ -45,10 +45,13 @@ public:
   double update_frequency_;
   std::string scenario_file_;
 
+  int seed_;
   std::vector<double> process_noise_;
   double ped_velocity_;
   std::string ped_type_string_;
   PedestrianType ped_type_;
+
+  double p_binomial_;
 
   bool success_;
 

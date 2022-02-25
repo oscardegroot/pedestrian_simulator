@@ -33,7 +33,6 @@ public:
     }
 
     virtual void Update() = 0;
-    virtual void PredictPath(lmpcc_msgs::obstacle_gmm &msg) = 0;
 
     unsigned int id_;
 
@@ -48,11 +47,14 @@ class GaussianPedestrian : public Pedestrian
 public:
     double angle;
     Eigen::Vector2d B;
+    Helpers::RandomGenerator random_generator;
 
     GaussianPedestrian(const Waypoint &start, const Waypoint &end)
         : Pedestrian(start)
     {
+        random_generator = Helpers::RandomGenerator(CONFIG.seed_);
         Reset();
+
         // Set the dynamics
         angle = std::atan2(end.y - start.y, end.x - start.x);
         B = Eigen::Vector2d(
@@ -62,7 +64,6 @@ public:
 
     virtual void Update() override
     {
-        Helpers::RandomGenerator random_generator;
 
         Eigen::Vector2d process_noise_realization = random_generator.BivariateGaussian(Eigen::Vector2d(0., 0.),
                                                                                        CONFIG.process_noise_[0],
@@ -78,32 +79,6 @@ public:
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
 
-    virtual void PredictPath(lmpcc_msgs::obstacle_gmm &msg) override
-    {
-        // lmpcc_msgs::gaussian gaussian_msg;
-        // geometry_msgs::PoseStamped new_pose;
-        // new_pose.pose.position.x = position_.x;
-        // new_pose.pose.position.y = position_.y;
-
-        // double major = 0.;
-        // double minor = 0.;
-
-        // for (int k = 0; k < HORIZON_N; k++)
-        // {
-        //     new_pose.pose.position.x += twist_.linear.x * DELTA_T_PREDICT;
-        //     new_pose.pose.position.y += twist_.linear.y * DELTA_T_PREDICT;
-        //     gaussian_msg.mean.poses.push_back(new_pose);
-
-        //     major = CONFIG.process_noise_[0] * DELTA_T_PREDICT; // TEST: Just add the per stage variance and integrate on the controller side
-        //     minor = CONFIG.process_noise_[1] * DELTA_T_PREDICT;
-
-        //     gaussian_msg.major_semiaxis.push_back(major);
-        //     gaussian_msg.minor_semiaxis.push_back(minor);
-        // }
-        // msg.gaussians.push_back(gaussian_msg);
-        // msg.probabilities.push_back(1.0);
-    }
-
 public:
     virtual void Reset()
     {
@@ -117,27 +92,24 @@ public:
     Eigen::Vector2d B_straight;
     Eigen::Vector2d B_cross;
     PedState state;
-    double p = 0.05;
+    double p;
     int counter;
+    Helpers::RandomGenerator random_generator;
 
     BinomialPedestrian(const Waypoint &start)
         : Pedestrian(start)
     {
+        random_generator = Helpers::RandomGenerator(CONFIG.seed_);
+
+        p = CONFIG.p_binomial_;
         Reset();
-
-        // Set the dynamics
-
-        B_straight = Eigen::Vector2d(1., 0.);
-        B_cross = Eigen::Vector2d(0., 1.);
-        state = PedState::STRAIGHT;
     }
 
     virtual void Update() override
     {
-        Helpers::RandomGenerator random_generator;
 
         // BINOMIAL
-        switch (state_)
+        switch (state)
         {
         case PedState::STRAIGHT:
 
@@ -146,7 +118,7 @@ public:
 
             // Transition
             if ((counter % 4 == 0) && (random_generator.Double() <= p)) // Do this only once every 4 times
-                state_ = PedState::CROSS;
+                state = PedState::CROSS;
 
             counter = (counter + 1) % 4;
 
@@ -169,26 +141,20 @@ public:
         position_.y += twist_.linear.y * DELTA_T + process_noise_realization(1) * DELTA_T;
     }
 
-    virtual void PredictPath(lmpcc_msgs::obstacle_gmm &msg) override
-    {
-    }
-
 public:
     virtual void Reset()
     {
         Pedestrian::Reset();
-        state_ = PedState::STRAIGHT;
 
-        // Temporary
-        if (start_.x > 6)
-            direction_ = -1;
-        else
-            direction_ = 1;
-
+        // Set the dynamics
+        B_straight = Eigen::Vector2d(1., 0.);
+        B_cross = Eigen::Vector2d(0., 1.);
+        state = PedState::STRAIGHT;
         counter = 0;
+
+        direction_ = start_.x < 6. ? 1. : -1.;
     }
 
-    PedState state_;
     int direction_;
 };
 
@@ -244,46 +210,46 @@ public:
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
 
-    void PredictPath(lmpcc_msgs::obstacle_gmm &msg) override
-    {
-        for (size_t path_id = 0; path_id < paths_.size(); path_id++)
-        {
-            // Create a new pedestrian at the current position
-            WaypointPedestrian fake_ped = *this;
-            fake_ped.current_path_id_ = path_id; // Explicitly set the path ID
+    // void PredictPath(lmpcc_msgs::obstacle_gmm &msg) override
+    // {
+    //     for (size_t path_id = 0; path_id < paths_.size(); path_id++)
+    //     {
+    //         // Create a new pedestrian at the current position
+    //         WaypointPedestrian fake_ped = *this;
+    //         fake_ped.current_path_id_ = path_id; // Explicitly set the path ID
 
-            bool found_waypoint = fake_ped.FindClosestWaypoint(); // Set the current waypoint via a search
-            if (!found_waypoint)
-                continue;
+    //         bool found_waypoint = fake_ped.FindClosestWaypoint(); // Set the current waypoint via a search
+    //         if (!found_waypoint)
+    //             continue;
 
-            lmpcc_msgs::gaussian gaussian_msg;
-            double major = 0.;
-            double minor = 0.;
-            for (int k = 0; k < HORIZON_N; k++)
-            {
-                fake_ped.Update(); // Update the fake ped
-                geometry_msgs::PoseStamped cur_pose;
-                cur_pose.pose.position.x = fake_ped.position_.x;
-                cur_pose.pose.position.y = fake_ped.position_.y;
-                gaussian_msg.mean.poses.push_back(cur_pose); // Add its position as mean of the gaussian
+    //         lmpcc_msgs::gaussian gaussian_msg;
+    //         double major = 0.;
+    //         double minor = 0.;
+    //         for (int k = 0; k < HORIZON_N; k++)
+    //         {
+    //             fake_ped.Update(); // Update the fake ped
+    //             geometry_msgs::PoseStamped cur_pose;
+    //             cur_pose.pose.position.x = fake_ped.position_.x;
+    //             cur_pose.pose.position.y = fake_ped.position_.y;
+    //             gaussian_msg.mean.poses.push_back(cur_pose); // Add its position as mean of the gaussian
 
-                major += std::pow(DELTA_T, 2.) * 1.0; // To be added in the real predictions?
-                minor += std::pow(DELTA_T, 2.) * 1.0;
+    //             major += std::pow(DELTA_T, 2.) * 1.0; // To be added in the real predictions?
+    //             minor += std::pow(DELTA_T, 2.) * 1.0;
 
-                gaussian_msg.major_semiaxis.push_back(major); // static for now
-                gaussian_msg.minor_semiaxis.push_back(minor); // static for now
-            }
+    //             gaussian_msg.major_semiaxis.push_back(major); // static for now
+    //             gaussian_msg.minor_semiaxis.push_back(minor); // static for now
+    //         }
 
-            // We want to only add this prediction if the path is still reasonable
-            msg.gaussians.push_back(gaussian_msg);
-        }
+    //         // We want to only add this prediction if the path is still reasonable
+    //         msg.gaussians.push_back(gaussian_msg);
+    //     }
 
-        for (size_t g = 0; g < msg.gaussians.size(); g++)
-            msg.probabilities.push_back(1. / ((double)msg.gaussians.size()));
+    //     for (size_t g = 0; g < msg.gaussians.size(); g++)
+    //         msg.probabilities.push_back(1. / ((double)msg.gaussians.size()));
 
-        if (msg.gaussians.size() == 0)
-            ROS_ERROR("No valid paths found!");
-    }
+    //     if (msg.gaussians.size() == 0)
+    //         ROS_ERROR("No valid paths found!");
+    // }
 
     // Set the waypoint to the closest one
     bool FindClosestWaypoint()

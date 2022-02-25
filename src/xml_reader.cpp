@@ -42,6 +42,19 @@ void XMLReader::ReadXML(const std::string &file)
 
     pedestrians_.clear();
 
+    // Read tags
+    for (rapidxml::xml_node<> *tag = doc.first_node("tag"); tag; tag = tag->next_sibling("tag"))
+    {
+        if (std::string(tag->first_attribute("type")->value()).compare("binomial") == 0)
+        {
+            CONFIG.ped_type_ = PedestrianType::BINOMIAL;
+        }
+        else if (std::string(tag->first_attribute("type")->value()).compare("gaussian") == 0)
+        {
+            CONFIG.ped_type_ = PedestrianType::GAUSSIAN;
+        }
+    }
+
     // try{
     // For all pedestrians in the file
     for (rapidxml::xml_node<> *ped = doc.first_node("pedestrian"); ped; ped = ped->next_sibling("pedestrian"))
