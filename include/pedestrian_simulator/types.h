@@ -5,7 +5,6 @@
 
 constexpr double DELTA_T = 0.05;
 constexpr double DELTA_T_PREDICT = 0.2;
-// constexpr double VELOCITY = 1.3;
 constexpr int HORIZON_N = 20;
 
 struct Waypoint
@@ -25,6 +24,13 @@ struct Waypoint
     double Angle(Waypoint &other)
     {
         return std::atan2(other.y - y, other.x - x);
+    }
+
+    Waypoint Translate(const geometry_msgs::Pose &frame)
+    {
+        x -= frame.position.x;
+        y -= frame.position.y;
+        return *this;
     }
 };
 

@@ -7,20 +7,20 @@
     </path>
 </pedestrian>
 <pedestrian>
-    <start x="4" y="-6"/>
+    <start x="3.5" y="-3"/>
     <path>
-        <point x="6" y="7"/>
+        <point x="5.5" y="7"/>
     </path>
 </pedestrian>
 <pedestrian>
-    <start x="6" y="8.5"/>
+    <start x="7" y="7.5"/>
     <path>
         <point x="8" y="-5"/>
     </path>
 </pedestrian>
 <pedestrian>
-    <start x="8" y="-11"/>
+    <start x="9" y="-5"/>
     <path>
-        <point x="7" y="7"/>
+        <point x="5" y="7"/>
     </path>
 </pedestrian>

@@ -46,13 +46,15 @@ void XMLReader::ReadXML(const std::string &file)
     for (rapidxml::xml_node<> *tag = doc.first_node("tag"); tag; tag = tag->next_sibling("tag"))
     {
         if (std::string(tag->first_attribute("type")->value()).compare("binomial") == 0)
-        {
             CONFIG.ped_type_ = PedestrianType::BINOMIAL;
-        }
         else if (std::string(tag->first_attribute("type")->value()).compare("gaussian") == 0)
-        {
             CONFIG.ped_type_ = PedestrianType::GAUSSIAN;
-        }
+
+        if (std::string(tag->first_attribute("type")->value()).compare("static") == 0)
+            CONFIG.static_ = true;
+
+        if (std::string(tag->first_attribute("type")->value()).compare("velocity") == 0)
+            CONFIG.ped_velocity_ = atof(tag->first_attribute("value")->value());
     }
 
     // try{

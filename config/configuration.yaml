@@ -2,15 +2,23 @@ pedestrian_simulator:
   node:
     debug_output: false
     # scenario: 4_binomial.xml
-    scenario: 4_crossing.xml
+    # scenario: crowded_gaussian.xml
+    scenario: crowded_binomial.xml # todo
+    # scenario: 4_corridor.xml
+    # scenario: 4_crossing(copy).xml
+    # scenario: 4_crossing_v2.xml
+    # scenario: static_3.xml
+    # scenario: static_4.xml
+    # scenario: region_test.xml
     update_frequency: 20
   pedestrians:
-    seed: -1  # -1 = random!
+    seed: 5  # > 0,  -1 = random!
     type: gaussian
-    #process_noise: [.6, 0.6]
-    process_noise: [.3, .3]
-    velocity: 1.3 #1.3
+    # process_noise: [.6, .6]
+    process_noise:  [.3, .3] 
+    velocity: 1.3
+    # velocity: 0.
   binomial:
-    p: 0.05
+    p: 0.01 # 0.05
 
 # simulation/weights/contouring: 0.02

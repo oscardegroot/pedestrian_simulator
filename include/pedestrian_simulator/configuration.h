@@ -19,9 +19,9 @@ class Config
 {
 
   /**
- * @brief Class for retrieving configuration parameters
- * 
- */
+   * @brief Class for retrieving configuration parameters
+   *
+   */
 
 public:
   // Singleton function
@@ -52,6 +52,7 @@ public:
   PedestrianType ped_type_;
 
   double p_binomial_;
+  bool static_;
 
   bool success_;
 

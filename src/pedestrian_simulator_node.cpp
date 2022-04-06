@@ -8,7 +8,6 @@ int main(int argc, char **argv)
     try
     {
         ros::init(argc, argv, ros::this_node::getName());
-        std::cout << "hi!" << std::endl;
         PedestrianSimulator simulator;
 
         // spin node, till ROS node is running on

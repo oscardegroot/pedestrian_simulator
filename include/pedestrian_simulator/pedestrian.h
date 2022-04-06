@@ -33,6 +33,11 @@ public:
     }
 
     virtual void Update() = 0;
+    virtual void MoveFrame(const Eigen::Vector2d &speed)
+    {
+        position_.x -= speed(0) * DELTA_T;
+        position_.y -= speed(1) * DELTA_T;
+    };
 
     unsigned int id_;
 
@@ -47,12 +52,14 @@ class GaussianPedestrian : public Pedestrian
 public:
     double angle;
     Eigen::Vector2d B;
-    Helpers::RandomGenerator random_generator;
+    std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+    int cur_seed_, seed_mp_;
 
-    GaussianPedestrian(const Waypoint &start, const Waypoint &end)
-        : Pedestrian(start)
+    GaussianPedestrian(const Waypoint &start, const Waypoint &end, int seed_mp)
+        : Pedestrian(start), seed_mp_(seed_mp)
     {
-        random_generator = Helpers::RandomGenerator(CONFIG.seed_);
+        cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+
         Reset();
 
         // Set the dynamics
@@ -65,23 +72,29 @@ public:
     virtual void Update() override
     {
 
-        Eigen::Vector2d process_noise_realization = random_generator.BivariateGaussian(Eigen::Vector2d(0., 0.),
-                                                                                       CONFIG.process_noise_[0],
-                                                                                       CONFIG.process_noise_[1],
-                                                                                       angle);
+        Eigen::Vector2d process_noise_realization = random_generator_->BivariateGaussian(Eigen::Vector2d(0., 0.),
+                                                                                         CONFIG.process_noise_[0],
+                                                                                         CONFIG.process_noise_[1],
+                                                                                         angle);
 
         twist_.linear.x = B(0) * CONFIG.ped_velocity_;
         twist_.linear.y = B(1) * CONFIG.ped_velocity_;
 
         // Major / minor -> Cov = [major^2, 0; 0 minor^2]
-        position_.x += twist_.linear.x * DELTA_T + process_noise_realization(0) * DELTA_T;
-        position_.y += twist_.linear.y * DELTA_T + process_noise_realization(1) * DELTA_T;
+        if (!CONFIG.static_) // If static, do not update the position
+        {
+            position_.x += twist_.linear.x * DELTA_T + process_noise_realization(0) * DELTA_T;
+            position_.y += twist_.linear.y * DELTA_T + process_noise_realization(1) * DELTA_T;
+        }
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
 
 public:
     virtual void Reset()
     {
+        cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
+        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+
         Pedestrian::Reset();
     }
 };
@@ -94,12 +107,13 @@ public:
     PedState state;
     double p;
     int counter;
-    Helpers::RandomGenerator random_generator;
+    std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+    int seed_mp_, cur_seed_;
 
-    BinomialPedestrian(const Waypoint &start)
-        : Pedestrian(start)
+    BinomialPedestrian(const Waypoint &start, int seed_mp)
+        : Pedestrian(start), seed_mp_(seed_mp)
     {
-        random_generator = Helpers::RandomGenerator(CONFIG.seed_);
+        cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_;
 
         p = CONFIG.p_binomial_;
         Reset();
@@ -117,7 +131,7 @@ public:
             twist_.linear.y = B_straight(1) * CONFIG.ped_velocity_ * direction_;
 
             // Transition
-            if ((counter % 4 == 0) && (random_generator.Double() <= p)) // Do this only once every 4 times
+            if ((counter % 4 == 0) && (random_generator_->Double() <= p)) // Do this only once every 4 times
                 state = PedState::CROSS;
 
             counter = (counter + 1) % 4;
@@ -131,10 +145,10 @@ public:
             break;
         }
 
-        Eigen::Vector2d process_noise_realization = random_generator.BivariateGaussian(Eigen::Vector2d(0., 0.),
-                                                                                       CONFIG.process_noise_[0],
-                                                                                       CONFIG.process_noise_[1],
-                                                                                       0.);
+        Eigen::Vector2d process_noise_realization = random_generator_->BivariateGaussian(Eigen::Vector2d(0., 0.),
+                                                                                         CONFIG.process_noise_[0],
+                                                                                         CONFIG.process_noise_[1],
+                                                                                         0.);
 
         // Update the position using the velocity and Gaussian process noise
         position_.x += twist_.linear.x * DELTA_T + process_noise_realization(0) * DELTA_T;
@@ -144,6 +158,9 @@ public:
 public:
     virtual void Reset()
     {
+        cur_seed_++;
+        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+
         Pedestrian::Reset();
 
         // Set the dynamics
