@@ -58,6 +58,7 @@ void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &ms
     vehicle_frame_.position.x += msg.linear.x * DELTA_T;
     vehicle_frame_.position.y += msg.linear.y * DELTA_T;
     vehicle_frame_.orientation.z += msg.angular.z * DELTA_T; // angular velocity is stored in orientation / angular .z (euler not quaternion)
+	std::cout << "Updated vehicle frame (velocity = " << msg.linear.x << ")\n";
 }
 
 void PedestrianSimulator::Reset()

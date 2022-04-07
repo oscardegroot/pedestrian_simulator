@@ -2,8 +2,8 @@ pedestrian_simulator:
   node:
     debug_output: false
     # scenario: 4_binomial.xml
-    # scenario: crowded_gaussian.xml
-    scenario: crowded_binomial.xml # todo
+    scenario: prius.xml
+    # scenario: crowded_binomial.xml # todo
     # scenario: 4_corridor.xml
     # scenario: 4_crossing(copy).xml
     # scenario: 4_crossing_v2.xml
