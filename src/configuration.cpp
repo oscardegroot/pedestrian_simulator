@@ -13,6 +13,7 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/node/debug_output", debug_output_, true);
   retrieveParameter(nh, "pedestrian_simulator/node/scenario", scenario_file_);
   retrieveParameter(nh, "pedestrian_simulator/node/update_frequency", update_frequency_, 20.);
+  delta_t_ = 1.0 / update_frequency_;
 
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/seed", seed_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);

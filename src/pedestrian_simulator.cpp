@@ -38,6 +38,13 @@ PedestrianSimulator::PedestrianSimulator()
         }
     }
 
+    // For Carla only!
+    for (size_t ped_id = 0; ped_id < pedestrians_.size(); ped_id++)
+    {
+        carla_position_pub_.push_back(nh_.advertise<geometry_msgs::Pose>("/carla/simulated_peds/" + std::to_string(ped_id) + "/position", 1));
+        carla_velocity_pub_.push_back(nh_.advertise<geometry_msgs::Twist>("/carla/simulated_peds/" + std::to_string(ped_id) + "/velocity", 1));
+    }
+
     // Pick a path
     Reset();
 
@@ -55,9 +62,9 @@ void PedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 
 void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)
 {
-    vehicle_frame_.position.x += msg.linear.x * DELTA_T;
-    vehicle_frame_.position.y += msg.linear.y * DELTA_T;
-    vehicle_frame_.orientation.z += msg.angular.z * DELTA_T; // angular velocity is stored in orientation / angular .z (euler not quaternion)
+    vehicle_frame_.position.x += msg.linear.x * CONFIG.delta_t_;
+    vehicle_frame_.position.y += msg.linear.y * CONFIG.delta_t_;
+    vehicle_frame_.orientation.z += msg.angular.z * CONFIG.delta_t_; // angular velocity is stored in orientation / angular .z (euler not quaternion)
 }
 
 void PedestrianSimulator::Reset()
@@ -100,8 +107,13 @@ void PedestrianSimulator::Publish()
         ped_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         ped_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
 
-        ped_msg.twist = ped->twist_;
+        ped_msg.twist = ped->noisy_twist_;
 
+        // For the Carla pedestrian visual updates, we need to publish the positions and velocities here
+        carla_position_pub_[id].publish(ped_msg.pose);
+        // ped_msg.twist.linear.x *= CONFIG.delta_t_; // Account for the time step
+        // ped_msg.twist.linear.y *= CONFIG.delta_t_; // Account for the time step
+        carla_velocity_pub_[id].publish(ped_msg.twist);
         // ped_msg.shape.dimensions[0] = 0.25;
         // ped_msg.shape.dimensions[1] = 0.25;
         ped_array_msg.objects.push_back(ped_msg);
@@ -255,22 +267,25 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
 void PedestrianSimulator::PublishDebugVisuals()
 {
     ROSPointMarker &arrow = debug_visuals_->getNewPointMarker("ARROW");
-    arrow.setScale(0.8, 0.15, 0.15);
+    arrow.setScale(0.8 * 1.5, 0.15 * 1.5, 0.15 * 1.5);
 
     for (auto &ped : pedestrians_)
     {
-        arrow.setColor(1.0, 0.0, 0.0, 0.8);
+        arrow.setColor(1.0, 0.0, 0.0, 1.);
 
         // Eigen::Matrix3d H;
         // H.block(0, 0, 2, 2) = Helpers::rotationMatrixFromHeading(vehicle_frame_.orientation.z);
         // H.block(2, 0, 2, 1) = Eigen::Vector2d(vehicle_frame_.position.x, vehicle_frame_.position.y);
         // H(2, 2) = 1.0;
         // Eigen::Vector3d pr = H * Eigen::Vector3d(ped->position_.x, ped->position_.y, 1);
+        // arrow.setColorInt(15);
+        // arrow.setColor(247. / 256., 177. / 256., 64. / 256.);
+
         arrow.setOrientation(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
         geometry_msgs::Point point;
         point.x = ped->position_.x - vehicle_frame_.position.x;
         point.y = ped->position_.y - vehicle_frame_.position.y;
-        point.z = 0.1;
+        point.z = 1.9 / 2.0;
         arrow.addPointMarker(point);
     }
 
@@ -284,13 +299,15 @@ void PedestrianSimulator::PublishDebugVisuals()
 
         for (size_t path_id = 0; path_id < fake_ped.paths_.size(); path_id++)
         {
-            arrow.setColor(0.0, 1.0, 0.0, 1.0);
+            arrow.setColorInt(8);
 
             fake_ped.current_path_id_ = path_id; // Explicitly set the path ID
 
             bool found_waypoint = fake_ped.FindClosestWaypoint(); // Set the current waypoint via a search
             if (found_waypoint)
             {
+                arrow.setColorInt(8);
+
                 arrow.setOrientation(fake_ped.position_.Angle(fake_ped.GetCurrentWaypoint()));
                 geometry_msgs::Point point;
                 point.x = fake_ped.position_.x;

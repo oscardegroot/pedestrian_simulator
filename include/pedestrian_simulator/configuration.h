@@ -43,6 +43,7 @@ public:
   // High-level Parameters
   bool debug_output_;
   double update_frequency_;
+  double delta_t_;
   std::string scenario_file_;
 
   int seed_;

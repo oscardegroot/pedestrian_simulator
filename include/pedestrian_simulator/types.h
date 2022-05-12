@@ -3,7 +3,7 @@
 
 #include <vector>
 
-constexpr double DELTA_T = 0.05;
+// constexpr double DELTA_T = 0.05;
 constexpr double DELTA_T_PREDICT = 0.2;
 constexpr int HORIZON_N = 20;
 

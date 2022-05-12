@@ -50,6 +50,7 @@ private:
     std::unique_ptr<XMLReader> xml_reader_;
 
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
+    std::vector<ros::Publisher> carla_position_pub_, carla_velocity_pub_;
     ros::Subscriber reset_sub_, vehicle_speed_sub_;
 
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;

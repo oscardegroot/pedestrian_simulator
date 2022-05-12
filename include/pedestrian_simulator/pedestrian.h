@@ -35,8 +35,8 @@ public:
     virtual void Update() = 0;
     virtual void MoveFrame(const Eigen::Vector2d &speed)
     {
-        position_.x -= speed(0) * DELTA_T;
-        position_.y -= speed(1) * DELTA_T;
+        position_.x -= speed(0) * CONFIG.delta_t_;
+        position_.y -= speed(1) * CONFIG.delta_t_;
     };
 
     unsigned int id_;
@@ -45,6 +45,7 @@ public:
     Waypoint position_;
 
     geometry_msgs::Twist twist_;
+    geometry_msgs::Twist noisy_twist_;
 };
 
 class GaussianPedestrian : public Pedestrian
@@ -79,12 +80,17 @@ public:
 
         twist_.linear.x = B(0) * CONFIG.ped_velocity_;
         twist_.linear.y = B(1) * CONFIG.ped_velocity_;
+        noisy_twist_ = twist_;
 
         // Major / minor -> Cov = [major^2, 0; 0 minor^2]
         if (!CONFIG.static_) // If static, do not update the position
         {
-            position_.x += twist_.linear.x * DELTA_T + process_noise_realization(0) * DELTA_T;
-            position_.y += twist_.linear.y * DELTA_T + process_noise_realization(1) * DELTA_T;
+            noisy_twist_.linear.x += process_noise_realization(0);
+            noisy_twist_.linear.y += process_noise_realization(1);
+            position_.x += noisy_twist_.linear.x * CONFIG.delta_t_;
+            position_.y += noisy_twist_.linear.y * CONFIG.delta_t_;
+            // position_.x += twist_.linear.x * CONFIG.delta_t_ + process_noise_realization(0) * CONFIG.delta_t_;
+            // position_.y += twist_.linear.y * CONFIG.delta_t_ + process_noise_realization(1) * CONFIG.delta_t_;
         }
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
@@ -151,8 +157,8 @@ public:
                                                                                          0.);
 
         // Update the position using the velocity and Gaussian process noise
-        position_.x += twist_.linear.x * DELTA_T + process_noise_realization(0) * DELTA_T;
-        position_.y += twist_.linear.y * DELTA_T + process_noise_realization(1) * DELTA_T;
+        position_.x += twist_.linear.x * CONFIG.delta_t_ + process_noise_realization(0) * CONFIG.delta_t_;
+        position_.y += twist_.linear.y * CONFIG.delta_t_ + process_noise_realization(1) * CONFIG.delta_t_;
     }
 
 public:
@@ -165,7 +171,7 @@ public:
 
         // Set the dynamics
         B_straight = Eigen::Vector2d(1., 0.);
-        B_cross = Eigen::Vector2d(0., 1.);
+        B_cross = Eigen::Vector2d(1.0 / std::sqrt(2), 1.0 / std::sqrt(2));
         state = PedState::STRAIGHT;
         counter = 0;
 
@@ -222,8 +228,8 @@ public:
         twist_.linear.x = CONFIG.ped_velocity_ * std::cos(position_.Angle(cur_waypoint));
         twist_.linear.y = CONFIG.ped_velocity_ * std::sin(position_.Angle(cur_waypoint));
 
-        position_.x += twist_.linear.x * DELTA_T;
-        position_.y += twist_.linear.y * DELTA_T;
+        position_.x += twist_.linear.x * CONFIG.delta_t_;
+        position_.y += twist_.linear.y * CONFIG.delta_t_;
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
 
@@ -250,8 +256,8 @@ public:
     //             cur_pose.pose.position.y = fake_ped.position_.y;
     //             gaussian_msg.mean.poses.push_back(cur_pose); // Add its position as mean of the gaussian
 
-    //             major += std::pow(DELTA_T, 2.) * 1.0; // To be added in the real predictions?
-    //             minor += std::pow(DELTA_T, 2.) * 1.0;
+    //             major += std::pow(CONFIG.delta_t_, 2.) * 1.0; // To be added in the real predictions?
+    //             minor += std::pow(CONFIG.delta_t_, 2.) * 1.0;
 
     //             gaussian_msg.major_semiaxis.push_back(major); // static for now
     //             gaussian_msg.minor_semiaxis.push_back(minor); // static for now
