@@ -15,6 +15,9 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/node/update_frequency", update_frequency_, 20.);
   delta_t_ = 1.0 / update_frequency_;
 
+  retrieveParameter(nh, "pedestrian_simulator/node/prediction_step", prediction_step_, delta_t_);
+  retrieveParameter(nh, "pedestrian_simulator/node/horizon", horizon_N_);
+
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/seed", seed_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/velocity", ped_velocity_);

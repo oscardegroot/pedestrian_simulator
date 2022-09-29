@@ -44,6 +44,10 @@ public:
   bool debug_output_;
   double update_frequency_;
   double delta_t_;
+
+  double prediction_step_;
+  double horizon_N_;
+
   std::string scenario_file_;
 
   int seed_;
