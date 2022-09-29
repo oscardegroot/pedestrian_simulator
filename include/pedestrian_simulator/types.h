@@ -4,8 +4,8 @@
 #include <vector>
 
 // constexpr double DELTA_T = 0.05;
-constexpr double DELTA_T_PREDICT = 0.2;
-constexpr int HORIZON_N = 20;
+// constexpr double DELTA_T_PREDICT = 0.1;
+// constexpr int HORIZON_N = 40;
 
 struct Waypoint
 {

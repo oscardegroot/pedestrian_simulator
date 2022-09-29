@@ -32,7 +32,7 @@ public:
         position_ = start_;
     }
 
-    virtual void Update() = 0;
+    virtual void Update(){};
     virtual void MoveFrame(const Eigen::Vector2d &speed)
     {
         position_.x -= speed(0) * CONFIG.delta_t_;
@@ -41,7 +41,7 @@ public:
 
     unsigned int id_;
 
-    Waypoint start_;
+    Waypoint start_, goal_;
     Waypoint position_;
 
     geometry_msgs::Twist twist_;
@@ -60,11 +60,11 @@ public:
         : Pedestrian(start), seed_mp_(seed_mp)
     {
         cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
-
+        goal_ = end;
         Reset();
 
         // Set the dynamics
-        angle = std::atan2(end.y - start.y, end.x - start.x);
+        angle = std::atan2(goal_.y - start.y, goal_.x - start.x);
         B = Eigen::Vector2d(
             std::cos(angle),
             std::sin(angle));
@@ -181,6 +181,91 @@ public:
     int direction_;
 };
 
+// class RandomPedestrian : public Pedestrian
+// {
+// public:
+//     double angle;
+//     Eigen::Vector2d B;
+//     std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+//     int cur_seed_, seed_mp_;
+
+//     int random_x_min_, random_x_max_, random_y_min_, random_y_max_;
+
+//     RandomPedestrian(double random_x_min, double random_x_max, double random_y_min, double random_y_max, int seed_mp)
+//         : Pedestrian(Waypoint(0., 0.)), seed_mp_(seed_mp)
+//     {
+//         cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+
+//         random_x_min_ = random_x_min;
+//         random_x_max_ = random_x_max;
+//         random_y_min_ = random_y_min;
+//         random_y_max_ = random_y_max;
+
+//         Reset();
+//     }
+
+// public:
+//     virtual void Reset()
+//     {
+//         cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
+//         random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+
+//         // Generate a new start/goal
+//         start_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
+//                           random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
+
+//         goal_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
+//                          random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
+
+//         // Set the dynamics
+//         angle = std::atan2(goal_.y - start_.y, goal_.x - start_.x);
+//         B = Eigen::Vector2d(
+//             std::cos(angle),
+//             std::sin(angle));
+
+//         Pedestrian::Reset();
+//     }
+// };
+
+class RandomGaussianPedestrian : public GaussianPedestrian
+{
+
+public:
+    int random_x_min_, random_x_max_, random_y_min_, random_y_max_;
+
+    RandomGaussianPedestrian(double random_x_min, double random_x_max, double random_y_min, double random_y_max, int seed_mp)
+        : GaussianPedestrian(Waypoint(0., 0.), Waypoint(0., 0.), seed_mp)
+    {
+        cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+
+        random_x_min_ = random_x_min;
+        random_x_max_ = random_x_max;
+        random_y_min_ = random_y_min;
+        random_y_max_ = random_y_max;
+    }
+
+    virtual void Reset()
+    {
+        cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
+        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+
+        // Generate a new start/goal
+        start_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
+                          random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
+
+        goal_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
+                         random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
+
+        // Set the dynamics
+        angle = std::atan2(goal_.y - start_.y, goal_.x - start_.x);
+        B = Eigen::Vector2d(
+            std::cos(angle),
+            std::sin(angle));
+
+        Pedestrian::Reset();
+    }
+};
+
 class WaypointPedestrian : public Pedestrian
 {
 public:
@@ -248,7 +333,7 @@ public:
     //         lmpcc_msgs::gaussian gaussian_msg;
     //         double major = 0.;
     //         double minor = 0.;
-    //         for (int k = 0; k < HORIZON_N; k++)
+    //         for (int k = 0; k < CONFIG.horizon_N_; k++)
     //         {
     //             fake_ped.Update(); // Update the fake ped
     //             geometry_msgs::PoseStamped cur_pose;

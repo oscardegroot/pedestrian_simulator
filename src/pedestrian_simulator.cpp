@@ -27,14 +27,24 @@ PedestrianSimulator::PedestrianSimulator()
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id].start_, xml_reader_->pedestrians_[ped_id].paths_[0].back(), ped_id));
+            if (xml_reader_->is_random_[ped_id])
+            {
+                pedestrians_.back().reset(new RandomGaussianPedestrian(xml_reader_->random_x_min_[ped_id], xml_reader_->random_x_max_[ped_id],
+                                                                       xml_reader_->random_y_min_[ped_id], xml_reader_->random_y_max_[ped_id],
+                                                                       ped_id));
+            }
+            else
+            {
+                std::cout << ped_id << std::endl;
+                pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
+            }
         }
         break;
     case PedestrianType::BINOMIAL:
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id].start_, ped_id));
+            pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id]->start_, ped_id));
         }
     }
 
@@ -144,7 +154,7 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
         {
 
             // For each state in the horizon we need to define a Gaussian + the case where the ped does not cross
-            for (int k_mode = 0; k_mode < HORIZON_N + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
+            for (int k_mode = 0; k_mode < CONFIG.horizon_N_ + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
             {
                 lmpcc_msgs::gaussian gaussian_msg;
                 // We simply load the uncertainty, to be integrated on the controller side
@@ -153,21 +163,21 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
                 double prob = 1.;
 
-                for (int k = 0; k < HORIZON_N; k++)
+                for (int k = 0; k < CONFIG.horizon_N_; k++)
                 {
-                    if ((k_mode == HORIZON_N) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
+                    if ((k_mode == CONFIG.horizon_N_) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
                     {
                         prob *= (1.0 - ped->p); // We did not start crossing yet
-                        pose.pose.position.x += ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
-                        pose.pose.position.y += ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
+                        pose.pose.position.x += ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
+                        pose.pose.position.y += ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
                     }
                     else // If we are crossing
                     {
                         if (k_mode == k)
                             prob *= ped->p; // We cross from here
 
-                        pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
-                        pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
+                        pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
+                        pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
                     }
 
                     // We simply add the mean so that we can determine the samples in the controller
@@ -187,10 +197,10 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
             geometry_msgs::PoseStamped pose;
             pose.pose = gmm_msg.pose;
 
-            for (int k = 0; k < HORIZON_N; k++)
+            for (int k = 0; k < CONFIG.horizon_N_; k++)
             {
-                pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
-                pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
+                pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_;
+                pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_;
 
                 // We simply add the mean so that we can determine the samples in the controller
                 gaussian_msg.mean.poses.push_back(pose);
@@ -238,10 +248,10 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
         geometry_msgs::PoseStamped pose;
         pose.pose = gmm_msg.pose;
 
-        for (int k = 0; k < HORIZON_N; k++)
+        for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
         {
-            pose.pose.position.x += ped->twist_.linear.x * DELTA_T_PREDICT;
-            pose.pose.position.y += ped->twist_.linear.y * DELTA_T_PREDICT;
+            pose.pose.position.x += ped->twist_.linear.x * CONFIG.prediction_step_;
+            pose.pose.position.y += ped->twist_.linear.y * CONFIG.prediction_step_;
 
             // We simply add the mean so that we can determine the samples in the controller
             gaussian_msg.mean.poses.push_back(pose);
@@ -285,7 +295,7 @@ void PedestrianSimulator::PublishDebugVisuals()
         geometry_msgs::Point point;
         point.x = ped->position_.x - vehicle_frame_.position.x;
         point.y = ped->position_.y - vehicle_frame_.position.y;
-        point.z = 1.9 / 2.0;
+        point.z = 39.; // 1.9 / 2.0;
         arrow.addPointMarker(point);
     }
 
