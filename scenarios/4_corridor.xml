@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<!-- <tag type="static"/> -->
+<pedestrian>
+    <start x="0.5" y="-2.5"/>
+    <path>
+        <point x="12" y="-2"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="0.6" y="-3.4"/>
+    <path>
+        <point x="12" y="-2.2"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="10" y="0.4"/>
+    <path>
+        <point x="0" y="0.4"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="11" y="1.0"/>
+    <path>
+        <point x="0" y="0.9"/>
+    </path>
+</pedestrian>
