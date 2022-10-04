@@ -2,7 +2,7 @@ pedestrian_simulator:
   node:
     debug_output: false
     # scenario: 4_binomial.xml # Safe-Horizon (non-crowded)?
-    # scenario: crowded_gaussian.xml # Safe-Horizon (crowded)
+    scenario: crowded_gaussian.xml # Safe-Horizon (crowded)
     # scenario: crowded_binomial.xml 
     # scenario: 4_corridor.xml
     # scenario: 4_crossing(copy).xml # Safe-Horizon (non-crowded)
@@ -15,13 +15,13 @@ pedestrian_simulator:
     # scenario: random/4_straight.xml (guidance from here down)
     # scenario: random/8_straight.xml
     # scenario: random/16_straight.xml
-    scenario: headon/2_middle.xml # (headon)
-    # update_frequency: 20 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.05 # JACKAL
-    # horizon: 80 # JACKAL
-    update_frequency: 20 # CARLA
-    prediction_step: 0.1 # CARLA
-    horizon: 40 # CARLA
+    # scenario: headon/2_middle.xml # (headon)
+    update_frequency: 20 # JACKAL   NOTE THIS SETTING
+    prediction_step: 0.2 # JACKAL
+    horizon: 20 # JACKAL
+    # update_frequency: 20 # CARLA
+    # prediction_step: 0.1 # CARLA
+    # horizon: 40 # CARLA
   pedestrians:
     seed: 5  # > 0,  -1 = random!
     type: gaussian
