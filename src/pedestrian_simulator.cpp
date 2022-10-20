@@ -15,6 +15,9 @@ PedestrianSimulator::PedestrianSimulator()
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
 
+    if (CONFIG.use_path_origin_)
+        path_origin_sub_ = nh_.subscribe("/roadmap/reference", 1, &PedestrianSimulator::OriginCallback, this);
+
     xml_reader_.reset(new XMLReader());
 
     // Read pedestrian data
@@ -75,6 +78,32 @@ void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &ms
     vehicle_frame_.position.x += msg.linear.x * CONFIG.delta_t_;
     vehicle_frame_.position.y += msg.linear.y * CONFIG.delta_t_;
     vehicle_frame_.orientation.z += msg.angular.z * CONFIG.delta_t_; // angular velocity is stored in orientation / angular .z (euler not quaternion)
+}
+
+void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
+{
+    // Update if the path is new
+    if (origin_.x != msg.poses[0].pose.position.x && origin_.y != msg.poses[0].pose.position.y)
+    {
+        for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin
+        {
+            ped->start_.x -= origin_.x;
+            ped->start_.x += msg.poses[0].pose.position.x;
+
+            ped->start_.y -= origin_.y;
+            ped->start_.y += msg.poses[0].pose.position.y;
+
+            ped->goal_.x -= origin_.x;
+            ped->goal_.x += msg.poses[0].pose.position.x;
+
+            ped->goal_.y -= origin_.y;
+            ped->goal_.y += msg.poses[0].pose.position.y;
+
+            ped->Reset();
+        }
+        origin_.x = msg.poses[0].pose.position.x;
+        origin_.y = msg.poses[0].pose.position.y;
+    }
 }
 
 void PedestrianSimulator::Reset()

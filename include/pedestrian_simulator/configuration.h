@@ -50,6 +50,8 @@ public:
 
   std::string scenario_file_;
 
+  bool use_path_origin_;
+
   int seed_;
   std::vector<double> process_noise_;
   double ped_velocity_;

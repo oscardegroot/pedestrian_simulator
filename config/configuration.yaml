@@ -8,20 +8,21 @@ pedestrian_simulator:
     # scenario: 4_crossing(copy).xml # Safe-Horizon (non-crowded)
     # scenario: carla/6_peds.xml # This is the carla sim
     # scenario: carla/demo_09-2022.xml
-    # scenario: 4_crossing_v2.xml
+    scenario: 4_crossing.xml
     # scenario: static_3.xml
     # scenario: static_4.xml
     # scenario: static/2_middle.xml
     # scenario: random/4_straight.xml (guidance from here down)
     # scenario: random/8_straight.xml
     # scenario: random/16_straight.xml
-    scenario: headon/2_middle.xml # (headon)
+    # scenario: headon/2_middle.xml # (headon)
     # update_frequency: 20 # JACKAL   NOTE THIS SETTING
     # prediction_step: 0.05 # JACKAL
     # horizon: 80 # JACKAL
-    update_frequency: 20 # CARLA
-    prediction_step: 0.1 # CARLA
-    horizon: 40 # CARLA
+    update_frequency: 10 # CARLA
+    prediction_step: 0.2 # CARLA
+    horizon: 20 # CARLA
+    use_path_origin: true
   pedestrians:
     seed: 5  # > 0,  -1 = random!
     type: gaussian
