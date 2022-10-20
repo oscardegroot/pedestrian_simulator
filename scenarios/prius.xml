@@ -2,20 +2,21 @@
 <tag type="gaussian"/>
 <tag type="velocity" value="1.0"/>
 <pedestrian>
-    <start x="25" y="-15.5"/>
+    <start x="581.3" y="-744.7"/>
     <path>
-        <point x="30.0" y="15.5"/>
+        <point x="582.3" y="-715.0"/>
     </path>
 </pedestrian>
+<!--pedestrian>
+    <start x="672" y="-709"/>
+    <path>
+        <point x="656" y="-685"/>
+    </path>
+</pedestrian-->
 <pedestrian>
-    <start x="23" y="16.0"/>
+    <start x="647" y="-705"/>
     <path>
-        <point x="25.0" y="-16.0"/>
+        <point x="591" y="-730"/>
     </path>
 </pedestrian>
-<pedestrian>
-    <start x="30" y="-3.0"/>
-    <path>
-        <point x="7.0" y="-3.0"/>
-    </path>
-</pedestrian>
+
