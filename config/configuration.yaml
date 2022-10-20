@@ -8,7 +8,8 @@ pedestrian_simulator:
     # scenario: 4_crossing(copy).xml # Safe-Horizon (non-crowded)
     # scenario: carla/6_peds.xml # This is the carla sim
     # scenario: carla/demo_09-2022.xml
-    scenario: 4_crossing.xml
+    # scenario: 4_crossing.xml
+    scenario: prius.xml
     # scenario: static_3.xml
     # scenario: static_4.xml
     # scenario: static/2_middle.xml
