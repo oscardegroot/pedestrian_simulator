@@ -57,27 +57,59 @@ void XMLReader::ReadXML(const std::string &file)
             CONFIG.ped_velocity_ = atof(tag->first_attribute("value")->value());
     }
 
-    // try{
     // For all pedestrians in the file
     for (rapidxml::xml_node<> *ped = doc.first_node("pedestrian"); ped; ped = ped->next_sibling("pedestrian"))
     {
         rapidxml::xml_node<> *start_point = ped->first_node("start");
 
-        // Create a pedestrian
-        Waypoint new_waypoint(
-            atof(start_point->first_attribute("x")->value()),
-            atof(start_point->first_attribute("y")->value()));
-        pedestrians_.emplace_back(new_waypoint);
-
-        // Read all paths
-        for (rapidxml::xml_node<> *path = ped->first_node("path"); path; path = path->next_sibling("path"))
+        bool random = false;
+        for (rapidxml::xml_node<> *tag = ped->first_node("tag"); tag; tag = tag->next_sibling("tag"))
         {
-            pedestrians_.back().paths_.emplace_back();
-            for (rapidxml::xml_node<> *point = path->first_node("point"); point; point = point->next_sibling("point"))
+            if (std::string(tag->first_attribute("type")->value()).compare("random") == 0)
             {
-                pedestrians_.back().paths_.back().emplace_back(Waypoint(
-                    atof(point->first_attribute("x")->value()),
-                    atof(point->first_attribute("y")->value())));
+                random = true;
+                break;
+            }
+        }
+
+        if (random)
+        {
+            // Read the x and y range
+            auto *range_x = ped->first_node("range_x");
+
+            random_x_min_.push_back(atof(range_x->first_attribute("min")->value()));
+            random_x_max_.push_back(atof(range_x->first_attribute("max")->value()));
+
+            auto *range_y = ped->first_node("range_y");
+
+            random_y_min_.push_back(atof(range_y->first_attribute("min")->value()));
+            random_y_max_.push_back(atof(range_y->first_attribute("max")->value()));
+
+            pedestrians_.emplace_back();
+            pedestrians_.back().reset(new Pedestrian(Waypoint(0., 0.)));
+            is_random_.push_back(true);
+        }
+        else
+        {
+            is_random_.push_back(false);
+            // Create a pedestrian
+            Waypoint new_waypoint(
+                atof(start_point->first_attribute("x")->value()),
+                atof(start_point->first_attribute("y")->value()));
+            pedestrians_.emplace_back();
+            pedestrians_.back().reset(new Pedestrian(new_waypoint));
+
+            // Read all paths
+            for (rapidxml::xml_node<> *path = ped->first_node("path"); path; path = path->next_sibling("path"))
+            {
+                // pedestrians_.back().paths_.emplace_back();
+                for (rapidxml::xml_node<> *point = path->first_node("point"); point; point = point->next_sibling("point"))
+                {
+                    // pedestrians_.back().paths_.back().emplace_back(Waypoint(
+                    pedestrians_.back()->goal_ = Waypoint(
+                        atof(point->first_attribute("x")->value()),
+                        atof(point->first_attribute("y")->value()));
+                }
             }
         }
     }

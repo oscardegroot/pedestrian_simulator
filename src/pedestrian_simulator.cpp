@@ -13,7 +13,10 @@ PedestrianSimulator::PedestrianSimulator()
     obstacle_trajectory_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
 
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
-    vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
+    // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
+
+    if (CONFIG.use_path_origin_)
+        path_origin_sub_ = nh_.subscribe("/roadmap/reference", 1, &PedestrianSimulator::OriginCallback, this);
 
     xml_reader_.reset(new XMLReader());
 
@@ -27,15 +30,32 @@ PedestrianSimulator::PedestrianSimulator()
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id].start_, xml_reader_->pedestrians_[ped_id].paths_[0].back(), ped_id));
+            if (xml_reader_->is_random_[ped_id])
+            {
+                pedestrians_.back().reset(new RandomGaussianPedestrian(xml_reader_->random_x_min_[ped_id], xml_reader_->random_x_max_[ped_id],
+                                                                       xml_reader_->random_y_min_[ped_id], xml_reader_->random_y_max_[ped_id],
+                                                                       ped_id));
+            }
+            else
+            {
+                std::cout << ped_id << std::endl;
+                pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
+            }
         }
         break;
     case PedestrianType::BINOMIAL:
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id].start_, ped_id));
+            pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id]->start_, ped_id));
         }
+    }
+
+    // For Carla only!
+    for (size_t ped_id = 0; ped_id < pedestrians_.size(); ped_id++)
+    {
+        carla_position_pub_.push_back(nh_.advertise<geometry_msgs::Pose>("/carla/simulated_peds/" + std::to_string(ped_id) + "/position", 1));
+        carla_velocity_pub_.push_back(nh_.advertise<geometry_msgs::Twist>("/carla/simulated_peds/" + std::to_string(ped_id) + "/velocity", 1));
     }
 
     // Pick a path
@@ -55,10 +75,37 @@ void PedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 
 void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)
 {
-    vehicle_frame_.position.x += msg.linear.x * DELTA_T;
-    vehicle_frame_.position.y += msg.linear.y * DELTA_T;
-    vehicle_frame_.orientation.z += msg.angular.z * DELTA_T; // angular velocity is stored in orientation / angular .z (euler not quaternion)
-	std::cout << "Updated vehicle frame (velocity = " << msg.linear.x << ")\n";
+
+    vehicle_frame_.position.x += msg.linear.x * CONFIG.delta_t_;
+    vehicle_frame_.position.y += msg.linear.y * CONFIG.delta_t_;
+    vehicle_frame_.orientation.z += msg.angular.z * CONFIG.delta_t_; // angular velocity is stored in orientation / angular .z (euler not quaternion)
+}
+
+void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
+{
+    // Update if the path is new
+    if (origin_.x != msg.poses[0].pose.position.x && origin_.y != msg.poses[0].pose.position.y)
+    {
+        for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin
+        {
+            ped->start_.x -= origin_.x;
+            ped->start_.x += msg.poses[0].pose.position.x;
+
+            ped->start_.y -= origin_.y;
+            ped->start_.y += msg.poses[0].pose.position.y;
+
+            ped->goal_.x -= origin_.x;
+            ped->goal_.x += msg.poses[0].pose.position.x;
+
+            ped->goal_.y -= origin_.y;
+            ped->goal_.y += msg.poses[0].pose.position.y;
+
+            ped->Reset();
+        }
+        origin_.x = msg.poses[0].pose.position.x;
+        origin_.y = msg.poses[0].pose.position.y;
+    }
+
 }
 
 void PedestrianSimulator::Reset()
@@ -101,8 +148,13 @@ void PedestrianSimulator::Publish()
         ped_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         ped_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
 
-        ped_msg.twist = ped->twist_;
+        ped_msg.twist = ped->noisy_twist_;
 
+        // For the Carla pedestrian visual updates, we need to publish the positions and velocities here
+        carla_position_pub_[id].publish(ped_msg.pose);
+        // ped_msg.twist.linear.x *= CONFIG.delta_t_; // Account for the time step
+        // ped_msg.twist.linear.y *= CONFIG.delta_t_; // Account for the time step
+        carla_velocity_pub_[id].publish(ped_msg.twist);
         // ped_msg.shape.dimensions[0] = 0.25;
         // ped_msg.shape.dimensions[1] = 0.25;
         ped_array_msg.objects.push_back(ped_msg);
@@ -133,7 +185,7 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
         {
 
             // For each state in the horizon we need to define a Gaussian + the case where the ped does not cross
-            for (int k_mode = 0; k_mode < HORIZON_N + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
+            for (int k_mode = 0; k_mode < CONFIG.horizon_N_ + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
             {
                 lmpcc_msgs::gaussian gaussian_msg;
                 // We simply load the uncertainty, to be integrated on the controller side
@@ -142,21 +194,21 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
                 double prob = 1.;
 
-                for (int k = 0; k < HORIZON_N; k++)
+                for (int k = 0; k < CONFIG.horizon_N_; k++)
                 {
-                    if ((k_mode == HORIZON_N) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
+                    if ((k_mode == CONFIG.horizon_N_) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
                     {
                         prob *= (1.0 - ped->p); // We did not start crossing yet
-                        pose.pose.position.x += ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
-                        pose.pose.position.y += ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
+                        pose.pose.position.x += ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
+                        pose.pose.position.y += ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
                     }
                     else // If we are crossing
                     {
                         if (k_mode == k)
                             prob *= ped->p; // We cross from here
 
-                        pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
-                        pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * DELTA_T_PREDICT;
+                        pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
+                        pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
                     }
 
                     // We simply add the mean so that we can determine the samples in the controller
@@ -176,10 +228,10 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
             geometry_msgs::PoseStamped pose;
             pose.pose = gmm_msg.pose;
 
-            for (int k = 0; k < HORIZON_N; k++)
+            for (int k = 0; k < CONFIG.horizon_N_; k++)
             {
-                pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
-                pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * DELTA_T_PREDICT;
+                pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_;
+                pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_;
 
                 // We simply add the mean so that we can determine the samples in the controller
                 gaussian_msg.mean.poses.push_back(pose);
@@ -227,10 +279,10 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
         geometry_msgs::PoseStamped pose;
         pose.pose = gmm_msg.pose;
 
-        for (int k = 0; k < HORIZON_N; k++)
+        for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
         {
-            pose.pose.position.x += ped->twist_.linear.x * DELTA_T_PREDICT;
-            pose.pose.position.y += ped->twist_.linear.y * DELTA_T_PREDICT;
+            pose.pose.position.x += ped->twist_.linear.x * CONFIG.prediction_step_;
+            pose.pose.position.y += ped->twist_.linear.y * CONFIG.prediction_step_;
 
             // We simply add the mean so that we can determine the samples in the controller
             gaussian_msg.mean.poses.push_back(pose);
@@ -256,22 +308,25 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
 void PedestrianSimulator::PublishDebugVisuals()
 {
     ROSPointMarker &arrow = debug_visuals_->getNewPointMarker("ARROW");
-    arrow.setScale(0.8, 0.15, 0.15);
+    arrow.setScale(0.8 * 1.5, 0.15 * 1.5, 0.15 * 1.5);
 
     for (auto &ped : pedestrians_)
     {
-        arrow.setColor(1.0, 0.0, 0.0, 0.8);
+        arrow.setColor(1.0, 0.0, 0.0, 1.);
 
         // Eigen::Matrix3d H;
         // H.block(0, 0, 2, 2) = Helpers::rotationMatrixFromHeading(vehicle_frame_.orientation.z);
         // H.block(2, 0, 2, 1) = Eigen::Vector2d(vehicle_frame_.position.x, vehicle_frame_.position.y);
         // H(2, 2) = 1.0;
         // Eigen::Vector3d pr = H * Eigen::Vector3d(ped->position_.x, ped->position_.y, 1);
+        // arrow.setColorInt(15);
+        // arrow.setColor(247. / 256., 177. / 256., 64. / 256.);
+
         arrow.setOrientation(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
         geometry_msgs::Point point;
         point.x = ped->position_.x - vehicle_frame_.position.x;
         point.y = ped->position_.y - vehicle_frame_.position.y;
-        point.z = 0.1;
+        point.z = 39.; // 1.9 / 2.0;
         arrow.addPointMarker(point);
     }
 
@@ -285,13 +340,15 @@ void PedestrianSimulator::PublishDebugVisuals()
 
         for (size_t path_id = 0; path_id < fake_ped.paths_.size(); path_id++)
         {
-            arrow.setColor(0.0, 1.0, 0.0, 1.0);
+            arrow.setColorInt(8);
 
             fake_ped.current_path_id_ = path_id; // Explicitly set the path ID
 
             bool found_waypoint = fake_ped.FindClosestWaypoint(); // Set the current waypoint via a search
             if (found_waypoint)
             {
+                arrow.setColorInt(8);
+
                 arrow.setOrientation(fake_ped.position_.Angle(fake_ped.GetCurrentWaypoint()));
                 geometry_msgs::Point point;
                 point.x = fake_ped.position_.x;

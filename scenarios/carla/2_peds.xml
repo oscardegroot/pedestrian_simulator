@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- (-14) is right -->
+<pedestrian>
+    <start x="215" y="-14"/>
+    <path>
+        <point x="217" y="4"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="223" y="11"/>
+    <path>
+        <point x="215" y="-14"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="265" y="2"/>
+    <path>
+        <point x="230" y="2"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="500" y="-12"/>
+    <path>
+        <point x="220" y="7"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="500" y="-20"/>
+    <path>
+        <point x="240" y="5"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="500" y="2"/>
+    <path>
+        <point x="200" y="2"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="500" y="2"/>
+    <path>
+        <point x="200" y="2"/>
+    </path>
+</pedestrian>

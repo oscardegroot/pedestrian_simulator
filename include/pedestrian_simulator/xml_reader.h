@@ -18,23 +18,25 @@ class XMLReader
 {
 
     /**
- * @brief Class for reading map files and converting it into necessary formats
- * @see types.h
- */
+     * @brief Class for reading map files and converting it into necessary formats
+     * @see types.h
+     */
 public:
     XMLReader()
     {
         Read();
     }
 
-    std::vector<WaypointPedestrian> pedestrians_;
+    std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
+    std::vector<double> random_x_min_, random_x_max_, random_y_min_, random_y_max_;
+    std::vector<bool> is_random_;
 
     void GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs);
 
 public:
     /**
      * @brief Read an XML file with map data
-     * 
+     *
      * @param file the file path to read from
      */
     void Read();
@@ -42,7 +44,7 @@ public:
 private:
     /**
      * @brief Read an XML file with map data
-     * 
+     *
      * @param file the file path to read from
      */
     void Read(const std::string &file);
