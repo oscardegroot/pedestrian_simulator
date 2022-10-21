@@ -8,6 +8,8 @@ PedestrianSimulator::PedestrianSimulator()
 
     debug_visuals_.reset(new ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50)); // 3500)); // was 1800
 
+    ped_model_visuals_ = nh_.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
+
     obstacle_pub_ = nh_.advertise<derived_object_msgs::ObjectArray>("/pedestrian_simulator/pedestrians", 1);
     // obstacle_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
     obstacle_trajectory_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
@@ -61,6 +63,9 @@ PedestrianSimulator::PedestrianSimulator()
     // Pick a path
     Reset();
 
+    for (size_t i = 0; i < colors_.size(); i++)
+        colors_[i] /= 256.;
+
     // Initialize the node loop
     timer_ = nh_.createTimer(ros::Duration(1.0 / CONFIG.update_frequency_), &PedestrianSimulator::Poll, this);
 
@@ -84,28 +89,20 @@ void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &ms
 void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
 {
     // Update if the path is new
-    if (origin_.x != msg.poses[0].pose.position.x && origin_.y != msg.poses[0].pose.position.y)
+    if (origin_.position.x != msg.poses[0].pose.position.x && origin_.position.y != msg.poses[0].pose.position.y)
     {
         for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin
         {
-            ped->start_.x -= origin_.x;
-            ped->start_.x += msg.poses[0].pose.position.x;
+            ped->start_.UndoTransform(origin_);
+            ped->start_.Transform(msg.poses[0].pose);
 
-            ped->start_.y -= origin_.y;
-            ped->start_.y += msg.poses[0].pose.position.y;
-
-            ped->goal_.x -= origin_.x;
-            ped->goal_.x += msg.poses[0].pose.position.x;
-
-            ped->goal_.y -= origin_.y;
-            ped->goal_.y += msg.poses[0].pose.position.y;
+            ped->goal_.UndoTransform(origin_);
+            ped->goal_.Transform(msg.poses[0].pose);
 
             ped->Reset();
         }
-        origin_.x = msg.poses[0].pose.position.x;
-        origin_.y = msg.poses[0].pose.position.y;
+        origin_ = msg.poses[0].pose;
     }
-
 }
 
 void PedestrianSimulator::Reset()
@@ -133,6 +130,7 @@ void PedestrianSimulator::Poll(const ros::TimerEvent &event)
     Publish();
     PublishTrajectoryPredictions();
     PublishDebugVisuals();
+    VisualizePedestrians();
 }
 
 void PedestrianSimulator::Publish()
@@ -358,4 +356,48 @@ void PedestrianSimulator::PublishDebugVisuals()
         }
     }
     debug_visuals_->publish();
+}
+
+void PedestrianSimulator::VisualizePedestrians()
+{
+
+    visualization_msgs::MarkerArray markers;
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "map";
+    marker.header.stamp = ros::Time::now();
+
+    int cur_id = 0;
+    for (auto &ped : pedestrians_)
+    {
+        // marker.ns = "myns";
+        // marker.id = k + current_cone_pos.left.x.size() + current_cone_pos.right.x.size() + 1;
+        marker.id = cur_id;
+
+        marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+        // marker.action = visualization_msgs::Marker::ADD;
+        marker.mesh_resource = "package://pedestrian_simulator/models/walking.dae";
+        marker.pose.position.x = ped->position_.x;
+        marker.pose.position.y = ped->position_.y;
+        marker.pose.position.z = 0;
+
+        double angle = std::atan2(ped->twist_.linear.y, ped->twist_.linear.x);
+        tf::Quaternion q = tf::createQuaternionFromRPY(0., 0., angle + M_PI / 2.);
+        geometry_msgs::Quaternion result;
+        marker.pose.orientation.x = q.getX();
+        marker.pose.orientation.y = q.getY();
+        marker.pose.orientation.z = q.getZ();
+        marker.pose.orientation.w = q.getW();
+
+        marker.scale.x = 1.0;
+        marker.scale.y = 1.0;
+        marker.scale.z = 1.0;
+        marker.color.b = colors_[3 * cur_id + 0];
+        marker.color.g = colors_[3 * cur_id + 1];
+        marker.color.r = colors_[3 * cur_id + 2];
+        marker.color.a = 1.0;
+        // marker.lifetime = ros::Duration();
+        markers.markers.push_back(marker);
+        cur_id++;
+    }
+    ped_model_visuals_.publish(markers);
 }

@@ -3,10 +3,6 @@
 
 #include <vector>
 
-// constexpr double DELTA_T = 0.05;
-// constexpr double DELTA_T_PREDICT = 0.1;
-// constexpr int HORIZON_N = 40;
-
 struct Waypoint
 {
     double x, y;
@@ -31,6 +27,33 @@ struct Waypoint
         x -= frame.position.x;
         y -= frame.position.y;
         return *this;
+    }
+
+    void Transform(const geometry_msgs::Pose &frame)
+    {
+        std::cout << "x: " << x << ", y: " << y << std::endl;
+        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(Helpers::quaternionToAngle(frame.orientation));
+
+        Eigen::Vector2d pos(x, y);
+        Eigen::Vector2d result = R * pos;
+
+        x = result(0) + frame.position.x;
+        y = result(1) + frame.position.y;
+        std::cout << "x: " << x << ", y: " << y << std::endl;
+    }
+
+    void UndoTransform(const geometry_msgs::Pose &frame)
+    {
+        std::cout << "x: " << x << ", y: " << y << std::endl;
+
+        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(-Helpers::quaternionToAngle(frame.orientation));
+
+        Eigen::Vector2d pos(x, y);
+        Eigen::Vector2d result = R * pos;
+
+        x = result(0) - frame.position.x;
+        y = result(1) - frame.position.y;
+        std::cout << "x: " << x << ", y: " << y << std::endl;
     }
 };
 

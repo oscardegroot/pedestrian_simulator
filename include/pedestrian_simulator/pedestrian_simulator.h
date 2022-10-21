@@ -5,6 +5,7 @@
 #include <ros/ros.h>
 #include <Eigen/Dense>
 
+#include <tf/tf.h>
 #include <derived_object_msgs/ObjectArray.h>
 #include <derived_object_msgs/Object.h>
 #include <lmpcc_msgs/obstacle_array.h>
@@ -46,6 +47,7 @@ public:
     void PublishBinomialTrajectoryPredictions();
 
     void PublishDebugVisuals();
+    void VisualizePedestrians();
 
 private:
     ros::Timer timer_;
@@ -53,9 +55,10 @@ private:
 
     std::unique_ptr<XMLReader> xml_reader_;
 
-    Waypoint origin_;
+    geometry_msgs::Pose origin_;
 
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
+    ros::Publisher ped_model_visuals_;
     std::vector<ros::Publisher> carla_position_pub_, carla_velocity_pub_;
     ros::Subscriber reset_sub_, vehicle_speed_sub_, path_origin_sub_;
 
@@ -64,6 +67,8 @@ private:
     std::unique_ptr<ROSMarkerPublisher> debug_visuals_;
 
     geometry_msgs::Pose vehicle_frame_; /* For pretending that the vehicle is moving! */
+
+    std::vector<double> colors_ = {217, 83, 25, 0, 114, 189, 119, 172, 48, 126, 47, 142, 237, 177, 32, 77, 190, 238, 162, 19, 47, 256, 153, 256, 0, 103, 256};
 
     void Reset();
 };
