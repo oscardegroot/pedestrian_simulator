@@ -17,9 +17,6 @@ PedestrianSimulator::PedestrianSimulator()
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
 
-    if (CONFIG.use_path_origin_)
-        path_origin_sub_ = nh_.subscribe("/roadmap/reference", 1, &PedestrianSimulator::OriginCallback, this);
-
     xml_reader_.reset(new XMLReader());
 
     // Read pedestrian data
@@ -68,6 +65,9 @@ PedestrianSimulator::PedestrianSimulator()
 
     // Initialize the node loop
     timer_ = nh_.createTimer(ros::Duration(1.0 / CONFIG.update_frequency_), &PedestrianSimulator::Poll, this);
+
+    if (CONFIG.use_path_origin_)
+        path_origin_sub_ = nh_.subscribe("/roadmap/reference", 1, &PedestrianSimulator::OriginCallback, this);
 
     ROS_INFO("PedestrianSimulator: Ready");
 }

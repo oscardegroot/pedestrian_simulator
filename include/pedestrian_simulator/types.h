@@ -31,29 +31,24 @@ struct Waypoint
 
     void Transform(const geometry_msgs::Pose &frame)
     {
-        std::cout << "x: " << x << ", y: " << y << std::endl;
         Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(Helpers::quaternionToAngle(frame.orientation));
 
-        Eigen::Vector2d pos(x, y);
-        Eigen::Vector2d result = R * pos;
+        Eigen::Vector2d transform_pos(frame.position.x, frame.position.y);
+        transform_pos = R * transform_pos; // Rotate the transformation with the orientation of the frame
 
-        x = result(0) + frame.position.x;
-        y = result(1) + frame.position.y;
-        std::cout << "x: " << x << ", y: " << y << std::endl;
+        x += transform_pos(0);
+        y += transform_pos(1);
     }
 
     void UndoTransform(const geometry_msgs::Pose &frame)
     {
-        std::cout << "x: " << x << ", y: " << y << std::endl;
+        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(Helpers::quaternionToAngle(frame.orientation));
 
-        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(-Helpers::quaternionToAngle(frame.orientation));
+        Eigen::Vector2d transform_pos(frame.position.x, frame.position.y);
+        transform_pos = R * transform_pos; // Rotate the transformation with the orientation of the frame
 
-        Eigen::Vector2d pos(x, y);
-        Eigen::Vector2d result = R * pos;
-
-        x = result(0) - frame.position.x;
-        y = result(1) - frame.position.y;
-        std::cout << "x: " << x << ", y: " << y << std::endl;
+        x -= transform_pos(0);
+        y -= transform_pos(1);
     }
 };
 
