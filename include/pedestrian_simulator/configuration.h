@@ -45,6 +45,8 @@ public:
   double update_frequency_;
   double delta_t_;
 
+  Eigen::Matrix2d origin_R_;
+
   double prediction_step_;
   double horizon_N_;
 

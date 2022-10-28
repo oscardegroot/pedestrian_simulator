@@ -6,11 +6,12 @@
 struct Waypoint
 {
     double x, y;
+    double og_x, og_y;
 
     Waypoint(){};
 
     Waypoint(double x, double y)
-        : x(x), y(y){};
+        : x(x), y(y), og_x(x), og_y(y){};
 
     double Distance(Waypoint &other)
     {
@@ -29,26 +30,22 @@ struct Waypoint
         return *this;
     }
 
-    void Transform(const geometry_msgs::Pose &frame)
+    /** @brief Transform a position to the position of the given frame, rotated with the given angle (in radians) */
+    void Transform(const geometry_msgs::Pose &frame, double angle)
     {
-        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(Helpers::quaternionToAngle(frame.orientation));
+        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(-angle); // Rotation matrix
 
-        Eigen::Vector2d transform_pos(frame.position.x, frame.position.y);
-        transform_pos = R * transform_pos; // Rotate the transformation with the orientation of the frame
+        Eigen::Vector2d transform_pos(frame.position.x, frame.position.y); // Frame (x, y)
+        transform_pos = transform_pos + R * Eigen::Vector2d(x, y);         // Frame + rotated position
 
-        x += transform_pos(0);
-        y += transform_pos(1);
+        x = transform_pos(0); // Save
+        y = transform_pos(1);
     }
 
     void UndoTransform(const geometry_msgs::Pose &frame)
     {
-        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(Helpers::quaternionToAngle(frame.orientation));
-
-        Eigen::Vector2d transform_pos(frame.position.x, frame.position.y);
-        transform_pos = R * transform_pos; // Rotate the transformation with the orientation of the frame
-
-        x -= transform_pos(0);
-        y -= transform_pos(1);
+        x = og_x; // Reset the x, y
+        y = og_y;
     }
 };
 

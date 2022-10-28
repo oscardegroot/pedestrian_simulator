@@ -2,7 +2,7 @@
 <tag type="gaussian"/>
 <tag type="velocity" value="1.0"/>
 <pedestrian>
-    <start x="30" y="0"/>
+    <start x="10" y="0"/>
     <path>
         <point x="0" y="0"/>
     </path>

@@ -17,6 +17,7 @@ enum class PedState
     CROSS
 };
 
+/** @brief Pedestrian base class */
 class Pedestrian
 {
 public:
@@ -33,11 +34,14 @@ public:
     }
 
     virtual void Update(){};
-    virtual void MoveFrame(const Eigen::Vector2d &speed)
+    virtual void UpdatePosition(const double vx, const double vy)
     {
-        position_.x -= speed(0) * CONFIG.delta_t_;
-        position_.y -= speed(1) * CONFIG.delta_t_;
-    };
+        // Rotate movement in the frame
+        Eigen::Vector2d rotated_delta_p = CONFIG.origin_R_ * Eigen::Vector2d(vx, vy) * CONFIG.delta_t_;
+
+        position_.x += rotated_delta_p(0);
+        position_.y += rotated_delta_p(1);
+    }
 
     unsigned int id_;
 
@@ -48,6 +52,7 @@ public:
     geometry_msgs::Twist noisy_twist_;
 };
 
+/** @brief Pedestrian that moves under Gaussian process noise */
 class GaussianPedestrian : public Pedestrian
 {
 public:
@@ -87,10 +92,7 @@ public:
         {
             noisy_twist_.linear.x += process_noise_realization(0);
             noisy_twist_.linear.y += process_noise_realization(1);
-            position_.x += noisy_twist_.linear.x * CONFIG.delta_t_;
-            position_.y += noisy_twist_.linear.y * CONFIG.delta_t_;
-            // position_.x += twist_.linear.x * CONFIG.delta_t_ + process_noise_realization(0) * CONFIG.delta_t_;
-            // position_.y += twist_.linear.y * CONFIG.delta_t_ + process_noise_realization(1) * CONFIG.delta_t_;
+            UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y);
         }
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
@@ -105,6 +107,7 @@ public:
     }
 };
 
+/** @brief Pedestrian that may cross with a probability, in the binomial sense */
 class BinomialPedestrian : public Pedestrian
 {
 public:
@@ -156,9 +159,9 @@ public:
                                                                                          CONFIG.process_noise_[1],
                                                                                          0.);
 
-        // Update the position using the velocity and Gaussian process noise
-        position_.x += twist_.linear.x * CONFIG.delta_t_ + process_noise_realization(0) * CONFIG.delta_t_;
-        position_.y += twist_.linear.y * CONFIG.delta_t_ + process_noise_realization(1) * CONFIG.delta_t_;
+        // Update the position using the velocity and Gaussian process noise (and taking the frame into account)
+        UpdatePosition(twist_.linear.x + process_noise_realization(0),
+                       twist_.linear.y + process_noise_realization(1));
     }
 
 public:
@@ -185,52 +188,7 @@ public:
     int direction_;
 };
 
-// class RandomPedestrian : public Pedestrian
-// {
-// public:
-//     double angle;
-//     Eigen::Vector2d B;
-//     std::unique_ptr<Helpers::RandomGenerator> random_generator_;
-//     int cur_seed_, seed_mp_;
-
-//     int random_x_min_, random_x_max_, random_y_min_, random_y_max_;
-
-//     RandomPedestrian(double random_x_min, double random_x_max, double random_y_min, double random_y_max, int seed_mp)
-//         : Pedestrian(Waypoint(0., 0.)), seed_mp_(seed_mp)
-//     {
-//         cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
-
-//         random_x_min_ = random_x_min;
-//         random_x_max_ = random_x_max;
-//         random_y_min_ = random_y_min;
-//         random_y_max_ = random_y_max;
-
-//         Reset();
-//     }
-
-// public:
-//     virtual void Reset()
-//     {
-//         cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
-//         random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
-
-//         // Generate a new start/goal
-//         start_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
-//                           random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
-
-//         goal_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
-//                          random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
-
-//         // Set the dynamics
-//         angle = std::atan2(goal_.y - start_.y, goal_.x - start_.x);
-//         B = Eigen::Vector2d(
-//             std::cos(angle),
-//             std::sin(angle));
-
-//         Pedestrian::Reset();
-//     }
-// };
-
+/** @brief Gaussian pedestrian spawning in a random location with a random goal */
 class RandomGaussianPedestrian : public GaussianPedestrian
 {
 
@@ -270,6 +228,7 @@ public:
     }
 };
 
+/** @deprecated Follow waypoints deterministically */
 class WaypointPedestrian : public Pedestrian
 {
 public:

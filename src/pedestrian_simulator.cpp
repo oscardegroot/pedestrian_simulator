@@ -88,16 +88,21 @@ void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &ms
 
 void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
 {
+
     // Update if the path is new
     if (origin_.position.x != msg.poses[0].pose.position.x && origin_.position.y != msg.poses[0].pose.position.y)
     {
+        // We save the rotation of the origin to also move in the direction of the origin frame
+        double angle = std::atan2(msg.poses[1].pose.position.y - msg.poses[0].pose.position.y, msg.poses[1].pose.position.x - msg.poses[0].pose.position.x);
+        CONFIG.origin_R_ = Helpers::rotationMatrixFromHeading(-angle);
+
         for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin
         {
             ped->start_.UndoTransform(origin_);
-            ped->start_.Transform(msg.poses[0].pose);
+            ped->start_.Transform(msg.poses[0].pose, angle);
 
             ped->goal_.UndoTransform(origin_);
-            ped->goal_.Transform(msg.poses[0].pose);
+            ped->goal_.Transform(msg.poses[0].pose, angle);
 
             ped->Reset();
         }
@@ -367,7 +372,7 @@ void PedestrianSimulator::VisualizePedestrians()
     marker.header.stamp = ros::Time::now();
 
     int cur_id = 0;
-    for (auto &ped : pedestrians_)
+    for (auto &ped : pedestrians_) // Publish a pedestrian model
     {
         // marker.ns = "myns";
         // marker.id = k + current_cone_pos.left.x.size() + current_cone_pos.right.x.size() + 1;
@@ -380,7 +385,9 @@ void PedestrianSimulator::VisualizePedestrians()
         marker.pose.position.y = ped->position_.y;
         marker.pose.position.z = 0;
 
-        double angle = std::atan2(ped->twist_.linear.y, ped->twist_.linear.x);
+        // Account for the origin rotation in the velocity
+        Eigen::Vector2d rotated_twist = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_.linear.x, ped->twist_.linear.y);
+        double angle = std::atan2(rotated_twist(1), rotated_twist(0));
         tf::Quaternion q = tf::createQuaternionFromRPY(0., 0., angle + M_PI / 2.);
         geometry_msgs::Quaternion result;
         marker.pose.orientation.x = q.getX();
