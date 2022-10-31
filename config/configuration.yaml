@@ -1,11 +1,11 @@
 pedestrian_simulator:
   node:
     debug_output: false
+    # scenario: 4_crossing(copy).xml # Safe-Horizon Gaussian (non-crowded)
+    # scenario: crowded_gaussian.xml # Safe-Horizon Gaussian (crowded)
     # scenario: 4_binomial.xml # Safe-Horizon (non-crowded)?
-    scenario: crowded_gaussian.xml # Safe-Horizon (crowded)
-    # scenario: crowded_binomial.xml 
+    scenario: crowded_binomial.xml 
     # scenario: 4_corridor.xml
-    # scenario: 4_crossing(copy).xml # Safe-Horizon (non-crowded)
     # scenario: carla/6_peds.xml # This is the carla sim
     # scenario: carla/demo_09-2022.xml
     # scenario: 4_crossing_v2.xml
