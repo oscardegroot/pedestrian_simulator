@@ -17,6 +17,10 @@ PedestrianSimulator::PedestrianSimulator()
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
 
+    setting_N_sub_ = nh_.subscribe("/pedestrian_simulator/N", 1, &PedestrianSimulator::SettingNCallback, this);
+    setting_dt_sub_ = nh_.subscribe("/pedestrian_simulator/dt", 1, &PedestrianSimulator::SettingdtCallback, this);
+    setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
+
     xml_reader_.reset(new XMLReader());
 
     // Read pedestrian data
@@ -108,6 +112,26 @@ void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
         }
         origin_ = msg.poses[0].pose;
     }
+}
+
+void PedestrianSimulator::SettingNCallback(const std_msgs::Float64 &msg)
+{
+    ROS_WARN_STREAM("Pedestrian Simulator: Received N = " << msg.data);
+    CONFIG.horizon_N_ = msg.data;
+}
+
+void PedestrianSimulator::SettingdtCallback(const std_msgs::Float64 &msg)
+{
+    ROS_WARN_STREAM("Pedestrian Simulator: Received dt = " << msg.data);
+    CONFIG.prediction_step_ = msg.data;
+}
+
+void PedestrianSimulator::SettingHzCallback(const std_msgs::Float64 &msg)
+{
+    ROS_WARN_STREAM("Pedestrian Simulator: Received update rate = " << msg.data);
+    CONFIG.update_frequency_ = msg.data;
+    CONFIG.delta_t_ = 1.0 / CONFIG.update_frequency_;
+    timer_ = nh_.createTimer(ros::Duration(1.0 / (double)CONFIG.update_frequency_), &PedestrianSimulator::Poll, this); // Restart the timer
 }
 
 void PedestrianSimulator::Reset()
@@ -313,6 +337,9 @@ void PedestrianSimulator::PublishDebugVisuals()
     ROSPointMarker &arrow = debug_visuals_->getNewPointMarker("ARROW");
     arrow.setScale(0.8 * 1.5, 0.15 * 1.5, 0.15 * 1.5);
 
+    ROSPointMarker &start_goal_marker = debug_visuals_->getNewPointMarker("SPHERE"); // Plot the start and goal locations of the pedestrians
+    start_goal_marker.setScale(0.4, 0.4, 0.4);
+
     for (auto &ped : pedestrians_)
     {
         arrow.setColor(1.0, 0.0, 0.0, 1.);
@@ -331,6 +358,12 @@ void PedestrianSimulator::PublishDebugVisuals()
         point.y = ped->position_.y - vehicle_frame_.position.y;
         point.z = 39.; // 1.9 / 2.0;
         arrow.addPointMarker(point);
+
+        start_goal_marker.setColor(1., 0., 0.);
+        start_goal_marker.addPointMarker(Eigen::Vector3d(ped->start_.x, ped->start_.y, 0.));
+
+        start_goal_marker.setColor(0., 1., 0.);
+        start_goal_marker.addPointMarker(Eigen::Vector3d(ped->goal_.x, ped->goal_.y, 0.));
     }
 
     for (auto &ped : pedestrians_)
