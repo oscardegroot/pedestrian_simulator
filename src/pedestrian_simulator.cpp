@@ -19,7 +19,7 @@ PedestrianSimulator::PedestrianSimulator()
 
     setting_N_sub_ = nh_.subscribe("/pedestrian_simulator/N", 1, &PedestrianSimulator::SettingNCallback, this);
     setting_dt_sub_ = nh_.subscribe("/pedestrian_simulator/dt", 1, &PedestrianSimulator::SettingdtCallback, this);
-    setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
+    //setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
 
     xml_reader_.reset(new XMLReader());
 
