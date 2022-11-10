@@ -205,6 +205,7 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
         lmpcc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
+
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
 
@@ -226,16 +227,20 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
                     if ((k_mode == CONFIG.horizon_N_) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
                     {
                         prob *= (1.0 - ped->p); // We did not start crossing yet
-                        pose.pose.position.x += ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
-                        pose.pose.position.y += ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
+Eigen::Vector2d rotated_predict = CONFIG.origin_R_ *Eigen::Vector2d(ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
+
+                        pose.pose.position.x +=rotated_predict(0);
+                        pose.pose.position.y +=rotated_predict(1);
                     }
                     else // If we are crossing
                     {
                         if (k_mode == k)
                             prob *= ped->p; // We cross from here
 
-                        pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ /* std::cos(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
-                        pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ /* std::sin(vehicle_frame_.orientation.z)*/ * CONFIG.prediction_step_;
+                       Eigen::Vector2d rotated_predict = CONFIG.origin_R_ *Eigen::Vector2d(ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
+
+                        pose.pose.position.x +=rotated_predict(0);
+                        pose.pose.position.y +=rotated_predict(1);
                     }
 
                     // We simply add the mean so that we can determine the samples in the controller
@@ -257,12 +262,10 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
             for (int k = 0; k < CONFIG.horizon_N_; k++)
             {
-		Eigen::Vector2d rotated_predict = CONFIG.origin_R_*Eigen::Vector2d( ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
+		Eigen::Vector2d rotated_predict = CONFIG.origin_R_* Eigen::Vector2d( ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_);
 
             pose.pose.position.x += rotated_predict(0) * CONFIG.prediction_step_;
             pose.pose.position.y += rotated_predict(1) * CONFIG.prediction_step_;
-                pose.pose.position.x += ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_;
-                pose.pose.position.y += ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_;
 
                 // We simply add the mean so that we can determine the samples in the controller
                 gaussian_msg.mean.poses.push_back(pose);
