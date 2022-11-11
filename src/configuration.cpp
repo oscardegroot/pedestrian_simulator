@@ -13,10 +13,11 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/node/debug_output", debug_output_, true);
   retrieveParameter(nh, "pedestrian_simulator/node/scenario", scenario_file_);
   retrieveParameter(nh, "pedestrian_simulator/node/update_frequency", update_frequency_, 20.);
-  delta_t_ = 1.0 / update_frequency_;
+  delta_t_ = 1.0 / ((double)update_frequency_);
 
   retrieveParameter(nh, "pedestrian_simulator/node/prediction_step", prediction_step_, delta_t_);
   retrieveParameter(nh, "pedestrian_simulator/node/horizon", horizon_N_);
+  retrieveParameter(nh, "pedestrian_simulator/node/use_path_origin", use_path_origin_);
 
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/seed", seed_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
@@ -25,6 +26,9 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/binomial/p", p_binomial_);
 
   retrieveParameter(nh, "pedestrian_simulator/static", static_, false);
+
+origin_R_ = Eigen::Matrix2d::Identity();
+
 
   // Define the pedestrian type (string -> enum class)
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/type", ped_type_string_);

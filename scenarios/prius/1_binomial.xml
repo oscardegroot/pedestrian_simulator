@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="binomial"/>
+<tag type="velocity" value="1.0"/>
+<pedestrian>
+    <start x="7" y="-2.5"/>
+    <path>
+        <point x="24" y="-2.5"/>
+    </path>
+</pedestrian>
+<!-- <pedestrian>
+    <start x="26" y="13"/>
+    <path>
+        <point x="28" y="-13"/>
+    </path>
+</pedestrian> -->
+
