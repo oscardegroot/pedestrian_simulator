@@ -8,12 +8,14 @@ PedestrianSimulator::PedestrianSimulator()
 
     debug_visuals_.reset(new ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50)); // 3500)); // was 1800
 
+    ped_model_visuals_ = nh_.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
+
     obstacle_pub_ = nh_.advertise<derived_object_msgs::ObjectArray>("/pedestrian_simulator/pedestrians", 1);
     // obstacle_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
     obstacle_trajectory_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
 
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
-    vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
+    // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
 
     xml_reader_.reset(new XMLReader());
 
@@ -58,8 +60,14 @@ PedestrianSimulator::PedestrianSimulator()
     // Pick a path
     Reset();
 
+    for (size_t i = 0; i < colors_.size(); i++)
+        colors_[i] /= 256.;
+
     // Initialize the node loop
     timer_ = nh_.createTimer(ros::Duration(1.0 / CONFIG.update_frequency_), &PedestrianSimulator::Poll, this);
+
+    if (CONFIG.use_path_origin_)
+        path_origin_sub_ = nh_.subscribe("/roadmap/reference", 1, &PedestrianSimulator::OriginCallback, this);
 
     ROS_INFO("PedestrianSimulator: Ready");
 }
@@ -72,9 +80,34 @@ void PedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 
 void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)
 {
+
     vehicle_frame_.position.x += msg.linear.x * CONFIG.delta_t_;
     vehicle_frame_.position.y += msg.linear.y * CONFIG.delta_t_;
     vehicle_frame_.orientation.z += msg.angular.z * CONFIG.delta_t_; // angular velocity is stored in orientation / angular .z (euler not quaternion)
+}
+
+void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
+{
+
+    // Update if the path is new
+    if (origin_.position.x != msg.poses[0].pose.position.x && origin_.position.y != msg.poses[0].pose.position.y)
+    {
+        // We save the rotation of the origin to also move in the direction of the origin frame
+        double angle = std::atan2(msg.poses[1].pose.position.y - msg.poses[0].pose.position.y, msg.poses[1].pose.position.x - msg.poses[0].pose.position.x);
+        CONFIG.origin_R_ = Helpers::rotationMatrixFromHeading(-angle);
+
+        for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin
+        {
+            ped->start_.UndoTransform(origin_);
+            ped->start_.Transform(msg.poses[0].pose, angle);
+
+            ped->goal_.UndoTransform(origin_);
+            ped->goal_.Transform(msg.poses[0].pose, angle);
+
+            ped->Reset();
+        }
+        origin_ = msg.poses[0].pose;
+    }
 }
 
 void PedestrianSimulator::Reset()
@@ -102,6 +135,7 @@ void PedestrianSimulator::Poll(const ros::TimerEvent &event)
     Publish();
     PublishTrajectoryPredictions();
     PublishDebugVisuals();
+    VisualizePedestrians();
 }
 
 void PedestrianSimulator::Publish()
@@ -327,4 +361,50 @@ void PedestrianSimulator::PublishDebugVisuals()
         }
     }
     debug_visuals_->publish();
+}
+
+void PedestrianSimulator::VisualizePedestrians()
+{
+
+    visualization_msgs::MarkerArray markers;
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = "map";
+    marker.header.stamp = ros::Time::now();
+
+    int cur_id = 0;
+    for (auto &ped : pedestrians_) // Publish a pedestrian model
+    {
+        // marker.ns = "myns";
+        // marker.id = k + current_cone_pos.left.x.size() + current_cone_pos.right.x.size() + 1;
+        marker.id = cur_id;
+
+        marker.type = visualization_msgs::Marker::MESH_RESOURCE;
+        // marker.action = visualization_msgs::Marker::ADD;
+        marker.mesh_resource = "package://pedestrian_simulator/models/walking.dae";
+        marker.pose.position.x = ped->position_.x;
+        marker.pose.position.y = ped->position_.y;
+        marker.pose.position.z = 0;
+
+        // Account for the origin rotation in the velocity
+        Eigen::Vector2d rotated_twist = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_.linear.x, ped->twist_.linear.y);
+        double angle = std::atan2(rotated_twist(1), rotated_twist(0));
+        tf::Quaternion q = tf::createQuaternionFromRPY(0., 0., angle + M_PI / 2.);
+        geometry_msgs::Quaternion result;
+        marker.pose.orientation.x = q.getX();
+        marker.pose.orientation.y = q.getY();
+        marker.pose.orientation.z = q.getZ();
+        marker.pose.orientation.w = q.getW();
+
+        marker.scale.x = 1.0;
+        marker.scale.y = 1.0;
+        marker.scale.z = 1.0;
+        marker.color.b = colors_[3 * cur_id + 0];
+        marker.color.g = colors_[3 * cur_id + 1];
+        marker.color.r = colors_[3 * cur_id + 2];
+        marker.color.a = 1.0;
+        // marker.lifetime = ros::Duration();
+        markers.markers.push_back(marker);
+        cur_id++;
+    }
+    ped_model_visuals_.publish(markers);
 }

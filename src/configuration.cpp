@@ -17,6 +17,7 @@ void Config::Init() // const std::string& node_handle_name
 
   retrieveParameter(nh, "pedestrian_simulator/node/prediction_step", prediction_step_, delta_t_);
   retrieveParameter(nh, "pedestrian_simulator/node/horizon", horizon_N_);
+  retrieveParameter(nh, "pedestrian_simulator/node/use_path_origin", use_path_origin_);
 
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/seed", seed_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);

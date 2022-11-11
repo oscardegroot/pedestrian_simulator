@@ -45,10 +45,14 @@ public:
   double update_frequency_;
   double delta_t_;
 
+  Eigen::Matrix2d origin_R_;
+
   double prediction_step_;
   double horizon_N_;
 
   std::string scenario_file_;
+
+  bool use_path_origin_;
 
   int seed_;
   std::vector<double> process_noise_;
