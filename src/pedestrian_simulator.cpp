@@ -19,7 +19,7 @@ PedestrianSimulator::PedestrianSimulator()
 
     setting_N_sub_ = nh_.subscribe("/pedestrian_simulator/N", 1, &PedestrianSimulator::SettingNCallback, this);
     setting_dt_sub_ = nh_.subscribe("/pedestrian_simulator/dt", 1, &PedestrianSimulator::SettingdtCallback, this);
-    //setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
+    // setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
 
     xml_reader_.reset(new XMLReader());
 
@@ -53,6 +53,9 @@ PedestrianSimulator::PedestrianSimulator()
             pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id]->start_, ped_id));
         }
     }
+
+    for (size_t i = 0; i < pedestrians_.size(); i++) // Assign IDs for all pedestrians
+        pedestrians_[i]->id_ = i;
 
     // For Carla only!
     for (size_t ped_id = 0; ped_id < pedestrians_.size(); ped_id++)
@@ -205,7 +208,6 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
         lmpcc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
-
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
 
@@ -227,20 +229,20 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
                     if ((k_mode == CONFIG.horizon_N_) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
                     {
                         prob *= (1.0 - ped->p); // We did not start crossing yet
-Eigen::Vector2d rotated_predict = CONFIG.origin_R_ *Eigen::Vector2d(ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
+                        Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
 
-                        pose.pose.position.x +=rotated_predict(0);
-                        pose.pose.position.y +=rotated_predict(1);
+                        pose.pose.position.x += rotated_predict(0);
+                        pose.pose.position.y += rotated_predict(1);
                     }
                     else // If we are crossing
                     {
                         if (k_mode == k)
                             prob *= ped->p; // We cross from here
 
-                       Eigen::Vector2d rotated_predict = CONFIG.origin_R_ *Eigen::Vector2d(ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
+                        Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
 
-                        pose.pose.position.x +=rotated_predict(0);
-                        pose.pose.position.y +=rotated_predict(1);
+                        pose.pose.position.x += rotated_predict(0);
+                        pose.pose.position.y += rotated_predict(1);
                     }
 
                     // We simply add the mean so that we can determine the samples in the controller
@@ -262,10 +264,10 @@ Eigen::Vector2d rotated_predict = CONFIG.origin_R_ *Eigen::Vector2d(ped->B_strai
 
             for (int k = 0; k < CONFIG.horizon_N_; k++)
             {
-		Eigen::Vector2d rotated_predict = CONFIG.origin_R_* Eigen::Vector2d( ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_);
+                Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_);
 
-            pose.pose.position.x += rotated_predict(0) * CONFIG.prediction_step_;
-            pose.pose.position.y += rotated_predict(1) * CONFIG.prediction_step_;
+                pose.pose.position.x += rotated_predict(0) * CONFIG.prediction_step_;
+                pose.pose.position.y += rotated_predict(1) * CONFIG.prediction_step_;
 
                 // We simply add the mean so that we can determine the samples in the controller
                 gaussian_msg.mean.poses.push_back(pose);
@@ -315,7 +317,7 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
 
         for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
         {
-		Eigen::Vector2d rotated_predict = CONFIG.origin_R_*Eigen::Vector2d(ped->twist_.linear.x, ped->twist_.linear.y);
+            Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_.linear.x, ped->twist_.linear.y);
 
             pose.pose.position.x += rotated_predict(0) * CONFIG.prediction_step_;
             pose.pose.position.y += rotated_predict(1) * CONFIG.prediction_step_;
@@ -418,7 +420,7 @@ void PedestrianSimulator::VisualizePedestrians()
     {
         // marker.ns = "myns";
         // marker.id = k + current_cone_pos.left.x.size() + current_cone_pos.right.x.size() + 1;
-        marker.id = cur_id;
+        marker.id = ped->id_;
 
         marker.type = visualization_msgs::Marker::MESH_RESOURCE;
         // marker.action = visualization_msgs::Marker::ADD;
@@ -440,9 +442,16 @@ void PedestrianSimulator::VisualizePedestrians()
         marker.scale.x = 1.0;
         marker.scale.y = 1.0;
         marker.scale.z = 1.0;
-        marker.color.b = colors_[3 * cur_id + 0];
-        marker.color.g = colors_[3 * cur_id + 1];
-        marker.color.r = colors_[3 * cur_id + 2];
+
+        // Consistent with LMPCC
+        int select = ped->id_;
+        select %= (int)(colors_.size() / 3); // We only have 20 values
+        select = (int)(colors_.size() / 3) - 1 - select;
+
+        marker.color.r = colors_[3 * select + 0];
+        marker.color.g = colors_[3 * select + 1];
+        marker.color.b = colors_[3 * select + 2];
+        std::cout << ped->id_ << std::endl;
         marker.color.a = 1.0;
         // marker.lifetime = ros::Duration();
         markers.markers.push_back(marker);

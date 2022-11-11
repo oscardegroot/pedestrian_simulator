@@ -75,7 +75,6 @@ private:
     geometry_msgs::Pose vehicle_frame_; /* For pretending that the vehicle is moving! */
 
     std::vector<double> colors_ = {217, 83, 25, 0, 114, 189, 119, 172, 48, 126, 47, 142, 237, 177, 32, 77, 190, 238, 162, 19, 47, 256, 153, 256, 0, 103, 256};
-
     void Reset();
 };
 
