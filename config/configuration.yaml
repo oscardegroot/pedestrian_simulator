@@ -9,7 +9,6 @@ pedestrian_simulator:
     # scenario: carla/6_peds.xml # This is the carla sim
     # scenario: carla/demo_09-2022.xml
     # scenario: 4_crossing.xml
-    scenario: prius.xml
     # scenario: static_3.xml
     # scenario: static_4.xml
     # scenario: static/2_middle.xml
@@ -17,6 +16,7 @@ pedestrian_simulator:
     # scenario: random/8_straight.xml
     # scenario: random/16_straight.xml
     # scenario: headon/2_middle.xml # (headon)
+    scenario: prius/4_binomial.xml
     # update_frequency: 20 # JACKAL   NOTE THIS SETTING
     # prediction_step: 0.05 # JACKAL
     # horizon: 80 # JACKAL
