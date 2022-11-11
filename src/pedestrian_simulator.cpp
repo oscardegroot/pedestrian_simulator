@@ -119,19 +119,25 @@ void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
 
 void PedestrianSimulator::SettingNCallback(const std_msgs::Float64 &msg)
 {
-    ROS_WARN_STREAM("Pedestrian Simulator: Received N = " << msg.data);
+    if (CONFIG.debug_output_)
+        ROS_WARN_STREAM("Pedestrian Simulator: Received N = " << msg.data);
+
     CONFIG.horizon_N_ = msg.data;
 }
 
 void PedestrianSimulator::SettingdtCallback(const std_msgs::Float64 &msg)
 {
-    ROS_WARN_STREAM("Pedestrian Simulator: Received dt = " << msg.data);
+    if (CONFIG.debug_output_)
+        ROS_WARN_STREAM("Pedestrian Simulator: Received dt = " << msg.data);
+
     CONFIG.prediction_step_ = msg.data;
 }
 
 void PedestrianSimulator::SettingHzCallback(const std_msgs::Float64 &msg)
 {
-    ROS_WARN_STREAM("Pedestrian Simulator: Received update rate = " << msg.data);
+    if (CONFIG.debug_output_)
+        ROS_WARN_STREAM("Pedestrian Simulator: Received update rate = " << msg.data);
+
     CONFIG.update_frequency_ = msg.data;
     CONFIG.delta_t_ = 1.0 / CONFIG.update_frequency_;
     timer_ = nh_.createTimer(ros::Duration(1.0 / (double)CONFIG.update_frequency_), &PedestrianSimulator::Poll, this); // Restart the timer
@@ -451,7 +457,7 @@ void PedestrianSimulator::VisualizePedestrians()
         marker.color.r = colors_[3 * select + 0];
         marker.color.g = colors_[3 * select + 1];
         marker.color.b = colors_[3 * select + 2];
-        std::cout << ped->id_ << std::endl;
+
         marker.color.a = 1.0;
         // marker.lifetime = ros::Duration();
         markers.markers.push_back(marker);
