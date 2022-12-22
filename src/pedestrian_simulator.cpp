@@ -216,7 +216,6 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
-
         if (ped->state == PedState::STRAIGHT)
         {
 
@@ -230,6 +229,7 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
                 double prob = 1.;
 
+                // Loop over each time step of motion prediction
                 for (int k = 0; k < CONFIG.horizon_N_; k++)
                 {
                     if ((k_mode == CONFIG.horizon_N_) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
@@ -258,6 +258,7 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
                     gaussian_msg.major_semiaxis.push_back(CONFIG.process_noise_[0]);
                     gaussian_msg.minor_semiaxis.push_back(CONFIG.process_noise_[1]);
                 }
+
                 gmm_msg.gaussians.push_back(gaussian_msg);
                 gmm_msg.probabilities.push_back(prob);
             }
