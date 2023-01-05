@@ -7,10 +7,12 @@
 #include <lmpcc_msgs/obstacle_gmm.h>
 #include <lmpcc_msgs/gaussian.h>
 
+#include "pedestrian_simulator/spawn_randomizer.h"
 #include "pedestrian_simulator/types.h"
 #include "pedestrian_simulator/configuration.h"
 
 struct Waypoint;
+
 enum class PedState
 {
     STRAIGHT = 0,
@@ -21,7 +23,8 @@ enum class PedState
 class Pedestrian
 {
 public:
-    Pedestrian(const Waypoint &start)
+    Pedestrian(const Waypoint &start, double velocity)
+        : velocity_(velocity)
     {
         start_ = start;
         Reset();
@@ -43,6 +46,9 @@ public:
         position_.y += rotated_delta_p(1);
     }
 
+    virtual Eigen::Vector2d GetSpeed() const { return Eigen::Vector2d(twist_.linear.x, twist_.linear.y); };
+    virtual Eigen::Vector2d GetPosition() const { return Eigen::Vector2d(position_.x, position_.y); };
+
     unsigned int id_;
 
     Waypoint start_, goal_;
@@ -50,6 +56,8 @@ public:
 
     geometry_msgs::Twist twist_;
     geometry_msgs::Twist noisy_twist_;
+
+    double velocity_; // This is the preferred velocity
 };
 
 /** @brief Pedestrian that moves under Gaussian process noise */
@@ -61,8 +69,8 @@ public:
     std::unique_ptr<Helpers::RandomGenerator> random_generator_;
     int cur_seed_, seed_mp_;
 
-    GaussianPedestrian(const Waypoint &start, const Waypoint &end, int seed_mp)
-        : Pedestrian(start), seed_mp_(seed_mp)
+    GaussianPedestrian(const Waypoint &start, double velocity, const Waypoint &end, int seed_mp)
+        : Pedestrian(start, velocity), seed_mp_(seed_mp)
     {
         cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
         goal_ = end;
@@ -83,8 +91,8 @@ public:
                                                                                          CONFIG.process_noise_[1],
                                                                                          angle);
 
-        twist_.linear.x = B(0) * CONFIG.ped_velocity_;
-        twist_.linear.y = B(1) * CONFIG.ped_velocity_;
+        twist_.linear.x = B(0) * velocity_;
+        twist_.linear.y = B(1) * velocity_;
         noisy_twist_ = twist_;
 
         // Major / minor -> Cov = [major^2, 0; 0 minor^2]
@@ -119,8 +127,8 @@ public:
     std::unique_ptr<Helpers::RandomGenerator> random_generator_;
     int seed_mp_, cur_seed_;
 
-    BinomialPedestrian(const Waypoint &start, int seed_mp)
-        : Pedestrian(start), seed_mp_(seed_mp)
+    BinomialPedestrian(const Waypoint &start, double velocity, int seed_mp)
+        : Pedestrian(start, velocity), seed_mp_(seed_mp)
     {
         cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_;
 
@@ -136,8 +144,8 @@ public:
         {
         case PedState::STRAIGHT:
 
-            twist_.linear.x = B_straight(0) * CONFIG.ped_velocity_ * direction_;
-            twist_.linear.y = B_straight(1) * CONFIG.ped_velocity_ * direction_;
+            twist_.linear.x = B_straight(0) * velocity_ * direction_;
+            twist_.linear.y = B_straight(1) * velocity_ * direction_;
 
             // Transition
             if ((counter % 4 == 0) && (random_generator_->Double() <= p)) // Do this only once every 4 times
@@ -148,8 +156,8 @@ public:
             break;
         case PedState::CROSS:
 
-            twist_.linear.x = B_cross(0) * CONFIG.ped_velocity_ * direction_;
-            twist_.linear.y = B_cross(1) * CONFIG.ped_velocity_ * direction_;
+            twist_.linear.x = B_cross(0) * velocity_ * direction_;
+            twist_.linear.y = B_cross(1) * velocity_ * direction_;
 
             break;
         }
@@ -193,17 +201,14 @@ class RandomGaussianPedestrian : public GaussianPedestrian
 {
 
 public:
-    int random_x_min_, random_x_max_, random_y_min_, random_y_max_;
+    SpawnRandomizer spawn_randomizer_;
 
-    RandomGaussianPedestrian(double random_x_min, double random_x_max, double random_y_min, double random_y_max, int seed_mp)
-        : GaussianPedestrian(Waypoint(0., 0.), Waypoint(0., 0.), seed_mp)
+    RandomGaussianPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp)
+        : GaussianPedestrian(Waypoint(0., 0.), 0., Waypoint(0., 0.), seed_mp)
     {
         cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
 
-        random_x_min_ = random_x_min;
-        random_x_max_ = random_x_max;
-        random_y_min_ = random_y_min;
-        random_y_max_ = random_y_max;
+        spawn_randomizer_ = spawn_randomizer;
     }
 
     virtual void Reset()
@@ -212,11 +217,9 @@ public:
         random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
 
         // Generate a new start/goal
-        start_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
-                          random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
-
-        goal_ = Waypoint(random_x_min_ + random_generator_->Double() * (random_x_max_ - random_x_min_),
-                         random_y_min_ + random_generator_->Double() * (random_y_max_ - random_y_min_));
+        start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
+        goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
+        velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
 
         // Set the dynamics
         angle = std::atan2(goal_.y - start_.y, goal_.x - start_.x);
@@ -228,12 +231,130 @@ public:
     }
 };
 
+class SocialForcesPedestrian : public Pedestrian
+{
+public:
+    SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp)
+        : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp)
+    {
+        spawn_randomizer_ = spawn_randomizer;
+        cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_;
+
+        Reset();
+    }
+
+    virtual void LoadOtherPedestrians(std::vector<std::unique_ptr<Pedestrian>> *other_peds) { other_peds_ = other_peds; };
+    virtual void LoadRobot(RobotState *robot_state) { robot_state_ = robot_state; };
+
+public:
+    virtual void Update() override
+    {
+        Eigen::Vector2d force(0., 0.); // Initialize the force
+
+        // Add a goal force
+        bool goal_reached = AddGoalForce(force);
+        // if (goal_reached) // Reset velocities?
+        // {
+        //     twist_.linear.x = 0.;
+        //     twist_.linear.y = 0.;
+        // }
+
+        for (auto &ped : *other_peds_)
+        {
+            if (ped->id_ == id_)
+                continue;
+
+            AddRepulsivePedestrianForce(force, *ped);
+        }
+
+        force += GetRepulsiveForce(robot_state_->pos, robot_state_->vel); // Influence of the robot
+
+        // Apply the force to update the velocity
+        twist_.linear.x += force(0) * CONFIG.delta_t_;
+        twist_.linear.y += force(1) * CONFIG.delta_t_;
+
+        // Update the position using the velocity
+        UpdatePosition(twist_.linear.x, twist_.linear.y);
+    }
+
+    virtual void Reset()
+    {
+        cur_seed_++;
+        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+
+        start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
+        goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
+        velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
+
+        Pedestrian::Reset();
+    }
+
+protected:
+    bool AddGoalForce(Eigen::Vector2d &force)
+    {
+        if (position_.Distance(goal_) < 1.05 * velocity_ * CONFIG.delta_t_)
+            return true; // Goal reached!
+
+        double direction = position_.Angle(goal_);
+        force += (Eigen::Vector2d(std::cos(direction) * velocity_, std::sin(direction) * velocity_) -
+                  Eigen::Vector2d(twist_.linear.x, twist_.linear.y)) /
+                 0.5;
+
+        return false;
+    }
+
+    void AddRepulsivePedestrianForce(Eigen::Vector2d &force, Pedestrian &other_ped)
+    {
+        force += GetRepulsiveForce(other_ped.GetPosition(), other_ped.GetSpeed());
+    }
+
+    Eigen::Vector2d GetRepulsiveForce(const Eigen::Vector2d &other_pos, const Eigen::Vector2d &other_vel)
+    {
+        double l = CONFIG.social_l_;
+        double A = CONFIG.social_strength_;
+        double B = CONFIG.social_decay_; // A = 2.1, B = 0.3;
+        Eigen::Vector2d r_ij(position_.x - other_pos(0), position_.y - other_pos(1));
+        Eigen::Vector2d s_ij = (other_vel - GetSpeed()) * CONFIG.delta_t_;
+        Eigen::Vector2d r_s_ij = r_ij - s_ij;
+
+        double mod_r_ij, mod_r_s_ij, mod_s_ij;
+        mod_r_ij = r_ij.norm();
+        mod_r_s_ij = r_s_ij.norm();
+        mod_s_ij = s_ij.norm();
+
+        if (mod_r_ij < 1e-10 || mod_r_s_ij < 1e-10 || mod_s_ij < 1e-10)
+            return Eigen::Vector2d(0., 0.);
+
+        double b = std::sqrt(std::pow(mod_r_ij + mod_r_s_ij, 2.) - std::pow(mod_s_ij, 2.)) / 2.;
+        // double b = std::sqrt(mod_std::pow(mod_r_ij + mod_r_s_ij, 2.) - std::pow(mod_s_ij, 2.)) / 2.;
+        if (b < 1e-10)
+            return Eigen::Vector2d(0., 0.);
+
+        double g_pre_term = A * std::exp(-b / B) * (mod_r_ij + mod_r_s_ij) / (2. * b);
+        Eigen::Vector2d g = g_pre_term * (r_ij / mod_r_ij + r_s_ij / mod_r_s_ij) / 2.;
+
+        Eigen::Vector2d e_t_i(std::cos(position_.Angle(goal_)), std::sin(position_.Angle(goal_)));
+        double cos_phi = (e_t_i(0) * r_ij(0) / mod_r_ij) + (e_t_i(1) * r_ij(1) / mod_r_ij);
+        double w = l + (1. - l) * (1. + cos_phi) / 2.;
+
+        return g * w;
+    }
+
+    int counter;
+    std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+    int seed_mp_, cur_seed_;
+
+    SpawnRandomizer spawn_randomizer_;
+    std::vector<std::unique_ptr<Pedestrian>> *other_peds_;
+    RobotState *robot_state_;
+};
+
 /** @deprecated Follow waypoints deterministically */
 class WaypointPedestrian : public Pedestrian
 {
 public:
-    WaypointPedestrian(const Waypoint &start)
-        : Pedestrian(start)
+    WaypointPedestrian(const Waypoint &start, double velocity)
+        : Pedestrian(start, velocity)
     {
     }
 
@@ -273,8 +394,8 @@ public:
 
         // Move towards the waypoint
         Waypoint &cur_waypoint = GetCurrentWaypoint();
-        twist_.linear.x = CONFIG.ped_velocity_ * std::cos(position_.Angle(cur_waypoint));
-        twist_.linear.y = CONFIG.ped_velocity_ * std::sin(position_.Angle(cur_waypoint));
+        twist_.linear.x = velocity_ * std::cos(position_.Angle(cur_waypoint));
+        twist_.linear.y = velocity_ * std::sin(position_.Angle(cur_waypoint));
 
         position_.x += twist_.linear.x * CONFIG.delta_t_;
         position_.y += twist_.linear.y * CONFIG.delta_t_;

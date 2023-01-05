@@ -16,6 +16,7 @@ PedestrianSimulator::PedestrianSimulator()
 
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
+    robot_state_sub_ = nh_.subscribe("/robot_state", 1, &PedestrianSimulator::RobotStateCallback, this);
 
     setting_N_sub_ = nh_.subscribe("/pedestrian_simulator/N", 1, &PedestrianSimulator::SettingNCallback, this);
     setting_dt_sub_ = nh_.subscribe("/pedestrian_simulator/dt", 1, &PedestrianSimulator::SettingdtCallback, this);
@@ -35,14 +36,13 @@ PedestrianSimulator::PedestrianSimulator()
             pedestrians_.emplace_back();
             if (xml_reader_->is_random_[ped_id])
             {
-                pedestrians_.back().reset(new RandomGaussianPedestrian(xml_reader_->random_x_min_[ped_id], xml_reader_->random_x_max_[ped_id],
-                                                                       xml_reader_->random_y_min_[ped_id], xml_reader_->random_y_max_[ped_id],
-                                                                       ped_id));
+                int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
+                pedestrians_.back().reset(new RandomGaussianPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id));
             }
             else
             {
                 std::cout << ped_id << std::endl;
-                pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
+                pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, CONFIG.ped_velocity_, xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
             }
         }
         break;
@@ -50,8 +50,23 @@ PedestrianSimulator::PedestrianSimulator()
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id]->start_, ped_id));
+            pedestrians_.back().reset(new BinomialPedestrian(xml_reader_->pedestrians_[ped_id]->start_, CONFIG.ped_velocity_, ped_id));
         }
+        break;
+    case PedestrianType::SOCIAL:
+        for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
+        {
+            int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
+            pedestrians_.emplace_back();
+            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id));
+        }
+
+        for (auto &ped : pedestrians_)
+        {
+            ((SocialForcesPedestrian *)(ped.get()))->LoadOtherPedestrians(&pedestrians_);
+            ((SocialForcesPedestrian *)(ped.get()))->LoadRobot(&robot_state_);
+        }
+        break;
     }
 
     for (size_t i = 0; i < pedestrians_.size(); i++) // Assign IDs for all pedestrians
@@ -83,6 +98,11 @@ void PedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 {
     // ROS_INFO("PedestrianSimulator: Reset callback");
     Reset();
+}
+
+void PedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
+{
+    robot_state_ = RobotState(msg);
 }
 
 void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)

@@ -8,6 +8,8 @@
 #include <stdlib.h> /* atoi */
 #include <map>
 
+#include <spawn_randomizer.h>
+
 #include "rapidxml_utils.hpp"
 
 #include "lmpcc_tools/helpers.h"
@@ -28,7 +30,8 @@ public:
     }
 
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
-    std::vector<double> random_x_min_, random_x_max_, random_y_min_, random_y_max_;
+    std::vector<SpawnRandomizer> spawn_randomizers_;
+
     std::vector<bool> is_random_;
 
     void GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs);

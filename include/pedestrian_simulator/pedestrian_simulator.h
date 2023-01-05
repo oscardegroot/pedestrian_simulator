@@ -40,6 +40,7 @@ public:
 
     /** @brief Shift the origin to the origin of the reference path */
     void OriginCallback(const nav_msgs::Path &msg);
+    void RobotStateCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
 
     void SettingNCallback(const std_msgs::Float64 &msg);
     void SettingdtCallback(const std_msgs::Float64 &msg);
@@ -62,11 +63,14 @@ private:
 
     geometry_msgs::Pose origin_;
 
+    RobotState robot_state_;
+
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
     ros::Publisher ped_model_visuals_;
     std::vector<ros::Publisher> carla_position_pub_, carla_velocity_pub_;
     ros::Subscriber reset_sub_, vehicle_speed_sub_, path_origin_sub_;
     ros::Subscriber setting_N_sub_, setting_dt_sub_, setting_hz_sub_;
+    ros::Subscriber robot_state_sub_;
 
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
 

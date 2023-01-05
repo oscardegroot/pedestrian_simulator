@@ -15,17 +15,21 @@ pedestrian_simulator:
     # scenario: random/4_straight.xml # (guidance from here down)
     # scenario: random/8_straight.xml
     scenario: random/16_straight.xml
+    # scenario: corridor/16_random.xml
+    # scenario: crossing/16_random-sidewalks.xml
     # scenario: headon/2_middle.xml # (headon)
     # scenario: prius/4_binomial.xml
     # scenario: headon/2_stacked.xml 
     # scenario: headon/1_middle.xml
     # scenario: corridor/4_both_ways.xml
-    # update_frequency: 20 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.2 #0.05 # JACKAL
-    # horizon: 20 # JACKAL
+    # KHALED COMPARISON
     update_frequency: 20 # JACKAL   NOTE THIS SETTING
-    prediction_step: 0.05 #0.05 # JACKAL
-    horizon: 80 # JACKAL
+    prediction_step: 0.2 #0.05 # JACKAL
+    horizon: 40 # JACKAL
+    #  REGULAR SETTINGS
+    # update_frequency: 20 # JACKAL   NOTE THIS SETTING
+    # prediction_step: 0.2 # Khaled #0.05 #0.05 # JACKAL
+    # horizon: 80 # JACKAL
     use_path_origin: true
   pedestrians:
     seed: 5  # > 0,  -1 = random!
@@ -36,5 +40,7 @@ pedestrian_simulator:
     # velocity: 0.
   binomial:
     p: 0.025 #0.01 # 0.05
-
-# simulation/weights/contouring: 0.02
+  social_forces:
+    strength: 3.0
+    decay: 0.5 # Larger means less rapid decay e^(-b/B)
+    line_of_sight: 0.7 #0.7 # Between 0 - 1

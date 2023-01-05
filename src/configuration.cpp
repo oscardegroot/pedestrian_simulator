@@ -27,8 +27,11 @@ void Config::Init() // const std::string& node_handle_name
 
   retrieveParameter(nh, "pedestrian_simulator/static", static_, false);
 
-origin_R_ = Eigen::Matrix2d::Identity();
+  retrieveParameter(nh, "pedestrian_simulator/social_forces/strength", social_strength_, 4.3);
+  retrieveParameter(nh, "pedestrian_simulator/social_forces/decay", social_decay_, 1.07);
+  retrieveParameter(nh, "pedestrian_simulator/social_forces/line_of_sight", social_l_, 0.7);
 
+  origin_R_ = Eigen::Matrix2d::Identity();
 
   // Define the pedestrian type (string -> enum class)
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/type", ped_type_string_);

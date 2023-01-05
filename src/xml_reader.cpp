@@ -42,6 +42,13 @@ void XMLReader::ReadXML(const std::string &file)
 
     pedestrians_.clear();
 
+    // If there is a general random description, read it
+    for (rapidxml::xml_node<> *tag = doc.first_node("random"); tag; tag = tag->next_sibling("random"))
+    {
+        spawn_randomizers_.emplace_back();
+        spawn_randomizers_.back().ReadFrom(tag);
+    }
+
     // Read tags
     for (rapidxml::xml_node<> *tag = doc.first_node("tag"); tag; tag = tag->next_sibling("tag"))
     {
@@ -49,6 +56,8 @@ void XMLReader::ReadXML(const std::string &file)
             CONFIG.ped_type_ = PedestrianType::BINOMIAL;
         else if (std::string(tag->first_attribute("type")->value()).compare("gaussian") == 0)
             CONFIG.ped_type_ = PedestrianType::GAUSSIAN;
+        else if (std::string(tag->first_attribute("type")->value()).compare("social") == 0)
+            CONFIG.ped_type_ = PedestrianType::SOCIAL;
 
         if (std::string(tag->first_attribute("type")->value()).compare("static") == 0)
             CONFIG.static_ = true;
@@ -74,19 +83,8 @@ void XMLReader::ReadXML(const std::string &file)
 
         if (random)
         {
-            // Read the x and y range
-            auto *range_x = ped->first_node("range_x");
-
-            random_x_min_.push_back(atof(range_x->first_attribute("min")->value()));
-            random_x_max_.push_back(atof(range_x->first_attribute("max")->value()));
-
-            auto *range_y = ped->first_node("range_y");
-
-            random_y_min_.push_back(atof(range_y->first_attribute("min")->value()));
-            random_y_max_.push_back(atof(range_y->first_attribute("max")->value()));
-
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new Pedestrian(Waypoint(0., 0.)));
+            pedestrians_.back().reset(new Pedestrian(Waypoint(0., 0.), 0.));
             is_random_.push_back(true);
         }
         else
@@ -97,7 +95,7 @@ void XMLReader::ReadXML(const std::string &file)
                 atof(start_point->first_attribute("x")->value()),
                 atof(start_point->first_attribute("y")->value()));
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new Pedestrian(new_waypoint));
+            pedestrians_.back().reset(new Pedestrian(new_waypoint, 0.));
 
             // Read all paths
             for (rapidxml::xml_node<> *path = ped->first_node("path"); path; path = path->next_sibling("path"))

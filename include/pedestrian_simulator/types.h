@@ -48,6 +48,23 @@ struct Waypoint
         y = og_y;
     }
 };
+/** @note Simple struct to simplify passing the robot state */
+struct RobotState
+{
+    Eigen::Vector2d pos;
+    Eigen::Vector2d vel;
+
+    RobotState(){};
+
+    RobotState(const geometry_msgs::PoseStamped::ConstPtr &msg)
+    {
+        pos(0) = msg->pose.position.x;
+        pos(1) = msg->pose.position.y;
+
+        vel(0) = std::cos(msg->pose.orientation.z) * msg->pose.position.z;
+        vel(1) = std::sin(msg->pose.orientation.z) * msg->pose.position.z;
+    }
+};
 
 typedef std::vector<Waypoint> Path;
 

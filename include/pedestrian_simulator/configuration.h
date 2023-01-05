@@ -12,7 +12,8 @@ enum class PedestrianType
 {
   WAYPOINT = 0,
   GAUSSIAN = 1,
-  BINOMIAL = 2
+  BINOMIAL = 2,
+  SOCIAL = 3
 };
 
 class Config
@@ -62,6 +63,8 @@ public:
 
   double p_binomial_;
   bool static_;
+
+  double social_strength_, social_decay_, social_l_;
 
   bool success_;
 
