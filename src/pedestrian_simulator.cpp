@@ -23,6 +23,7 @@ PedestrianSimulator::PedestrianSimulator()
     // setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
 
     xml_reader_.reset(new XMLReader());
+    random_generator_ = Helpers::RandomGenerator(CONFIG.seed_);
 
     // Read pedestrian data
     switch (CONFIG.ped_type_)
@@ -203,6 +204,7 @@ void PedestrianSimulator::Publish()
 
         ped_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         ped_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
+        ped_msg.pose.orientation = Helpers::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
         ped_msg.twist = ped->noisy_twist_;
 
@@ -236,6 +238,8 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
+        gmm_msg.pose.orientation = Helpers::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
+
         if (ped->state == PedState::STRAIGHT)
         {
 
@@ -336,6 +340,7 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
+        gmm_msg.pose.orientation = Helpers::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
         // We simply load the uncertainty, to be integrated on the controller side
         lmpcc_msgs::gaussian gaussian_msg;

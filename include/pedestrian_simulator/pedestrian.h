@@ -167,9 +167,11 @@ public:
                                                                                          CONFIG.process_noise_[1],
                                                                                          0.);
 
+        noisy_twist_.linear.x = twist_.linear.x + process_noise_realization(0);
+        noisy_twist_.linear.y = twist_.linear.y + process_noise_realization(1);
+
         // Update the position using the velocity and Gaussian process noise (and taking the frame into account)
-        UpdatePosition(twist_.linear.x + process_noise_realization(0),
-                       twist_.linear.y + process_noise_realization(1));
+        UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y);
     }
 
 public:

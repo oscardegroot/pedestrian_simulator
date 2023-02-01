@@ -1,17 +1,18 @@
 pedestrian_simulator:
   node:
     debug_output: false
-    # scenario: 4_binomial.xml # Safe-Horizon (non-crowded)?
+    # scenario: safe-horizon/4_binomial.xml # Safe-Horizon (non-crowded)?
     # scenario: safe-horizon/crowded_gaussian.xml # Safe-Horizon (crowded)
     # scenario: safe-horizon/crowded_binomial.xml 
     # scenario: 4_corridor.xml
     # scenario: 4_crossing(copy).xml # Safe-Horizon (non-crowded)
     # scenario: carla/6_peds.xml # This is the carla sim
     # scenario: carla/demo_09-2022.xml
-    # scenario: 4_crossing.xml
+    # scenario: crossing/2_opposite_crossing.xml
     # scenario: static_3.xml
     # scenario: static_4.xml
     # scenario: static/1_middle.xml
+    # scenario: random/2_straight.xml
     # scenario: random/4_straight.xml # (guidance from here down)
     # scenario: random/8_straight.xml
     scenario: random/16_straight.xml
@@ -26,9 +27,12 @@ pedestrian_simulator:
     update_frequency: 20 # JACKAL   NOTE THIS SETTING
     prediction_step: 0.2 #0.05 # JACKAL
     horizon: 40 # JACKAL
+    # update_frequency: 10 # PARTITION
+    # prediction_step: 0.1 #PARTITION
+    # horizon: 30 # PARTITION
     #  REGULAR SETTINGS
     # update_frequency: 20 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.2 # Khaled #0.05 #0.05 # JACKAL
+    # prediction_step: 0.05 #0.05 # JACKAL
     # horizon: 80 # JACKAL
     use_path_origin: true
   pedestrians:
