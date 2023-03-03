@@ -17,7 +17,6 @@ enum class PedestrianType
 
 class Config
 {
-
   /**
    * @brief Class for retrieving configuration parameters
    *
@@ -25,16 +24,18 @@ class Config
 
 public:
   // Singleton function
-  static Config &Get()
+  static Config& Get()
   {
-
     static Config instance_;
 
     return instance_;
   }
 
-  Config() { success_ = false; };
-  Config(const Config &) = delete;
+  Config()
+  {
+    success_ = false;
+  };
+  Config(const Config&) = delete;
 
   ~Config();
 
@@ -50,7 +51,7 @@ public:
 
   std::string scenario_file_;
 
-  int seed_;
+  int seed_, repeat_experiment_;
   std::vector<double> process_noise_;
   double ped_velocity_;
   std::string ped_type_string_;
@@ -64,9 +65,8 @@ public:
 public:
   /* Retrieve paramater, if it doesn't exist return false */
   template <class T>
-  static bool retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value)
+  static bool retrieveParameter(const ros::NodeHandle& nh, const std::string& name, T& value)
   {
-
     if (!nh.getParam(name, value))
     {
       ROS_WARN_STREAM(" Parameter " << name << " not set on node " << ros::this_node::getName().c_str());
@@ -80,9 +80,8 @@ public:
 
   /* Retrieve parameter, if it doesn't exist use the default */
   template <class T>
-  static void retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value, const T &default_value)
+  static void retrieveParameter(const ros::NodeHandle& nh, const std::string& name, T& value, const T& default_value)
   {
-
     if (!retrieveParameter(nh, name, value))
     {
       ROS_WARN_STREAM(" Setting " << name << " to default value: " << default_value);

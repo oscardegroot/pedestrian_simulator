@@ -13,17 +13,18 @@ pedestrian_simulator:
     # scenario: static_4.xml
     # scenario: static/2_middle.xml
     # scenario: random/4_straight.xml (guidance from here down)
-    # scenario: random/8_straight.xml
-    scenario: random/16_straight.xml
+    scenario: random/8_straight.xml
+    # scenario: random/16_straight.xml
     # scenario: headon/2_middle.xml # (headon)
     update_frequency: 20 # JACKAL   NOTE THIS SETTING
     prediction_step: 0.05 # JACKAL
-    horizon: 80 # JACKAL
+    horizon: 120 # JACKAL
     # update_frequency: 20 # CARLA
     # prediction_step: 0.1 # CARLA
     # horizon: 40 # CARLA
   pedestrians:
     seed: 6 # Experiments  # > 0,  -1 = random!
+    # repeat_experiment: 11 # If set, will repeat a particular experiment for debugging
     # seed: 10 # Video  # > 0,  -1 = random!
     type: gaussian
     # process_noise:  [.3, .3] # Safe-Horizon

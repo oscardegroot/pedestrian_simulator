@@ -6,7 +6,7 @@ Config::~Config()
 }
 
 // read predicitve configuration paramter from paramter server
-void Config::Init() // const std::string& node_handle_name
+void Config::Init()  // const std::string& node_handle_name
 {
   ros::NodeHandle nh;
 
@@ -25,6 +25,8 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/binomial/p", p_binomial_);
 
   retrieveParameter(nh, "pedestrian_simulator/static", static_, false);
+
+  retrieveParameter(nh, "pedestrian_simulator/pedestrians/repeat_experiment", repeat_experiment_, -1);
 
   // Define the pedestrian type (string -> enum class)
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/type", ped_type_string_);
