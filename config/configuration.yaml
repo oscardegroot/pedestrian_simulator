@@ -10,15 +10,17 @@ pedestrian_simulator:
     # scenario: carla/demo_09-2022.xml
     # scenario: crossing/2_opposite_crossing.xml
     # scenario: static_3.xml
-    # scenario: static_4.xml
     # scenario: static/1_middle.xml
+    # scenario: static/1_offset_small.xml
+    # scenario: static/2_blocking.xml
+    # scenario: static/3_sequential_tight.xml
     # scenario: random/2_straight.xml
     # scenario: random/4_straight.xml # (guidance from here down)
     # scenario: random/8_straight.xml
-    scenario: random/16_straight.xml
+    # scenario: random/16_straight.xml
     # scenario: corridor/16_random.xml
     # scenario: crossing/16_random-sidewalks.xml
-    # scenario: headon/2_middle.xml # (headon)
+    scenario: headon/2_middle.xml # (headon)
     # scenario: prius/4_binomial.xml
     # scenario: headon/2_stacked.xml 
     # scenario: headon/1_middle.xml
