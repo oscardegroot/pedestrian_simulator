@@ -10,7 +10,7 @@ pedestrian_simulator:
     # scenario: carla/demo_09-2022.xml
     # scenario: crossing/2_opposite_crossing.xml
     # scenario: static_3.xml
-    # scenario: static/1_middle.xml
+    scenario: static/1_middle.xml
     # scenario: static/1_offset_small.xml
     # scenario: static/2_blocking.xml
     # scenario: static/3_sequential_tight.xml
@@ -20,10 +20,11 @@ pedestrian_simulator:
     # scenario: random/16_straight.xml
     # scenario: corridor/16_random.xml
     # scenario: crossing/16_random-sidewalks.xml
-    scenario: headon/2_middle.xml # (headon)
+    # scenario: headon/2_middle.xml # (headon)
     # scenario: prius/4_binomial.xml
     # scenario: headon/2_stacked.xml 
     # scenario: headon/1_middle.xml
+    # scenario: corridor/1_middle.xml
     # scenario: corridor/4_both_ways.xml
     # KHALED COMPARISON
     update_frequency: 20 # JACKAL   NOTE THIS SETTING
@@ -36,10 +37,15 @@ pedestrian_simulator:
     # update_frequency: 20 # JACKAL   NOTE THIS SETTING
     # prediction_step: 0.05 #0.05 # JACKAL
     # horizon: 80 # JACKAL
+    # ICRA Settings
+    # update_frequency: 20
+    # prediction_step: 0.05
+    # horizon: 120
     use_path_origin: true
   pedestrians:
     seed: 5  # > 0,  -1 = random!
     type: gaussian
+    # process_noise:  [.8, .8] # Safe-Horizon
     # process_noise:  [.3, .3] # Safe-Horizon
     process_noise: [0.0, 0.0] # Deterministic
     velocity: 1.3
