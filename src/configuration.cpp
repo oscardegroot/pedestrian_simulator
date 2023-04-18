@@ -6,7 +6,7 @@ Config::~Config()
 }
 
 // read predicitve configuration paramter from paramter server
-void Config::Init() // const std::string& node_handle_name
+void Config::Init()  // const std::string& node_handle_name
 {
   ros::NodeHandle nh;
 
@@ -29,6 +29,8 @@ void Config::Init() // const std::string& node_handle_name
 
   // Define the pedestrian type (string -> enum class)
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/type", ped_type_string_);
+
+  origin_R_ = Eigen::Matrix2d::Identity();
   if (ped_type_string_.compare("waypoint") == 0)
     ped_type_ = PedestrianType::WAYPOINT;
   else if (ped_type_string_.compare("gaussian") == 0)
