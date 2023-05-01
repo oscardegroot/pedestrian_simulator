@@ -2,7 +2,7 @@
 #define __SPAWN_RANDOMIZER_H__
 
 #include "rapidxml_utils.hpp"
-#include "lmpcc_tools/helpers.h"
+#include "ros_tools/helpers.h"
 #include "pedestrian_simulator/types.h"
 
 struct Range
@@ -17,7 +17,7 @@ struct Range
         max = _max;
     }
 
-    double GenerateRandom(Helpers::RandomGenerator *random_generator)
+    double GenerateRandom(RosTools::RandomGenerator *random_generator)
     {
         return min + random_generator->Double() * (max - min);
     }
@@ -31,18 +31,18 @@ public:
         goal_offset_ = Waypoint(0., 0.);
     };
 
-    Waypoint GenerateStart(Helpers::RandomGenerator *random_generator)
+    Waypoint GenerateStart(RosTools::RandomGenerator *random_generator)
     {
         return Waypoint(range_x_.GenerateRandom(random_generator), range_y_.GenerateRandom(random_generator));
     }
 
-    Waypoint GenerateGoal(Helpers::RandomGenerator *random_generator)
+    Waypoint GenerateGoal(RosTools::RandomGenerator *random_generator)
     {
         Waypoint absolute = GenerateStart(random_generator);
         return Waypoint(absolute.x + goal_offset_.x, absolute.y + goal_offset_.y);
     }
 
-    double GenerateVelocity(Helpers::RandomGenerator *random_generator)
+    double GenerateVelocity(RosTools::RandomGenerator *random_generator)
     {
         return range_v_.GenerateRandom(random_generator);
     }

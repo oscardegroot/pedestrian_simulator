@@ -6,7 +6,7 @@ PedestrianSimulator::PedestrianSimulator()
 
     Config::Get().Init();
 
-    debug_visuals_.reset(new ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50)); // 3500)); // was 1800
+    debug_visuals_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50)); // 3500)); // was 1800
 
     ped_model_visuals_ = nh_.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
 
@@ -23,7 +23,7 @@ PedestrianSimulator::PedestrianSimulator()
     // setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
 
     xml_reader_.reset(new XMLReader());
-    random_generator_ = Helpers::RandomGenerator(CONFIG.seed_);
+    random_generator_ = RosTools::RandomGenerator(CONFIG.seed_);
 
     // Read pedestrian data
     switch (CONFIG.ped_type_)
@@ -122,7 +122,7 @@ void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
     {
         // We save the rotation of the origin to also move in the direction of the origin frame
         double angle = std::atan2(msg.poses[1].pose.position.y - msg.poses[0].pose.position.y, msg.poses[1].pose.position.x - msg.poses[0].pose.position.x);
-        CONFIG.origin_R_ = Helpers::rotationMatrixFromHeading(-angle);
+        CONFIG.origin_R_ = RosTools::rotationMatrixFromHeading(-angle);
 
         for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin
         {
@@ -204,7 +204,7 @@ void PedestrianSimulator::Publish()
 
         ped_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         ped_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
-        ped_msg.pose.orientation = Helpers::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
+        ped_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
         ped_msg.twist = ped->noisy_twist_;
 
@@ -238,7 +238,7 @@ void PedestrianSimulator::PublishBinomialTrajectoryPredictions()
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
-        gmm_msg.pose.orientation = Helpers::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
+        gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
         if (ped->state == PedState::STRAIGHT)
         {
@@ -340,7 +340,7 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
         gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
-        gmm_msg.pose.orientation = Helpers::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
+        gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
         // We simply load the uncertainty, to be integrated on the controller side
         lmpcc_msgs::gaussian gaussian_msg;
@@ -377,10 +377,10 @@ void PedestrianSimulator::PublishTrajectoryPredictions()
 
 void PedestrianSimulator::PublishDebugVisuals()
 {
-    ROSPointMarker &arrow = debug_visuals_->getNewPointMarker("ARROW");
+    RosTools::ROSPointMarker &arrow = debug_visuals_->getNewPointMarker("ARROW");
     arrow.setScale(0.8 * 1.5, 0.15 * 1.5, 0.15 * 1.5);
 
-    ROSPointMarker &start_goal_marker = debug_visuals_->getNewPointMarker("SPHERE"); // Plot the start and goal locations of the pedestrians
+    RosTools::ROSPointMarker &start_goal_marker = debug_visuals_->getNewPointMarker("SPHERE"); // Plot the start and goal locations of the pedestrians
     start_goal_marker.setScale(0.4, 0.4, 0.4);
 
     for (auto &ped : pedestrians_)
@@ -388,7 +388,7 @@ void PedestrianSimulator::PublishDebugVisuals()
         arrow.setColor(1.0, 0.0, 0.0, 1.);
 
         // Eigen::Matrix3d H;
-        // H.block(0, 0, 2, 2) = Helpers::rotationMatrixFromHeading(vehicle_frame_.orientation.z);
+        // H.block(0, 0, 2, 2) = RosTools::rotationMatrixFromHeading(vehicle_frame_.orientation.z);
         // H.block(2, 0, 2, 1) = Eigen::Vector2d(vehicle_frame_.position.x, vehicle_frame_.position.y);
         // H(2, 2) = 1.0;
         // Eigen::Vector3d pr = H * Eigen::Vector3d(ped->position_.x, ped->position_.y, 1);

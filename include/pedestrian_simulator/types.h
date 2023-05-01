@@ -33,7 +33,7 @@ struct Waypoint
     /** @brief Transform a position to the position of the given frame, rotated with the given angle (in radians) */
     void Transform(const geometry_msgs::Pose &frame, double angle)
     {
-        Eigen::Matrix2d R = Helpers::rotationMatrixFromHeading(-angle); // Rotation matrix
+        Eigen::Matrix2d R = RosTools::rotationMatrixFromHeading(-angle); // Rotation matrix
 
         Eigen::Vector2d transform_pos(frame.position.x, frame.position.y); // Frame (x, y)
         transform_pos = transform_pos + R * Eigen::Vector2d(x, y);         // Frame + rotated position

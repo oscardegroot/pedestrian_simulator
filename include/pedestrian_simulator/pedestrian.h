@@ -66,7 +66,7 @@ class GaussianPedestrian : public Pedestrian
 public:
     double angle;
     Eigen::Vector2d B;
-    std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+    std::unique_ptr<RosTools::RandomGenerator> random_generator_;
     int cur_seed_, seed_mp_;
 
     GaussianPedestrian(const Waypoint &start, double velocity, const Waypoint &end, int seed_mp)
@@ -109,7 +109,7 @@ public:
     virtual void Reset()
     {
         cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
-        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+        random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
         Pedestrian::Reset();
     }
@@ -124,7 +124,7 @@ public:
     PedState state;
     double p;
     int counter;
-    std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+    std::unique_ptr<RosTools::RandomGenerator> random_generator_;
     int seed_mp_, cur_seed_;
 
     BinomialPedestrian(const Waypoint &start, double velocity, int seed_mp)
@@ -178,7 +178,7 @@ public:
     virtual void Reset()
     {
         cur_seed_++;
-        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+        random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
         Pedestrian::Reset();
 
@@ -216,7 +216,7 @@ public:
     virtual void Reset()
     {
         cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
-        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+        random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
         // Generate a new start/goal
         start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
@@ -282,7 +282,7 @@ public:
     virtual void Reset()
     {
         cur_seed_++;
-        random_generator_.reset(new Helpers::RandomGenerator(cur_seed_));
+        random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
         start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
         goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
@@ -343,7 +343,7 @@ protected:
     }
 
     int counter;
-    std::unique_ptr<Helpers::RandomGenerator> random_generator_;
+    std::unique_ptr<RosTools::RandomGenerator> random_generator_;
     int seed_mp_, cur_seed_;
 
     SpawnRandomizer spawn_randomizer_;
@@ -490,7 +490,7 @@ public:
 protected:
     bool done_;
 
-    Helpers::RandomGenerator random_generator;
+    RosTools::RandomGenerator random_generator;
 };
 
 #endif // __PEDESTRIAN_H__

@@ -12,7 +12,7 @@
 
 #include "rapidxml_utils.hpp"
 
-#include "lmpcc_tools/helpers.h"
+#include "ros_tools/helpers.h"
 #include "pedestrian.h"
 #include "pedestrian_simulator/configuration.h"
 

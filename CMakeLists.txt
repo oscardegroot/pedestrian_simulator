@@ -13,7 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   roscpp
   std_msgs
-  lmpcc_tools
+  ros_tools
+  lmpcc_msgs
   asr_rapidxml
   roslib
 )

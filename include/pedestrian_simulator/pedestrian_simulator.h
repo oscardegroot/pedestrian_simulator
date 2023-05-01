@@ -18,8 +18,8 @@
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Pose.h>
 
-#include "lmpcc_tools/helpers.h"
-#include "lmpcc_tools/ros_visuals.h"
+#include "ros_tools/helpers.h"
+#include "ros_tools/ros_visuals.h"
 
 #include "pedestrian_simulator/pedestrian.h"
 #include "pedestrian_simulator/xml_reader.h"
@@ -33,7 +33,7 @@ public:
     PedestrianSimulator();
 
 public:
-    Helpers::RandomGenerator random_generator_;
+    RosTools::RandomGenerator random_generator_;
 
     void ResetCallback(const std_msgs::Empty &msg);
     void VehicleVelocityCallback(const geometry_msgs::Twist &msg); /* For pretending that the vehicle is moving! */
@@ -74,7 +74,7 @@ private:
 
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
 
-    std::unique_ptr<ROSMarkerPublisher> debug_visuals_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> debug_visuals_;
 
     geometry_msgs::Pose vehicle_frame_; /* For pretending that the vehicle is moving! */
 

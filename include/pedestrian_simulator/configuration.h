@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <string>
 #include <vector>
-#include "helpers.h"
+#include "ros_tools/helpers.h"
 
 #define CONFIG Config::Get()
 
