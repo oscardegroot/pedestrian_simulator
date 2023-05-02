@@ -254,7 +254,7 @@ public:
         Eigen::Vector2d force(0., 0.); // Initialize the force
 
         // Add a goal force
-        bool goal_reached = AddGoalForce(force);
+        AddGoalForce(force);
         // if (goal_reached) // Reset velocities?
         // {
         //     twist_.linear.x = 0.;

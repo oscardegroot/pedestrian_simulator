@@ -56,7 +56,8 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <depend>geometry_msgs</depend>
-  <depend>lmpcc_tools</depend>
+  <depend>ros_tools</depend>
+  <depend>lmpcc_msgs</depend>
   <depend>asr_rapidxml</depend>
   <depend>roslib</depend>
 

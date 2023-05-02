@@ -35,7 +35,7 @@ include_directories(
 # # CATKIN_DEPENDS: catkin_packages dependent projects also need
 # # DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs roscpp std_msgs lmpcc_tools asr_rapidxml roslib
+  CATKIN_DEPENDS geometry_msgs roscpp std_msgs ros_tools asr_rapidxml roslib
   INCLUDE_DIRS include include/${PROJECT_NAME}
   LIBRARIES pedestrian_simulator
 )
