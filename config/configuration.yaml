@@ -11,7 +11,8 @@ pedestrian_simulator:
     horizon: 120
     use_path_origin: true
   pedestrians:
-    seed: 5  # > 0,  -1 = random!
+    seed: 6 # Experiments  # > 0,  -1 = random!
+    # seed: 10 # Video  # > 0,  -1 = random!
     type: gaussian
     process_noise: [0.0, 0.0] # Deterministic
     velocity: 1.3
