@@ -116,12 +116,12 @@ void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &ms
 
 void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
 {
+    double angle = std::atan2(msg.poses[1].pose.position.y - msg.poses[0].pose.position.y, msg.poses[1].pose.position.x - msg.poses[0].pose.position.x);
 
     // Update if the path is new
-    if (origin_.position.x != msg.poses[0].pose.position.x && origin_.position.y != msg.poses[0].pose.position.y)
+    if (origin_.position.x != msg.poses[0].pose.position.x || origin_.position.y != msg.poses[0].pose.position.y || RosTools::rotationMatrixFromHeading(-angle) != CONFIG.origin_R_)
     {
         // We save the rotation of the origin to also move in the direction of the origin frame
-        double angle = std::atan2(msg.poses[1].pose.position.y - msg.poses[0].pose.position.y, msg.poses[1].pose.position.x - msg.poses[0].pose.position.x);
         CONFIG.origin_R_ = RosTools::rotationMatrixFromHeading(-angle);
 
         for (auto &ped : pedestrians_) // Shift the peds start and goal to the origin

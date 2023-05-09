@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<random>
+    <range_x min="2" max="20"/>
+    <range_y min="-3" max="3"/>
+    <range_v min="0.7" max="0.7"/>
+</random>
+<tag type="velocity" value="0.7"/>
+<!-- 1 -->
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
