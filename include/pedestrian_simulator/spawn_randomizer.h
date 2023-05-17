@@ -21,6 +21,14 @@ struct Range
     {
         return min + random_generator->Double() * (max - min);
     }
+
+    double GenerateNormalRandom(RosTools::RandomGenerator *random_generator)
+    {
+        // Assumed that max is at +1sigma and min is at -1sigma
+        double mean = (max + min) / 2.;
+        return random_generator->Gaussian(mean, max - mean);
+        // min + random_generator->Double() * (max - min);
+    }
 };
 
 class SpawnRandomizer
@@ -44,7 +52,7 @@ public:
 
     double GenerateVelocity(RosTools::RandomGenerator *random_generator)
     {
-        return range_v_.GenerateRandom(random_generator);
+        return range_v_.GenerateNormalRandom(random_generator);
     }
 
 public:
