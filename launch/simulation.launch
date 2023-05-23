@@ -3,8 +3,9 @@
 <launch>
     <arg name="pedestrian_scenario" default="" />
     <arg name="overwrite_pedestrian_scenario" default="false" />
+    <arg name="config_file" default="$(find pedestrian_simulator)/config/configuration.yaml"/>
 
-    <rosparam command="load" file="$(find pedestrian_simulator)/config/configuration.yaml"/>
+    <rosparam command="load" file="$(arg config_file)"/>
 
     <param name="pedestrian_simulator/node/scenario" value="$(arg pedestrian_scenario)" if="$(arg overwrite_pedestrian_scenario)"/>
 
