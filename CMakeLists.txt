@@ -2,9 +2,12 @@ cmake_minimum_required(VERSION 3.0.2)
 project(pedestrian_simulator)
 
 # # Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
 add_compile_options(-fstack-protector)
-set(CMAKE_CXX_FLAGS "-O3 -Wall -DCMAKE_BUILD_TYPE=RELEASE")
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-deprecated-declarations")
 
 # # Find catkin macros and libraries
 # # if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -35,7 +38,7 @@ include_directories(
 # # CATKIN_DEPENDS: catkin_packages dependent projects also need
 # # DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs roscpp std_msgs lmpcc_tools asr_rapidxml roslib
+  CATKIN_DEPENDS geometry_msgs roscpp std_msgs asr_rapidxml roslib
   INCLUDE_DIRS include include/${PROJECT_NAME}
   LIBRARIES pedestrian_simulator
 )

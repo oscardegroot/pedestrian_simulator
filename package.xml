@@ -58,6 +58,7 @@
   <depend>geometry_msgs</depend>
   <depend>asr_rapidxml</depend>
   <depend>roslib</depend>
+  <depend>ros_tools</depend>
 
 <!--   <depend>asr_rapidxml</depend>
  -->  <!-- The export tag contains other, unspecified, tags -->
