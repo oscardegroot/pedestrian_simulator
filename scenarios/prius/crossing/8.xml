@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<!-- First wave -->
+<random>
+    <range_x min="20" max="30"/>
+    <range_y min="-5.5" max="-25.5"/>
+    <goal_offset x="0" y="40"/>
+    <range_v min="0.96" max="1.92"/>
+</random>
+<!-- Second Wave -->
+<random>
+    <range_x min="40" max="50"/>
+    <range_y min="20.5" max="40.5"/>
+    <goal_offset x="0" y="-40"/>
+    <range_v min="0.96" max="1.92"/>
+</random>
+<!-- 8 Pedestrians -->
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>

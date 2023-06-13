@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<random>
+    <range_x min="20" max="40"/>
+    <range_y min="-8" max="8"/>
+    <range_v min="0.96" max="1.92"/>
+</random>
+<!-- 1 -->
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
