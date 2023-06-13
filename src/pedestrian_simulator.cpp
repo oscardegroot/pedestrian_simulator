@@ -29,7 +29,7 @@ PedestrianSimulator::PedestrianSimulator()
     switch (CONFIG.ped_type_)
     {
     case PedestrianType::WAYPOINT:
-        xml_reader_->GetPedestrians(pedestrians_); // pedestrians_;
+        xml_reader_->GetPedestrians(pedestrians_);
         break;
     case PedestrianType::GAUSSIAN:
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
@@ -42,7 +42,6 @@ PedestrianSimulator::PedestrianSimulator()
             }
             else
             {
-                std::cout << ped_id << std::endl;
                 pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, CONFIG.ped_velocity_, xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
             }
         }
