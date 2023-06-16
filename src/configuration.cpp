@@ -20,6 +20,8 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/node/use_path_origin", use_path_origin_);
 
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/seed", seed_);
+  retrieveParameter(nh, "pedestrian_simulator/pedestrians/single_scenario", single_scenario_, -1);
+
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/velocity", ped_velocity_);
 

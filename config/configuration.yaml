@@ -1,5 +1,5 @@
 pedestrian_simulator:
-  static: true
+  static: false
   node:
     debug_output: false
     # scenario: safe-horizon/4_binomial.xml # Safe-Horizon (non-crowded)?
@@ -17,9 +17,10 @@ pedestrian_simulator:
     # scenario: static/3_sequential_tight.xml
     # scenario: random/2_straight.xml
     # scenario: random/4_straight.xml # (guidance from here down)
-    scenario: random/8_straight.xml
+    # scenario: random/8_straight.xml
     # scenario: random/16_straight.xml
-    # scenario: random_fast/16_straight.xml
+    scenario: random_fast/16_straight.xml
+    # scenario: random_fast/2_headon.xml
     # scenario: corridor/16_random.xml
     # scenario: crossing/16_random-sidewalks.xml
     # scenario: headon/2_middle.xml # (headon)
@@ -54,9 +55,12 @@ pedestrian_simulator:
     # update_frequency: 20
     # prediction_step: 0.05
     # horizon: 120
-    use_path_origin: true
+    use_path_origin: false
   pedestrians:
     seed: 5  # > 0,  -1 = random!
+    single_scenario: -1 # > 0 = run the scenario with this index | -1 = not a single scenario
+    # single_scenario: 12 # > 0 = run the scenario with this index | -1 = not a single scenario
+    # single_scenario: 7 # > 0 = run the scenario with this index | -1 = not a single scenario
     type: gaussian
     # process_noise:  [.8, .8] # Safe-Horizon
     # process_noise:  [.3, .3] # Safe-Horizon

@@ -56,6 +56,7 @@ public:
   bool use_path_origin_;
 
   int seed_;
+  int single_scenario_;
   std::vector<double> process_noise_;
   double ped_velocity_;
   std::string ped_type_string_;
