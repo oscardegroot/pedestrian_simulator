@@ -15,9 +15,9 @@ pedestrian_simulator:
     # scenario: random/2_straight.xml
     # scenario: random/4_straight.xml # (guidance from here down)
     # scenario: random/8_straight.xml
-    scenario: random/16_straight.xml
+    # scenario: random/16_straight.xml
     # scenario: corridor/16_random.xml
-    # scenario: crossing/16_random-sidewalks.xml
+    scenario: crossing/16_random-sidewalks.xml
     # scenario: headon/2_middle.xml # (headon)
     # scenario: prius/4_binomial.xml
     # scenario: headon/2_stacked.xml 

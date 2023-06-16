@@ -1,25 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tag type="gaussian"/>
-<!-- First sidewalk -->
+<!-- Left sidewalk -->
 <random>
-    <range_x min="8" max="10"/>
-    <range_y min="-10" max="-3"/>
+    <range_x min="10" max="90"/>
+    <range_y min="-6" max="-4"/>
+    <goal_offset x="100" y="0"/>
+    <range_v min="0.0" max="1.0"/>
+</random>
+<!-- Right sidewalk -->
+<random>
+    <range_x min="10" max="90"/>
+    <range_y min="4" max="6"/>
+    <goal_offset x="-100" y="0"/>
+    <range_v min="0.0" max="1.0"/>
+</random>
+<!-- Sidewalk crossing one way -->
+<random>
+    <range_x min="30" max="37"/>
+    <range_y min="-15" max="-3"/>
     <goal_offset x="0" y="40"/>
-    <range_v min="0.7" max="1.0"/>
+    <range_v min="0.0" max="1.0"/>
 </random>
-<!-- Second sidewalk -->
+<!-- Sidewalk crossing other way -->
 <random>
-    <range_x min="14" max="16"/>
-    <range_y min="6" max="14"/>
+    <range_x min="33" max="40"/>
+    <range_y min="3" max="15"/>
     <goal_offset x="0" y="-40"/>
-    <range_v min="0.7" max="1.0"/>
+    <range_v min="0.0" max="1.0"/>
 </random>
-<!-- Third sidewalk -->
+<!-- Random walking -->
 <random>
-    <range_x min="22" max="24"/>
-    <range_y min="10" max="15"/>
-    <goal_offset x="0" y="-40"/>
-    <range_v min="0.7" max="1.0"/>
+    <range_x min="65" max="85"/>
+    <range_y min="-15" max="15"/>
+    <!-- <goal_offset x="0" y="-40"/> -->
+    <range_v min="0.0" max="1.0"/>
 </random>
 <pedestrian>
     <tag type="random"/>
