@@ -36,11 +36,18 @@ public:
         position_ = start_;
     }
 
-    virtual void Update(){};
-    virtual void UpdatePosition(const double vx, const double vy)
+    // If computations should happen before we update the positions of all pedestrians
+    virtual void PreUpdateComputations() { PreUpdateComputations(CONFIG.delta_t_); }
+    virtual void PreUpdateComputations(const double dt){};
+
+    virtual void Update() { Update(CONFIG.delta_t_); }
+    virtual void Update(const double dt){};
+
+    virtual void UpdatePosition(const double vx, const double vy) { UpdatePosition(vx, vy, CONFIG.delta_t_); }
+    virtual void UpdatePosition(const double vx, const double vy, const double dt)
     {
         // Rotate movement in the frame
-        Eigen::Vector2d rotated_delta_p = CONFIG.origin_R_ * Eigen::Vector2d(vx, vy) * CONFIG.delta_t_;
+        Eigen::Vector2d rotated_delta_p = CONFIG.origin_R_ * Eigen::Vector2d(vx, vy) * dt; // CONFIG.delta_t_;
 
         position_.x += rotated_delta_p(0);
         position_.y += rotated_delta_p(1);
@@ -83,7 +90,7 @@ public:
             std::sin(angle));
     }
 
-    virtual void Update() override
+    virtual void Update(const double dt) override
     {
 
         Eigen::Vector2d process_noise_realization = random_generator_->BivariateGaussian(Eigen::Vector2d(0., 0.),
@@ -100,7 +107,7 @@ public:
         {
             noisy_twist_.linear.x += process_noise_realization(0);
             noisy_twist_.linear.y += process_noise_realization(1);
-            UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y);
+            UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y, dt);
         }
         // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
     }
@@ -136,7 +143,7 @@ public:
         Reset();
     }
 
-    virtual void Update() override
+    virtual void Update(const double dt) override
     {
 
         // BINOMIAL
@@ -171,7 +178,7 @@ public:
         noisy_twist_.linear.y = twist_.linear.y + process_noise_realization(1);
 
         // Update the position using the velocity and Gaussian process noise (and taking the frame into account)
-        UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y);
+        UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y, dt);
     }
 
 public:
@@ -244,43 +251,63 @@ public:
         : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp)
     {
         spawn_randomizer_ = spawn_randomizer;
-        cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_;
+        cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+        if (CONFIG.single_scenario_ != -1)
+            cur_seed_ += CONFIG.single_scenario_;
 
         Reset();
+    }
+
+    SocialForcesPedestrian(const SocialForcesPedestrian &other)
+        : Pedestrian(other.start_, other.velocity_), seed_mp_(other.seed_mp_)
+    {
+        id_ = other.id_;
+        spawn_randomizer_ = other.spawn_randomizer_;
+        cur_seed_ = other.cur_seed_;
+        random_generator_.reset(new RosTools::RandomGenerator(*other.random_generator_));
+        robot_state_ = other.robot_state_;
+
+        position_ = other.position_;
+        twist_ = other.twist_;
+        start_ = other.start_;
+        goal_ = other.goal_;
+        noisy_twist_ = other.noisy_twist_;
+        velocity_ = other.velocity_;
     }
 
     virtual void LoadOtherPedestrians(std::vector<std::unique_ptr<Pedestrian>> *other_peds) { other_peds_ = other_peds; };
     virtual void LoadRobot(RobotState *robot_state) { robot_state_ = robot_state; };
 
 public:
-    virtual void Update() override
+    // Compute the forces of other pedestrians before we update their position
+    virtual void PreUpdateComputations(const double dt) override
     {
-        Eigen::Vector2d force(0., 0.); // Initialize the force
-
-        // Add a goal force
-        bool goal_reached = AddGoalForce(force);
-        // if (goal_reached) // Reset velocities?
-        // {
-        //     twist_.linear.x = 0.;
-        //     twist_.linear.y = 0.;
-        // }
-
+        other_ped_force_ = Eigen::Vector2d(0., 0.);
         for (auto &ped : *other_peds_)
         {
             if (ped->id_ == id_)
                 continue;
 
-            AddRepulsivePedestrianForce(force, *ped);
+            AddRepulsivePedestrianForce(other_ped_force_, *ped, dt);
         }
+    }
 
-        force += GetRepulsiveForce(robot_state_->pos, robot_state_->vel); // Influence of the robot
+    virtual void Update(const double dt) override
+    {
+        Eigen::Vector2d force(0., 0.); // Initialize the force
+
+        // Add a goal force
+        AddGoalForce(force);
+        force += other_ped_force_;
+
+        force += GetRepulsiveForce(robot_state_->pos, robot_state_->vel, dt); // Influence of the robot
 
         // Apply the force to update the velocity
-        twist_.linear.x += force(0) * CONFIG.delta_t_;
-        twist_.linear.y += force(1) * CONFIG.delta_t_;
+        twist_.linear.x += force(0) * dt;
+        twist_.linear.y += force(1) * dt;
 
         // Update the position using the velocity
-        UpdatePosition(twist_.linear.x, twist_.linear.y);
+        UpdatePosition(twist_.linear.x, twist_.linear.y, dt);
     }
 
     virtual void Reset()
@@ -289,8 +316,11 @@ public:
         random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
         start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
-        goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
         velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
+
+        goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
+        for (int i = 0; start_.Distance(goal_) < velocity_ * 20. && i < 100; i++) // Make sure the goal is far enough away (20s)
+            goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
 
         Pedestrian::Reset();
     }
@@ -309,18 +339,18 @@ protected:
         return false;
     }
 
-    void AddRepulsivePedestrianForce(Eigen::Vector2d &force, Pedestrian &other_ped)
+    void AddRepulsivePedestrianForce(Eigen::Vector2d &force, Pedestrian &other_ped, const double dt)
     {
-        force += GetRepulsiveForce(other_ped.GetPosition(), other_ped.GetSpeed());
+        force += GetRepulsiveForce(other_ped.GetPosition(), other_ped.GetSpeed(), dt);
     }
 
-    Eigen::Vector2d GetRepulsiveForce(const Eigen::Vector2d &other_pos, const Eigen::Vector2d &other_vel)
+    Eigen::Vector2d GetRepulsiveForce(const Eigen::Vector2d &other_pos, const Eigen::Vector2d &other_vel, const double dt)
     {
         double l = CONFIG.social_l_;
         double A = CONFIG.social_strength_;
         double B = CONFIG.social_decay_; // A = 2.1, B = 0.3;
         Eigen::Vector2d r_ij(position_.x - other_pos(0), position_.y - other_pos(1));
-        Eigen::Vector2d s_ij = (other_vel - GetSpeed()) * CONFIG.delta_t_;
+        Eigen::Vector2d s_ij = (other_vel - GetSpeed()) * dt; // CONFIG.delta_t_;
         Eigen::Vector2d r_s_ij = r_ij - s_ij;
 
         double mod_r_ij, mod_r_s_ij, mod_s_ij;
@@ -346,12 +376,12 @@ protected:
         return g * w;
     }
 
-    int counter;
     std::unique_ptr<RosTools::RandomGenerator> random_generator_;
     int seed_mp_, cur_seed_;
 
     SpawnRandomizer spawn_randomizer_;
     std::vector<std::unique_ptr<Pedestrian>> *other_peds_;
+    Eigen::Vector2d other_ped_force_;
     RobotState *robot_state_;
 };
 

@@ -64,6 +64,9 @@ void XMLReader::ReadXML(const std::string &file)
 
         if (std::string(tag->first_attribute("type")->value()).compare("velocity") == 0)
             CONFIG.ped_velocity_ = atof(tag->first_attribute("value")->value());
+
+        // if (CONFIG.ped_type_ == PedestrianType::SOCIAL && std::string(tag->first_attribute("type")->value()).compare("constant_velocity_predictions"))
+        //     CONFIG.constant_velocity_predictions_ = true;
     }
 
     // For all pedestrians in the file

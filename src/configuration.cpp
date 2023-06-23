@@ -19,8 +19,12 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/node/horizon", horizon_N_);
   retrieveParameter(nh, "pedestrian_simulator/node/use_path_origin", use_path_origin_);
 
+  retrieveParameter(nh, "obstacles/radius", ped_radius_, 0.5);
+
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/seed", seed_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/single_scenario", single_scenario_, -1);
+  retrieveParameter(nh, "pedestrian_simulator/pedestrians/collision_free_spawn", collision_free_spawn_, true);
+  retrieveParameter(nh, "pedestrian_simulator/pedestrians/constant_velocity_predictions", constant_velocity_predictions_, true);
 
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/velocity", ped_velocity_);

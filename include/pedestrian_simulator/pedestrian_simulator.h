@@ -49,8 +49,13 @@ public:
     void Poll(const ros::TimerEvent &event);
 
     void Publish();
-    void PublishTrajectoryPredictions();
-    void PublishBinomialTrajectoryPredictions();
+
+    /** @brief Trajectory predictions for deterministic models (e.g., social forces) */
+    void PublishPredictions();
+    void PublishGaussianPredictions();
+
+    /** @brief Trajectory predictions for uncertain pedestrian model following a binomial distribution */
+    void PublishBinomialPredictions();
 
     void PublishDebugVisuals();
     void VisualizePedestrians();

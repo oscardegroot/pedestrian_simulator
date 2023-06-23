@@ -29,6 +29,12 @@ struct Range
         return random_generator->Gaussian(mean, max - mean);
         // min + random_generator->Double() * (max - min);
     }
+
+    Range Inflate(double inflation_mp)
+    {
+        double mean = (max + min) / 2.;
+        return Range(mean + (min - mean) * inflation_mp, mean + (max - mean) * inflation_mp);
+    }
 };
 
 class SpawnRandomizer
@@ -46,7 +52,9 @@ public:
 
     Waypoint GenerateGoal(RosTools::RandomGenerator *random_generator)
     {
-        Waypoint absolute = GenerateStart(random_generator);
+        Waypoint absolute = Waypoint(range_x_.Inflate(goal_inflation_).GenerateRandom(random_generator),
+                                     range_y_.Inflate(goal_inflation_).GenerateRandom(random_generator));
+
         return Waypoint(absolute.x + goal_offset_.x, absolute.y + goal_offset_.y);
     }
 
@@ -69,11 +77,17 @@ public:
             goal_offset_ = Waypoint(atof(goal_offset_tag->first_attribute("x")->value()),
                                     atof(goal_offset_tag->first_attribute("y")->value()));
         }
+
+        // The goal inflation tag enlarges the region that the goal can be in
+        auto *goal_inflation = tag->first_node("goal_inflation");
+        if (goal_inflation)
+            goal_inflation_ = atof(goal_inflation->first_attribute("value")->value());
     }
 
 private:
     Range range_x_, range_y_, range_v_;
     Waypoint goal_offset_;
+    double goal_inflation_ = 1.;
 
     void ReadRange(rapidxml::xml_node<> *tag, const std::string &&name, Range &range)
     {

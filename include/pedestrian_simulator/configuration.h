@@ -61,6 +61,10 @@ public:
   double ped_velocity_;
   std::string ped_type_string_;
   PedestrianType ped_type_;
+  bool constant_velocity_predictions_;
+  double ped_radius_;
+
+  bool collision_free_spawn_;
 
   double p_binomial_;
   bool static_;
