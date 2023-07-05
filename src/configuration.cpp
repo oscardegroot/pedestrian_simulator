@@ -27,7 +27,7 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/constant_velocity_predictions", constant_velocity_predictions_, true);
 
   retrieveParameter(nh, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
-  retrieveParameter(nh, "pedestrian_simulator/pedestrians/velocity", ped_velocity_);
+  // retrieveParameter(nh, "pedestrian_simulator/pedestrians/velocity", ped_velocity_);
 
   retrieveParameter(nh, "pedestrian_simulator/binomial/p", p_binomial_);
 

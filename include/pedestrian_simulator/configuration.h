@@ -1,10 +1,13 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+// #include "ros_tools/helpers.h"
+
+#include <Eigen/Dense>
 #include <ros/ros.h>
+
 #include <string>
 #include <vector>
-#include "ros_tools/helpers.h"
 
 #define CONFIG Config::Get()
 

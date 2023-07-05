@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   ros_tools
+  pedsim
   lmpcc_msgs
   asr_rapidxml
   roslib
@@ -26,6 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 include_directories(
   include/pedestrian_simulator
+  include/pedestrians
 )
 
 # ##################################
@@ -59,7 +61,16 @@ include_directories(
 add_library(pedestrian_simulator
   src/pedestrian_simulator.cpp
   src/xml_reader.cpp
+  src/spawn_randomizer.cpp
   src/configuration.cpp
+
+  # Pedestrians
+  src/pedestrians/binomial_pedestrian.cpp
+  src/pedestrians/gaussian_pedestrian.cpp
+  src/pedestrians/pedestrian.cpp
+  src/pedestrians/random_gaussian_pedestrian.cpp
+  src/pedestrians/social_forces_pedestrian.cpp
+  src/pedestrians/waypoint_pedestrian.cpp
 )
 add_dependencies(pedestrian_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 

@@ -1,31 +1,21 @@
 #ifndef __PEDESTRIAN_SIMULATOR_H__
 #define __PEDESTRIAN_SIMULATOR_H__
 
+#include <pedestrian_simulator/types.h>
+#include <pedestrian_simulator/xml_reader.h>
+
+#include <ros_tools/helpers.h>
+#include <ros_tools/ros_visuals.h>
+
+#include <geometry_msgs/Pose.h>
+#include <nav_msgs/Path.h>
+#include <std_msgs/Float64.h>
+
 #include <vector>
 #include <ros/ros.h>
 #include <Eigen/Dense>
 
-#include <tf/tf.h>
-#include <derived_object_msgs/ObjectArray.h>
-#include <derived_object_msgs/Object.h>
-#include <lmpcc_msgs/obstacle_array.h>
-#include <lmpcc_msgs/obstacle_gmm.h>
-#include <lmpcc_msgs/gaussian.h>
-
-#include <std_msgs/Empty.h>
-#include <std_msgs/Float64.h>
-#include <nav_msgs/Path.h>
-#include <geometry_msgs/Twist.h>
-#include <geometry_msgs/Pose.h>
-
-#include "ros_tools/helpers.h"
-#include "ros_tools/ros_visuals.h"
-
-#include "pedestrian_simulator/pedestrian.h"
-#include "pedestrian_simulator/xml_reader.h"
-#include "pedestrian_simulator/types.h"
-#include "pedestrian_simulator/configuration.h"
-
+class Pedestrian;
 class PedestrianSimulator
 {
 
@@ -72,7 +62,9 @@ private:
 
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
     ros::Publisher ped_model_visuals_;
+
     std::vector<ros::Publisher> carla_position_pub_, carla_velocity_pub_;
+
     ros::Subscriber reset_sub_, vehicle_speed_sub_, path_origin_sub_;
     ros::Subscriber setting_N_sub_, setting_dt_sub_, setting_hz_sub_;
     ros::Subscriber robot_state_sub_;

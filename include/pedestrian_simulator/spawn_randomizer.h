@@ -1,9 +1,12 @@
 #ifndef __SPAWN_RANDOMIZER_H__
 #define __SPAWN_RANDOMIZER_H__
 
-#include "rapidxml_utils.hpp"
-#include "ros_tools/helpers.h"
-#include "pedestrian_simulator/types.h"
+#include <pedestrian_simulator/types.h>
+
+#include <rapidxml_utils.hpp>
+#include <ros_tools/helpers.h>
+
+#include <string>
 
 struct Range
 {
@@ -17,84 +20,31 @@ struct Range
         max = _max;
     }
 
-    double GenerateRandom(RosTools::RandomGenerator *random_generator)
-    {
-        return min + random_generator->Double() * (max - min);
-    }
+    double GenerateRandom(RosTools::RandomGenerator *random_generator);
 
-    double GenerateNormalRandom(RosTools::RandomGenerator *random_generator)
-    {
-        // Assumed that max is at +1sigma and min is at -1sigma
-        double mean = (max + min) / 2.;
-        return random_generator->Gaussian(mean, max - mean);
-        // min + random_generator->Double() * (max - min);
-    }
+    double GenerateNormalRandom(RosTools::RandomGenerator *random_generator);
 
-    Range Inflate(double inflation_mp)
-    {
-        double mean = (max + min) / 2.;
-        return Range(mean + (min - mean) * inflation_mp, mean + (max - mean) * inflation_mp);
-    }
+    Range Inflate(double inflation_mp);
 };
 
 class SpawnRandomizer
 {
 public:
-    SpawnRandomizer()
-    {
-        goal_offset_ = Waypoint(0., 0.);
-    };
+    SpawnRandomizer();
 
-    Waypoint GenerateStart(RosTools::RandomGenerator *random_generator)
-    {
-        return Waypoint(range_x_.GenerateRandom(random_generator), range_y_.GenerateRandom(random_generator));
-    }
-
-    Waypoint GenerateGoal(RosTools::RandomGenerator *random_generator)
-    {
-        Waypoint absolute = Waypoint(range_x_.Inflate(goal_inflation_).GenerateRandom(random_generator),
-                                     range_y_.Inflate(goal_inflation_).GenerateRandom(random_generator));
-
-        return Waypoint(absolute.x + goal_offset_.x, absolute.y + goal_offset_.y);
-    }
-
-    double GenerateVelocity(RosTools::RandomGenerator *random_generator)
-    {
-        return range_v_.GenerateNormalRandom(random_generator);
-    }
+    Waypoint GenerateStart(RosTools::RandomGenerator *random_generator);
+    Waypoint GenerateGoal(RosTools::RandomGenerator *random_generator);
+    double GenerateVelocity(RosTools::RandomGenerator *random_generator);
 
 public:
-    void ReadFrom(rapidxml::xml_node<> *tag)
-    {
-
-        ReadRange(tag, "range_x", range_x_);
-        ReadRange(tag, "range_y", range_y_);
-        ReadRange(tag, "range_v", range_v_);
-
-        auto *goal_offset_tag = tag->first_node("goal_offset");
-        if (goal_offset_tag)
-        {
-            goal_offset_ = Waypoint(atof(goal_offset_tag->first_attribute("x")->value()),
-                                    atof(goal_offset_tag->first_attribute("y")->value()));
-        }
-
-        // The goal inflation tag enlarges the region that the goal can be in
-        auto *goal_inflation = tag->first_node("goal_inflation");
-        if (goal_inflation)
-            goal_inflation_ = atof(goal_inflation->first_attribute("value")->value());
-    }
+    void ReadFrom(rapidxml::xml_node<> *tag);
 
 private:
     Range range_x_, range_y_, range_v_;
     Waypoint goal_offset_;
     double goal_inflation_ = 1.;
 
-    void ReadRange(rapidxml::xml_node<> *tag, const std::string &&name, Range &range)
-    {
-        auto *range_tag = tag->first_node(name.c_str());
-        range = Range(atof(range_tag->first_attribute("min")->value()),
-                      atof(range_tag->first_attribute("max")->value()));
-    }
+    void ReadRange(rapidxml::xml_node<> *tag, const std::string &&name, Range &range);
 };
 
 #endif // __SPAWN_RANDOMIZER_H__

@@ -1,20 +1,12 @@
 #ifndef __XMLREADER_H__
 #define __XMLREADER_H__
 
-#include <ros/ros.h>
-#include <ros/package.h>
-#include <string>
+#include <pedestrian.h>
+#include <pedestrian_simulator/spawn_randomizer.h>
+
 #include <vector>
-#include <stdlib.h> /* atoi */
-#include <map>
-
-#include <spawn_randomizer.h>
-
-#include "rapidxml_utils.hpp"
-
-#include "ros_tools/helpers.h"
-#include "pedestrian.h"
-#include "pedestrian_simulator/configuration.h"
+#include <string>
+#include <memory>
 
 class XMLReader
 {

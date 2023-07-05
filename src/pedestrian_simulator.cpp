@@ -1,5 +1,24 @@
 #include "pedestrian_simulator/pedestrian_simulator.h"
 
+#include <pedestrian_simulator/configuration.h>
+
+#include <pedestrians/pedestrian.h>
+#include <pedestrians/gaussian_pedestrian.h>
+#include <pedestrians/binomial_pedestrian.h>
+#include <pedestrians/random_gaussian_pedestrian.h>
+#include <pedestrians/social_forces_pedestrian.h>
+#include <pedestrians/waypoint_pedestrian.h>
+
+#include <tf/tf.h>
+#include <derived_object_msgs/ObjectArray.h>
+#include <derived_object_msgs/Object.h>
+#include <lmpcc_msgs/obstacle_array.h>
+#include <lmpcc_msgs/obstacle_gmm.h>
+#include <lmpcc_msgs/gaussian.h>
+
+#include <std_msgs/Empty.h>
+#include <geometry_msgs/Twist.h>
+
 PedestrianSimulator::PedestrianSimulator()
 {
     ROS_INFO("PedestrianSimulator: Initializing");
@@ -261,7 +280,6 @@ void PedestrianSimulator::PublishPredictions()
             return;
         }
         break;
-        // std::cout << "running the general prediction function\n";
     }
 
     // Otherwise we use this function

@@ -1,6 +1,11 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <Eigen/Dense>
+#include <ros_tools/helpers.h>
+
 #include <vector>
 
 struct Waypoint
