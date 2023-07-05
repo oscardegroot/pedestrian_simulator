@@ -71,6 +71,15 @@ struct RobotState
     }
 };
 
+struct StaticObstacle
+{
+    double min_x, min_y;
+    double max_x, max_y;
+
+    StaticObstacle(double _min_x, double _min_y,
+                   double _max_x, double _max_y) : min_x(_min_x), min_y(_min_y), max_x(_max_x), max_y(_max_y) {}
+};
+
 typedef std::vector<Waypoint> Path;
 
 #endif // __TYPES_H__

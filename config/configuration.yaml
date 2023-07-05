@@ -20,7 +20,7 @@ pedestrian_simulator:
     # scenario: random/8_straight.xml
     # scenario: random/16_straight.xml
     # scenario: random_fast/16_straight.xml
-    scenario: random_social/16_straight.xml
+    scenario: random_social/16_corridor.xml
     # scenario: random_fast/2_headon.xml
     # scenario: corridor/16_random.xml
     # scenario: crossing/16_random-sidewalks.xml
@@ -68,6 +68,7 @@ pedestrian_simulator:
     # process_noise:  [.3, .3] # Safe-Horizon
     process_noise: [0.0, 0.0] # Deterministic
     collision_free_spawn: true
+    interaction: false
     constant_velocity_predictions: false # If "false" will produce predictions that follow the pedestrian model
   binomial:
     p: 0.025 #0.01 # 0.05

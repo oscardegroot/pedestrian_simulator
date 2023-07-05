@@ -1,14 +1,19 @@
 #include <pedestrians/social_forces_pedestrian.h>
 
 #include <pedestrian_simulator/configuration.h>
+// #include <pedsim_original/ped_scene.h>
+// #include <pedsim_original/ped_agent.h>
+// #include <pedsim_original/ped_waypoint.h>
 
-SocialForcesPedestrian::SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp)
+SocialForcesPedestrian::SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp, Ped::Tscene *pedsim_scene)
     : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp)
 {
     spawn_randomizer_ = spawn_randomizer;
     cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
     if (CONFIG.single_scenario_ != -1)
         cur_seed_ += CONFIG.single_scenario_;
+
+    pedsim_scene_ = pedsim_scene;
 
     Reset();
 }
@@ -50,6 +55,12 @@ void SocialForcesPedestrian::Update(const double dt)
 {
     Eigen::Vector2d force(0., 0.); // Initialize the force
 
+    position_.x = pedsim_agent_->getx();
+    position_.y = pedsim_agent_->gety();
+    twist_.linear.x = pedsim_agent_->getVelocity().x;
+    twist_.linear.y = pedsim_agent_->getVelocity().y;
+    return;
+
     // Add a goal force
     AddGoalForce(force);
     force += other_ped_force_;
@@ -75,6 +86,19 @@ void SocialForcesPedestrian::Reset()
     goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
     for (int i = 0; start_.Distance(goal_) < velocity_ * 20. && i < 100; i++) // Make sure the goal is far enough away (20s)
         goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
+
+    pedsim_agent_ = new Ped::Tagent();
+    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_.x, start_.y, 5.);
+    Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_.x, goal_.y, 5.);
+    pedsim_agent_->addWaypoint(w1);
+    pedsim_agent_->addWaypoint(w2);
+
+    pedsim_agent_->setPosition(start_.x, start_.y, 0.);
+    pedsim_agent_->setRadius(CONFIG.ped_radius_);
+
+    velocity_ = pedsim_agent_->getvmax(); // Determined by libpedsim
+
+    pedsim_scene_->addAgent(pedsim_agent_);
 
     Pedestrian::Reset();
 }

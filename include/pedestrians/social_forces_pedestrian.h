@@ -6,13 +6,12 @@
 #include <pedestrian_simulator/spawn_randomizer.h>
 
 // #include <algorithm>
-// #include <pedsim/ped_agent.h>
-
+#include <pedsim_original/ped_includes.h>
 
 class SocialForcesPedestrian : public Pedestrian
 {
 public:
-    SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp);
+    SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp, Ped::Tscene *pedsim_scene);
 
     /** @brief copy constructor */
     SocialForcesPedestrian(const SocialForcesPedestrian &other);
@@ -45,5 +44,8 @@ protected:
     std::vector<std::unique_ptr<Pedestrian>> *other_peds_;
     Eigen::Vector2d other_ped_force_;
     RobotState *robot_state_;
+
+    Ped::Tscene *pedsim_scene_;
+    Ped::Tagent *pedsim_agent_;
 };
 #endif // __SOCIAL_FORCES_PEDESTRIAN_H__

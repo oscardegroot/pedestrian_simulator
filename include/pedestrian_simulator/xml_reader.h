@@ -3,6 +3,7 @@
 
 #include <pedestrian.h>
 #include <pedestrian_simulator/spawn_randomizer.h>
+#include <pedestrian_simulator/types.h>
 
 #include <vector>
 #include <string>
@@ -22,6 +23,7 @@ public:
     }
 
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
+    std::vector<StaticObstacle> static_obstacles_;
     std::vector<SpawnRandomizer> spawn_randomizers_;
 
     std::vector<bool> is_random_;

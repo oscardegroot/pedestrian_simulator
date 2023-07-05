@@ -120,4 +120,13 @@ void XMLReader::ReadXML(const std::string &file)
             }
         }
     }
+
+    // For all pedestrians in the file
+    for (rapidxml::xml_node<> *obs = doc.first_node("obstacle"); obs; obs = obs->next_sibling("obstacle"))
+    {
+        static_obstacles_.emplace_back(atof(obs->first_attribute("x1")->value()),
+                                       atof(obs->first_attribute("y1")->value()),
+                                       atof(obs->first_attribute("x2")->value()),
+                                       atof(obs->first_attribute("y2")->value()));
+    }
 }

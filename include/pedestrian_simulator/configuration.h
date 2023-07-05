@@ -1,8 +1,6 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-// #include "ros_tools/helpers.h"
-
 #include <Eigen/Dense>
 #include <ros/ros.h>
 
@@ -65,6 +63,7 @@ public:
   std::string ped_type_string_;
   PedestrianType ped_type_;
   bool constant_velocity_predictions_;
+  bool interaction_;
   double ped_radius_;
 
   bool collision_free_spawn_;

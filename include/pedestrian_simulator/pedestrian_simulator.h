@@ -3,6 +3,7 @@
 
 #include <pedestrian_simulator/types.h>
 #include <pedestrian_simulator/xml_reader.h>
+#include <pedestrian_simulator/pedsim_manager.h>
 
 #include <ros_tools/helpers.h>
 #include <ros_tools/ros_visuals.h>
@@ -21,6 +22,8 @@ class PedestrianSimulator
 
 public:
     PedestrianSimulator();
+
+    // virtual ~PedestrianSimulator(){};
 
 public:
     RosTools::RandomGenerator random_generator_;
@@ -46,7 +49,7 @@ public:
 
     /** @brief Trajectory predictions for uncertain pedestrian model following a binomial distribution */
     void PublishBinomialPredictions();
-
+    void PublishSocialPredictions();
     void PublishDebugVisuals();
     void VisualizePedestrians();
 
@@ -55,6 +58,7 @@ private:
     ros::NodeHandle nh_;
 
     std::unique_ptr<XMLReader> xml_reader_;
+    std::unique_ptr<PedsimManager> pedsim_manager_, pedsim_prediction_manager_;
 
     geometry_msgs::Pose origin_;
 

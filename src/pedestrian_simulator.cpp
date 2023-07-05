@@ -73,12 +73,15 @@ PedestrianSimulator::PedestrianSimulator()
         }
         break;
     case PedestrianType::SOCIAL:
+        pedsim_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
+
+        pedsim_prediction_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
         ROS_INFO("Pedestrian Simulator: Spawning social forces pedestrian");
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id));
+            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id, pedsim_manager_->GetScene()));
         }
 
         for (auto &ped : pedestrians_)
@@ -124,6 +127,13 @@ void PedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::C
 {
     robot_state_ = RobotState(msg);
     robot_state_.pos += robot_state_.vel * CONFIG.delta_t_; // Usually the robot state is lagging one time step behind
+
+    if (pedsim_manager_)
+    {
+        pedsim_manager_->SetRobotPosition(robot_state_.pos(0), robot_state_.pos(1));
+        pedsim_manager_->SetRobotVelocity(robot_state_.vel(0), robot_state_.vel(1));
+    }
+    // pedsim_robot_->setPosition(robot_state_.pos(0), robot_state_.pos(1), 0.);
 }
 
 void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)
@@ -188,6 +198,9 @@ void PedestrianSimulator::Reset()
 {
     vehicle_frame_ = geometry_msgs::Pose();
 
+    if (pedsim_manager_)
+        pedsim_manager_->Reset();
+
     for (auto &ped : pedestrians_)
     {
         // Reset pedestrians to their starting position
@@ -210,17 +223,24 @@ void PedestrianSimulator::Reset()
 
 void PedestrianSimulator::Poll(const ros::TimerEvent &event)
 {
+    // Moving pedsim agents
+    if (pedsim_manager_)
+        pedsim_manager_->Update(CONFIG.delta_t_);
+
     if (CONFIG.debug_output_)
         ROS_INFO("PedestrianSimulator: Update");
 
+    // std::cout << "preupdate\n";
     for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
         ped->PreUpdateComputations();
 
+    // std::cout << "update\n";
     for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
     {
         ped->Update();
         // ped->MoveFrame(vehicle_speed_);
     }
+    // std::cout << "done\n";
 
     Publish();
     PublishPredictions();
@@ -263,7 +283,6 @@ void PedestrianSimulator::Publish()
 
 void PedestrianSimulator::PublishPredictions()
 {
-
     // Decide how to compute predictions
     switch (CONFIG.ped_type_)
     {
@@ -272,6 +291,9 @@ void PedestrianSimulator::PublishPredictions()
         return;
     case PedestrianType::BINOMIAL:
         PublishBinomialPredictions();
+        return;
+    case PedestrianType::SOCIAL:
+        PublishSocialPredictions(); // With libpedsim
         return;
     default:
         if (CONFIG.constant_velocity_predictions_)
@@ -350,6 +372,112 @@ void PedestrianSimulator::PublishPredictions()
     id = 0;
     for (auto &ped : copied_pedestrians)
     {
+        prediction_array.obstacles[id].gaussians.push_back(gaussian_msgs[id]);
+        prediction_array.obstacles[id].probabilities.push_back(1.0);
+        id++;
+    }
+    prediction_array.header.stamp = ros::Time::now();
+    obstacle_trajectory_prediction_pub_.publish(prediction_array);
+}
+
+void PedestrianSimulator::PublishSocialPredictions()
+{
+
+    lmpcc_msgs::obstacle_array prediction_array;
+    prediction_array.header.frame_id = "map";
+
+    // Build up the scene
+    pedsim_prediction_manager_->Reset();
+    // Ped::Tscene *prediction_scene = new Ped::Tscene(-200, -200, 400, 400);
+    // Ped::Tobstacle *o1 = new Ped::Tobstacle(-6.5, -3.5, 39.5, -3.5);
+    // Ped::Tobstacle *o2 = new Ped::Tobstacle(-6.5, 3.5, 39.5, 3.5);
+    // prediction_scene->addObstacle(o1);
+    // prediction_scene->addObstacle(o2);
+    for (auto &pedestrian : pedestrians_)
+    {
+        Ped::Tagent *a = pedsim_prediction_manager_->AddAgent(pedestrian->GetPosition()(0), pedestrian->GetPosition()(1),
+                                                              pedestrian->goal_.x, pedestrian->goal_.y);
+
+        // Ped::Tagent *a = new Ped::Tagent();
+        // Ped::Twaypoint *w1 = new Ped::Twaypoint(pedestrian->GetPosition()(0), pedestrian->GetPosition()(1), 5.);
+        // Ped::Twaypoint *w2 = new Ped::Twaypoint(pedestrian->goal_.x, pedestrian->goal_.y, 5.);
+        // a->addWaypoint(w1);
+        // a->addWaypoint(w2);
+
+        // a->setPosition(pedestrian->GetPosition()(0), pedestrian->GetPosition()(1), 0.);
+        a->setVelocity(pedestrian->GetSpeed()(0), pedestrian->GetSpeed()(1), 0.);
+        a->setVmax(pedestrian->velocity_);
+        // a->setRadius(CONFIG.ped_radius_);
+        // a->setType(0);
+        // prediction_scene->addAgent(a);
+    }
+
+    // Idea: Copy the pedestrian and step all of them one by one recording their positions then
+    // std::vector<std::unique_ptr<Pedestrian>> copied_pedestrians;
+    std::vector<lmpcc_msgs::gaussian> gaussian_msgs;
+
+    // RobotState copied_robot = robot_state_;
+
+    size_t id = 0;
+    for (auto &ped : pedsim_prediction_manager_->GetAllAgents())
+    {
+        if (ped->gettype() == (int)AgentType::ROBOT)
+            continue;
+        // SocialForcesPedestrian &cur_ped = *((SocialForcesPedestrian *)(ped.get()));
+
+        // Copy the pedestrian here
+        // copied_pedestrians.push_back(nullptr);
+        // copied_pedestrians.back().reset(new SocialForcesPedestrian(cur_ped));
+        // SocialForcesPedestrian *copied_ped = (SocialForcesPedestrian *)(copied_pedestrians.back().get());
+
+        // copied_ped->LoadOtherPedestrians(&copied_pedestrians); // Link this pedestrian to the copied pedestrians
+        // copied_ped->LoadRobot(&copied_robot);
+
+        lmpcc_msgs::obstacle_gmm gmm_msg;
+        gmm_msg.id = id;
+
+        // Initial position
+        gmm_msg.pose.position.x = ped->getx() - vehicle_frame_.position.x;
+        gmm_msg.pose.position.y = ped->gety() - vehicle_frame_.position.y;
+        gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+
+        prediction_array.obstacles.push_back(gmm_msg);
+
+        gaussian_msgs.emplace_back();
+        id++;
+    }
+
+    for (int k = 0; k < CONFIG.horizon_N_; k++)
+    {
+        // copied_robot.pos += copied_robot.vel * CONFIG.delta_t_; // Update the robot position assuming constant velocity
+        pedsim_prediction_manager_->Update(CONFIG.prediction_step_);
+        id = 0;
+        for (auto &ped : pedsim_prediction_manager_->GetAllAgents())
+        {
+            if (ped->gettype() == (int)AgentType::ROBOT)
+                continue;
+
+            geometry_msgs::PoseStamped pose;
+            pose.pose.position.x = ped->getx();
+            pose.pose.position.y = ped->gety();
+            pose.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+
+            gaussian_msgs[id].mean.poses.push_back(pose);
+
+            // The variance is simply the uncertainty per stage
+            gaussian_msgs[id].major_semiaxis.push_back(CONFIG.process_noise_[0]);
+            gaussian_msgs[id].minor_semiaxis.push_back(CONFIG.process_noise_[1]);
+
+            id++;
+        }
+    }
+
+    id = 0;
+    for (auto &ped : pedsim_prediction_manager_->GetAllAgents())
+    {
+        if (ped->gettype() == (int)AgentType::ROBOT)
+            continue;
+
         prediction_array.obstacles[id].gaussians.push_back(gaussian_msgs[id]);
         prediction_array.obstacles[id].probabilities.push_back(1.0);
         id++;

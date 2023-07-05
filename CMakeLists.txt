@@ -17,7 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   ros_tools
-  pedsim
+  pedsim_original
   lmpcc_msgs
   asr_rapidxml
   roslib
@@ -40,7 +40,7 @@ include_directories(
 # # CATKIN_DEPENDS: catkin_packages dependent projects also need
 # # DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs roscpp std_msgs asr_rapidxml roslib
+  CATKIN_DEPENDS geometry_msgs roscpp std_msgs asr_rapidxml roslib pedsim_original lmpcc_msgs
   INCLUDE_DIRS include include/${PROJECT_NAME}
   LIBRARIES pedestrian_simulator
 )
@@ -60,6 +60,7 @@ include_directories(
 # # Declare a C++ library
 add_library(pedestrian_simulator
   src/pedestrian_simulator.cpp
+  src/pedsim_manager.cpp
   src/xml_reader.cpp
   src/spawn_randomizer.cpp
   src/configuration.cpp
