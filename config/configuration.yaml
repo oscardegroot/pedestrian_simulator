@@ -34,7 +34,7 @@ pedestrian_simulator:
     # scenario: corridor/1_middle.xml
     # scenario: corridor/4_both_ways.xml
     # GMPCC
-    update_frequency: 20 # JACKAL   NOTE THIS SETTING
+    update_frequency: 50 # JACKAL   NOTE THIS SETTING
     prediction_step: 0.2 #0.05 # JACKAL
     horizon: 30 # JACKAL
     # ICRA GUIDANCE

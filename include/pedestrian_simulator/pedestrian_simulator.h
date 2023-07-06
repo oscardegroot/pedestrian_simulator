@@ -51,7 +51,9 @@ public:
     void PublishBinomialPredictions();
     void PublishSocialPredictions();
     void PublishDebugVisuals();
+    void VisualizeRobot();
     void VisualizePedestrians();
+    void VisualizeStaticObstacles();
 
 private:
     ros::Timer timer_;
@@ -76,6 +78,8 @@ private:
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
 
     std::unique_ptr<RosTools::ROSMarkerPublisher> debug_visuals_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> static_obstacle_visuals_;
+    std::unique_ptr<RosTools::ROSMarkerPublisher> robot_visual_;
 
     geometry_msgs::Pose vehicle_frame_; /* For pretending that the vehicle is moving! */
 

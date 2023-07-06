@@ -25,7 +25,9 @@ PedestrianSimulator::PedestrianSimulator()
 
     Config::Get().Init();
 
-    debug_visuals_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50)); // 3500)); // was 1800
+    debug_visuals_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50));
+    static_obstacle_visuals_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/static_obstacles", "map", 50));
+    robot_visual_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/robot", "map", 5));
 
     ped_model_visuals_ = nh_.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
 
@@ -126,7 +128,7 @@ void PedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 void PedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
     robot_state_ = RobotState(msg);
-    robot_state_.pos += robot_state_.vel * CONFIG.delta_t_; // Usually the robot state is lagging one time step behind
+    // robot_state_.pos += robot_state_.vel * CONFIG.delta_t_; // Usually the robot state is lagging one time step behind
 
     if (pedsim_manager_)
     {
@@ -245,7 +247,9 @@ void PedestrianSimulator::Poll(const ros::TimerEvent &event)
     Publish();
     PublishPredictions();
     PublishDebugVisuals();
+    VisualizeRobot();
     VisualizePedestrians();
+    VisualizeStaticObstacles();
 }
 
 void PedestrianSimulator::Publish()
@@ -369,12 +373,10 @@ void PedestrianSimulator::PublishPredictions()
         }
     }
 
-    id = 0;
-    for (auto &ped : copied_pedestrians)
+    for (size_t id = 0; id < copied_pedestrians.size(); id++)
     {
         prediction_array.obstacles[id].gaussians.push_back(gaussian_msgs[id]);
         prediction_array.obstacles[id].probabilities.push_back(1.0);
-        id++;
     }
     prediction_array.header.stamp = ros::Time::now();
     obstacle_trajectory_prediction_pub_.publish(prediction_array);
@@ -701,6 +703,23 @@ void PedestrianSimulator::PublishDebugVisuals()
     debug_visuals_->publish();
 }
 
+void PedestrianSimulator::VisualizeRobot()
+{
+    if (pedsim_manager_->GetRobot() == nullptr)
+        return;
+
+    RosTools::ROSPointMarker &obstacle_marker = robot_visual_->getNewPointMarker("CYLINDER");
+    obstacle_marker.setColorInt(0, 1.);
+    obstacle_marker.setScale(pedsim_manager_->GetRobot()->getradius() * 2,
+                             pedsim_manager_->GetRobot()->getradius() * 2,
+                             0.1);
+
+    obstacle_marker.addPointMarker(Eigen::Vector3d(pedsim_manager_->GetRobot()->getx(),
+                                                   pedsim_manager_->GetRobot()->gety(), 0.05));
+
+    robot_visual_->publish();
+}
+
 void PedestrianSimulator::VisualizePedestrians()
 {
 
@@ -752,4 +771,23 @@ void PedestrianSimulator::VisualizePedestrians()
         cur_id++;
     }
     ped_model_visuals_.publish(markers);
+}
+
+void PedestrianSimulator::VisualizeStaticObstacles()
+{
+    RosTools::ROSPointMarker &obstacle_marker = static_obstacle_visuals_->getNewPointMarker("Cube");
+    double min_dim = 0.5;
+    obstacle_marker.setColor(0.1, 0.1, 0.1, 0.8);
+
+    for (auto &obstacle : xml_reader_->static_obstacles_)
+    {
+        obstacle_marker.setScale(std::max(min_dim, obstacle.max_x - obstacle.min_x),
+                                 std::max(min_dim, obstacle.max_y - obstacle.min_y),
+                                 2.);
+        obstacle_marker.addPointMarker(Eigen::Vector3d((obstacle.max_x + obstacle.min_x) / 2.,
+                                                       (obstacle.max_y + obstacle.min_y) / 2.,
+                                                       1.));
+    }
+
+    static_obstacle_visuals_->publish();
 }
