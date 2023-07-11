@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="social"/>
+
+<!--Obstacles-->
+<obstacle x1="-6.5" y1="-3.5" x2="39.5" y2="-3.5"/>
+<obstacle x1="-6.5" y1="3.5" x2="39.5" y2="3.5"/>
+
+<!-- Doors -->
+<!-- <obstacle x1="10" y1="-3.5" x2="10" y2="-1.5"/> -->
+<!-- <obstacle x1="10" y1="1.5" x2="10" y2="3.5"/> -->
+
+<random>
+    <range_x min="4" max="12"/>
+    <range_y min="-3" max="3"/>
+    <range_v min="1.14" max="1.66"/>
+    <goal_offset x="30" y="0"/>   <!-- Inflates where the goal can be -->
+</random>
+<random>
+    <range_x min="20" max="35"/>
+    <range_y min="-3" max="3"/>
+    <range_v min="1.14" max="1.66"/>
+    <!-- <goal_inflation value="1.0"/>    -->
+    <goal_offset x="-30" y="0"/>   <!-- Inflates where the goal can be -->
+</random>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
