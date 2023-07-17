@@ -84,12 +84,12 @@ void SocialForcesPedestrian::Reset()
     velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
 
     goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
-    for (int i = 0; start_.Distance(goal_) < velocity_ * 20. && i < 100; i++) // Make sure the goal is far enough away (20s)
+    for (int i = 0; start_.Distance(goal_) < velocity_ * spawn_randomizer_.GetMinTravelTime() && i < 100; i++) // Make sure the goal is far enough away (20s)
         goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
 
     pedsim_agent_ = new Ped::Tagent();
-    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_.x, start_.y, 5.);
-    Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_.x, goal_.y, 5.);
+    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_.x, start_.y, spawn_randomizer_.GetGoalRange());
+    Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_.x, goal_.y, spawn_randomizer_.GetGoalRange());
     pedsim_agent_->addWaypoint(w1);
     pedsim_agent_->addWaypoint(w2);
 

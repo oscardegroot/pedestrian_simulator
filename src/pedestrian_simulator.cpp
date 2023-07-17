@@ -10,7 +10,6 @@
 #include <pedestrians/waypoint_pedestrian.h>
 
 #include <tf/tf.h>
-#include <derived_object_msgs/ObjectArray.h>
 #include <derived_object_msgs/Object.h>
 #include <lmpcc_msgs/obstacle_array.h>
 #include <lmpcc_msgs/obstacle_gmm.h>
@@ -18,6 +17,7 @@
 
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
+#include <sensor_msgs/Joy.h>
 
 PedestrianSimulator::PedestrianSimulator()
 {
@@ -102,8 +102,17 @@ PedestrianSimulator::PedestrianSimulator()
     {
         carla_position_pub_.push_back(nh_.advertise<geometry_msgs::Pose>("/carla/simulated_peds/" + std::to_string(ped_id) + "/position", 1));
         carla_velocity_pub_.push_back(nh_.advertise<geometry_msgs::Twist>("/carla/simulated_peds/" + std::to_string(ped_id) + "/velocity", 1));
+
+        if (CONFIG.pretend_to_be_optitrack_)
+            optitrack_publishers_.push_back(nh_.advertise<geometry_msgs::PoseStamped>("mocap_obstacle" + std::to_string(ped_id + 1) + "/pose", 1));
     }
 
+    // The robot state publisher
+    if (CONFIG.pretend_to_be_optitrack_)
+    {
+        optitrack_publishers_.push_back(nh_.advertise<geometry_msgs::PoseStamped>("Robot_1/pose", 1));
+        joystick_publisher_ = nh_.advertise<sensor_msgs::Joy>("/bluetooth_teleop/joy", 1); // Disable the deadman switch
+    }
     // Pick a path
     Reset();
 
@@ -136,6 +145,17 @@ void PedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::C
         pedsim_manager_->SetRobotVelocity(robot_state_.vel(0), robot_state_.vel(1));
     }
     // pedsim_robot_->setPosition(robot_state_.pos(0), robot_state_.pos(1), 0.);
+
+    if (CONFIG.pretend_to_be_optitrack_)
+    {
+        optitrack_publishers_.back().publish(msg); // Forward the message on the optitrack topic
+
+        sensor_msgs::Joy joystick_msg;
+        joystick_msg.axes.resize(3);
+        joystick_msg.axes[2] = -1.;
+        joystick_msg.header.stamp = ros::Time::now();
+        joystick_publisher_.publish(joystick_msg);
+    }
 }
 
 void PedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)
@@ -283,6 +303,21 @@ void PedestrianSimulator::Publish()
     ped_array_msg.header.frame_id = "map";
 
     obstacle_pub_.publish(ped_array_msg);
+
+    if (CONFIG.pretend_to_be_optitrack_)
+        PublishOptitrackPedestrians(ped_array_msg);
+}
+
+void PedestrianSimulator::PublishOptitrackPedestrians(const derived_object_msgs::ObjectArray &ped_msg)
+{
+    geometry_msgs::PoseStamped optitrack_msg;
+    optitrack_msg.header.stamp = ped_msg.header.stamp;
+    optitrack_msg.header.frame_id = ped_msg.header.frame_id;
+    for (size_t ped_id = 0; ped_id < ped_msg.objects.size(); ped_id++)
+    {
+        optitrack_msg.pose = ped_msg.objects[ped_id].pose;    // Update the pose
+        optitrack_publishers_[ped_id].publish(optitrack_msg); // Send the message over this publisher
+    }
 }
 
 void PedestrianSimulator::PublishPredictions()

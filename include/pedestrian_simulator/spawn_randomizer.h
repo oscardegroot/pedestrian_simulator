@@ -36,6 +36,9 @@ public:
     Waypoint GenerateGoal(RosTools::RandomGenerator *random_generator);
     double GenerateVelocity(RosTools::RandomGenerator *random_generator);
 
+    double GetGoalRange() const { return goal_range_; }
+    double GetMinTravelTime() const { return min_travel_time_; }
+
 public:
     void ReadFrom(rapidxml::xml_node<> *tag);
 
@@ -43,6 +46,8 @@ private:
     Range range_x_, range_y_, range_v_;
     Waypoint goal_offset_;
     double goal_inflation_ = 1.;
+    double goal_range_;
+    double min_travel_time_;
 
     void ReadRange(rapidxml::xml_node<> *tag, const std::string &&name, Range &range);
 };

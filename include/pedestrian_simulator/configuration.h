@@ -46,6 +46,7 @@ public:
   bool debug_output_;
   double update_frequency_;
   double delta_t_;
+  bool pretend_to_be_optitrack_;
 
   Eigen::Matrix2d origin_R_;
 

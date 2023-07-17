@@ -1,6 +1,5 @@
 #include <pedestrian_simulator/spawn_randomizer.h>
 
-
 double Range::GenerateRandom(RosTools::RandomGenerator *random_generator)
 {
     return min + random_generator->Double() * (max - min);
@@ -56,6 +55,18 @@ void SpawnRandomizer::ReadFrom(rapidxml::xml_node<> *tag)
         goal_offset_ = Waypoint(atof(goal_offset_tag->first_attribute("x")->value()),
                                 atof(goal_offset_tag->first_attribute("y")->value()));
     }
+
+    auto *goal_range_tag = tag->first_node("goal_range");
+    if (goal_range_tag)
+        goal_range_ = atof(goal_range_tag->first_attribute("value")->value());
+    else
+        goal_range_ = 5.;
+
+    auto *travel_time_tag = tag->first_node("travel_time");
+    if (travel_time_tag)
+        min_travel_time_ = atof(travel_time_tag->first_attribute("value")->value());
+    else
+        min_travel_time_ = 5.;
 
     // The goal inflation tag enlarges the region that the goal can be in
     auto *goal_inflation = tag->first_node("goal_inflation");

@@ -11,6 +11,7 @@
 #include <geometry_msgs/Pose.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Float64.h>
+#include <derived_object_msgs/ObjectArray.h>
 
 #include <vector>
 #include <ros/ros.h>
@@ -43,6 +44,8 @@ public:
 
     void Publish();
 
+    void PublishOptitrackPedestrians(const derived_object_msgs::ObjectArray &ped_msg);
+
     /** @brief Trajectory predictions for deterministic models (e.g., social forces) */
     void PublishPredictions();
     void PublishGaussianPredictions();
@@ -68,7 +71,9 @@ private:
 
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
     ros::Publisher ped_model_visuals_;
+    ros::Publisher joystick_publisher_;
 
+    std::vector<ros::Publisher> optitrack_publishers_;
     std::vector<ros::Publisher> carla_position_pub_, carla_velocity_pub_;
 
     ros::Subscriber reset_sub_, vehicle_speed_sub_, path_origin_sub_;
