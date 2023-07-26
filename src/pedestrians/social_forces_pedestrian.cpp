@@ -53,26 +53,13 @@ void SocialForcesPedestrian::PreUpdateComputations(const double dt)
 
 void SocialForcesPedestrian::Update(const double dt)
 {
-    Eigen::Vector2d force(0., 0.); // Initialize the force
-
-    position_.x = pedsim_agent_->getx();
-    position_.y = pedsim_agent_->gety();
-    twist_.linear.x = pedsim_agent_->getVelocity().x;
-    twist_.linear.y = pedsim_agent_->getVelocity().y;
-    return;
-
-    // Add a goal force
-    AddGoalForce(force);
-    force += other_ped_force_;
-
-    force += GetPedRepulsiveForce(robot_state_->pos, robot_state_->vel, dt); // Influence of the robot
-
-    // Apply the force to update the velocity
-    twist_.linear.x += force(0) * dt;
-    twist_.linear.y += force(1) * dt;
-
-    // Update the position using the velocity
-    UpdatePosition(twist_.linear.x, twist_.linear.y, dt);
+    if (!CONFIG.static_)
+    {
+        position_.x = pedsim_agent_->getx();
+        position_.y = pedsim_agent_->gety();
+        twist_.linear.x = pedsim_agent_->getVelocity().x;
+        twist_.linear.y = pedsim_agent_->getVelocity().y;
+    }
 }
 
 void SocialForcesPedestrian::Reset()

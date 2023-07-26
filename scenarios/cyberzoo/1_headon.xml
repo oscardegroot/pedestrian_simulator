@@ -12,8 +12,8 @@
 <!-- <obstacle x1="10" y1="1.5" x2="10" y2="3.5"/> -->
 
 <random>
-    <range_x min="0." max="0.0"/>
-    <range_y min="7." max="7."/>
+    <range_x min="5." max="5"/>
+    <range_y min="0." max="0."/>
     <range_v min="1.14" max="1.66"/>
     <goal_range value="0.5"/>
     <goal_offset x="0" y="-10"/>   <!-- Inflates where the goal can be -->
