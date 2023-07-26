@@ -71,6 +71,11 @@ void XMLReader::ReadXML(const std::string &file)
         if (std::string(tag->first_attribute("type")->value()).compare("static") == 0)
             CONFIG.static_ = true;
 
+        if (std::string(tag->first_attribute("type")->value()).compare("uncertainty") == 0)
+        {
+            double noise = atof(tag->first_attribute("value")->value());
+            CONFIG.process_noise_ = std::vector<double>({noise, noise});
+        }
         if (std::string(tag->first_attribute("type")->value()).compare("velocity") == 0)
             CONFIG.ped_velocity_ = atof(tag->first_attribute("value")->value());
     }

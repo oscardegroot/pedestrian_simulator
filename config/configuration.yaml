@@ -4,7 +4,8 @@ pedestrian_simulator:
     debug_output: false
     pretend_to_be_optitrack: false
     # scenario: random/16_straight.xml
-    scenario: random_social/12_corridor.xml
+    # scenario: random_social/12_straight.xml
+    scenario: random_social/12_uncertain.xml
     # scenario: cyberzoo/1_headon.xml
     # scenario: cyberzoo/8_random.xml
     # GMPCC

@@ -59,6 +59,22 @@ void SocialForcesPedestrian::Update(const double dt)
         position_.y = pedsim_agent_->gety();
         twist_.linear.x = pedsim_agent_->getVelocity().x;
         twist_.linear.y = pedsim_agent_->getVelocity().y;
+
+        if (CONFIG.process_noise_.size() > 1 && CONFIG.process_noise_[0] > 1e-4) // If there is noise
+        {
+            double angle = std::atan2(twist_.linear.y, twist_.linear.x);
+
+            Eigen::Vector2d noise = random_generator_->BivariateGaussian(Eigen::Vector2d(0., 0.),
+                                                                         CONFIG.process_noise_[0],
+                                                                         CONFIG.process_noise_[1],
+                                                                         angle);
+            // twist_.linear.x = pedsim_agent_->getVelocity().x + noise(0);
+            // twist_.linear.y = pedsim_agent_->getVelocity().y + noise(1);
+            position_.x = pedsim_agent_->getx() + noise(0) * CONFIG.delta_t_;
+            position_.y = pedsim_agent_->gety() + noise(1) * CONFIG.delta_t_;
+
+            pedsim_agent_->setPosition(position_.x, position_.y, pedsim_agent_->getz());
+        }
     }
 }
 

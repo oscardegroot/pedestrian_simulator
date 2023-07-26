@@ -425,28 +425,16 @@ void PedestrianSimulator::PublishSocialPredictions()
 
     // Build up the scene
     pedsim_prediction_manager_->Reset();
-    // Ped::Tscene *prediction_scene = new Ped::Tscene(-200, -200, 400, 400);
-    // Ped::Tobstacle *o1 = new Ped::Tobstacle(-6.5, -3.5, 39.5, -3.5);
-    // Ped::Tobstacle *o2 = new Ped::Tobstacle(-6.5, 3.5, 39.5, 3.5);
-    // prediction_scene->addObstacle(o1);
-    // prediction_scene->addObstacle(o2);
+
     for (auto &pedestrian : pedestrians_)
     {
-        Ped::Tagent *a = pedsim_prediction_manager_->AddAgent(pedestrian->GetPosition()(0), pedestrian->GetPosition()(1),
-                                                              pedestrian->goal_.x, pedestrian->goal_.y);
+        Ped::Tagent *a = pedsim_prediction_manager_->AddAgent(pedestrian->GetPosition()(0),
+                                                              pedestrian->GetPosition()(1),
+                                                              pedestrian->goal_.x,
+                                                              pedestrian->goal_.y);
 
-        // Ped::Tagent *a = new Ped::Tagent();
-        // Ped::Twaypoint *w1 = new Ped::Twaypoint(pedestrian->GetPosition()(0), pedestrian->GetPosition()(1), 5.);
-        // Ped::Twaypoint *w2 = new Ped::Twaypoint(pedestrian->goal_.x, pedestrian->goal_.y, 5.);
-        // a->addWaypoint(w1);
-        // a->addWaypoint(w2);
-
-        // a->setPosition(pedestrian->GetPosition()(0), pedestrian->GetPosition()(1), 0.);
         a->setVelocity(pedestrian->GetSpeed()(0), pedestrian->GetSpeed()(1), 0.);
         a->setVmax(pedestrian->velocity_);
-        // a->setRadius(CONFIG.ped_radius_);
-        // a->setType(0);
-        // prediction_scene->addAgent(a);
     }
 
     // Idea: Copy the pedestrian and step all of them one by one recording their positions then
@@ -460,15 +448,6 @@ void PedestrianSimulator::PublishSocialPredictions()
     {
         if (ped->gettype() == (int)AgentType::ROBOT)
             continue;
-        // SocialForcesPedestrian &cur_ped = *((SocialForcesPedestrian *)(ped.get()));
-
-        // Copy the pedestrian here
-        // copied_pedestrians.push_back(nullptr);
-        // copied_pedestrians.back().reset(new SocialForcesPedestrian(cur_ped));
-        // SocialForcesPedestrian *copied_ped = (SocialForcesPedestrian *)(copied_pedestrians.back().get());
-
-        // copied_ped->LoadOtherPedestrians(&copied_pedestrians); // Link this pedestrian to the copied pedestrians
-        // copied_ped->LoadRobot(&copied_robot);
 
         lmpcc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
