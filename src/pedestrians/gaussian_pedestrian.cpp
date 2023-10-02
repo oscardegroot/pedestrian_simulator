@@ -5,7 +5,10 @@
 GaussianPedestrian::GaussianPedestrian(const Waypoint &start, double velocity, const Waypoint &end, int seed_mp)
     : Pedestrian(start, velocity), seed_mp_(seed_mp)
 {
+
     cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+    if (CONFIG.single_scenario_ != -1)
+        cur_seed_ += CONFIG.single_scenario_;
     goal_ = end;
     Reset();
 
@@ -35,11 +38,13 @@ void GaussianPedestrian::Update(const double dt)
         noisy_twist_.linear.y += process_noise_realization(1);
         UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y, dt);
     }
+
     // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;
 }
 
 void GaussianPedestrian::Reset()
 {
+
     cur_seed_++; // We increase the seed after every simulation, to keep the behavior the same during each simulation
     random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 

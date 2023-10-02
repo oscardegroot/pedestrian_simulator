@@ -53,6 +53,7 @@ PedestrianSimulator::PedestrianSimulator()
         xml_reader_->GetPedestrians(pedestrians_);
         break;
     case PedestrianType::GAUSSIAN:
+
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
             pedestrians_.emplace_back();
@@ -148,7 +149,9 @@ void PedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::C
 
     if (CONFIG.pretend_to_be_optitrack_)
     {
-        optitrack_publishers_.back().publish(msg); // Forward the message on the optitrack topic
+        geometry_msgs::PoseStamped robot_state_out_msg = *msg;
+        robot_state_out_msg.pose.orientation = RosTools::angleToQuaternion(robot_state_out_msg.pose.orientation.z);
+        optitrack_publishers_.back().publish(robot_state_out_msg); // Forward the message on the optitrack topic
 
         sensor_msgs::Joy joystick_msg;
         joystick_msg.axes.resize(3);
@@ -266,9 +269,13 @@ void PedestrianSimulator::Poll(const ros::TimerEvent &event)
 
     Publish();
     PublishPredictions();
+
     PublishDebugVisuals();
+
     VisualizeRobot();
+
     VisualizePedestrians();
+
     VisualizeStaticObstacles();
 }
 
@@ -326,6 +333,7 @@ void PedestrianSimulator::PublishPredictions()
     switch (CONFIG.ped_type_)
     {
     case PedestrianType::GAUSSIAN:
+
         PublishGaussianPredictions();
         return;
     case PedestrianType::BINOMIAL:
@@ -510,6 +518,7 @@ void PedestrianSimulator::PublishGaussianPredictions()
     unsigned int id = 0;
     for (auto &ped : pedestrians_)
     {
+
         lmpcc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
@@ -719,7 +728,7 @@ void PedestrianSimulator::PublishDebugVisuals()
 
 void PedestrianSimulator::VisualizeRobot()
 {
-    if (pedsim_manager_->GetRobot() == nullptr)
+    if ((!pedsim_manager_) || pedsim_manager_->GetRobot() == nullptr)
         return;
 
     RosTools::ROSPointMarker &obstacle_marker = robot_visual_->getNewPointMarker("CYLINDER");

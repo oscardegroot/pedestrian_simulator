@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<tag type="static" />
+<tag type="velocity" value="1.4"/>
+<random>
+    <range_x min="4" max="10"/>
+    <range_y min="-3" max="3"/>
+    <range_v min="1.14" max="1.66"/>
+</random>
+<!-- 1 -->
+<!-- <pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian> -->
+<pedestrian>
+    <start x="5.5" y="-4.0"/>
+    <path>
+        <point x="5.5" y="0.5"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="3.5" y="3.0"/>
+    <path>
+        <point x="3.5" y="-0.5"/>
+    </path>
+</pedestrian>

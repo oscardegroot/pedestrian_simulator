@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="social"/>
+
+<!-- Obstacles -->
+<!-- Correct measures for cyberzoo space -->
+<!-- <obstacle x1="-2.5" y1="-4" x2="3.7" y2="-4"/>
+<obstacle x1="3.7" y1="-4" x2="3.7" y2="3.5"/>
+<obstacle x1="3.7" y1="3.5" x2="-2.5" y2="3.5"/>
+<obstacle x1="-2.5" y1="3.5" x2="-2.5" y2="-4"/> -->
+
+<!-- Doors -->
+<!-- <obstacle x1="10" y1="-3.5" x2="10" y2="-1.5"/> -->
+<!-- <obstacle x1="10" y1="1.5" x2="10" y2="3.5"/> -->
+
+<!-- <random>
+    <range_x min="-2.5" max="-0.5"/>
+    <range_y min="-4" max="-2"/>
+    <range_v min="1.14" max="1.66"/>
+    <goal_range value="0.5"/>
+    <goal_offset x="6.1" y="7.4"/>
+    <min_travel_time value="5.0"/>
+</random>
+<random>
+    <range_x min="1.7" max="3.7"/>
+    <range_y min="1.5" max="3.5"/>
+    <range_v min="1.14" max="1.66"/>
+    <goal_range value="0.5"/>
+    <goal_offset x="-6.1" y="-7.4"/>
+    <min_travel_time value="5.0"/>
+</random> -->
+
+<random>
+    <range_x min="-5.5" max="-3.5"/>
+    <range_y min="-4" max="-2"/>
+    <range_v min="1.14" max="1.66"/>
+    <goal_range value="0.5"/>
+    <goal_offset x="8.1" y="7.4"/>
+    <min_travel_time value="5.0"/>
+</random>
+<random>
+    <range_x min="5.7" max="7.7"/>
+    <range_y min="1.5" max="3.5"/>
+    <range_v min="1.14" max="1.66"/>
+    <goal_range value="0.5"/>
+    <goal_offset x="-8.1" y="-7.4"/>
+    <min_travel_time value="5.0"/>
+</random>
+
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<!-- <pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian> -->

@@ -5,9 +5,9 @@
 RandomGaussianPedestrian::RandomGaussianPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp)
     : GaussianPedestrian(Waypoint(0., 0.), 0., Waypoint(0., 0.), seed_mp)
 {
-    cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
-    if (CONFIG.single_scenario_ != -1)
-        cur_seed_ += CONFIG.single_scenario_;
+    // cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+    // if (CONFIG.single_scenario_ != -1)
+    //     cur_seed_ += CONFIG.single_scenario_;
 
     spawn_randomizer_ = spawn_randomizer;
 }
