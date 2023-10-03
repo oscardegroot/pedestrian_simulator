@@ -22,30 +22,8 @@ namespace pedestrian_simulator
         : rclcpp::Node("pedestrian_simulator", options)
     {
         RCLCPP_INFO(this->get_logger(), "Initializing");
-        RCLCPP_INFO(this->get_logger(), "Initializing Test2");
-
-        // RCLCPP_INFO(node->get_logger(), "Initializing2");
-
-        // auto parameters = this->list_parameters({}, 3); // std::make_shared<rclcpp::parameter::ParameterClient>(node);
-        // RCLCPP_INFO(this->get_logger(), "Initializing3");
-        // // Print the parameter names and values
-        // for (const auto &parameter : parameters.names)
-        // {
-        //     RCLCPP_INFO(this->get_logger(), "Parameter Name: %s", parameter.c_str());
-        //     // RCLCPP_INFO(node->get_logger(), "Parameter Name: %s, Value: %s",
-        //     // parameter.c_str(), node->get_parameter(parameter).as_string());
-        // }
-        // // RCLCPP_INFO(this->get_logger(), "Initializing4");
-
-        // // RCLCPP_INFO(this->get_logger(), this->get_parameter("test").value_to_string().c_str());
-        // // RCLCPP_INFO(this->get_logger(), "Initializing5");
-
-        // To enable the pointer to work
-        // auto ptr = std::shared_ptr<PedestrianSimulator>(this, [](PedestrianSimulator *) {});
-        // node_ = shared_from_this();
 
         Config::Get().Init(this);
-        RCLCPP_INFO(this->get_logger(), "Initializing2");
 
         debug_visuals_.reset(new RosTools::ROSMarkerPublisher(this, "pedestrian_simulator/debug", "map", 50));
         static_obstacle_visuals_.reset(new RosTools::ROSMarkerPublisher(this, "pedestrian_simulator/static_obstacles", "map", 50));
@@ -60,7 +38,7 @@ namespace pedestrian_simulator
         reset_sub_ = this->create_subscription<std_msgs::msg::Empty>(
             "/lmpcc/reset_environment", 1,
             std::bind(&PedestrianSimulator::ResetCallback, this, std::placeholders::_1));
-        // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
+
         robot_state_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
             "/robot_state", 1,
             std::bind(&PedestrianSimulator::RobotStateCallback, this, std::placeholders::_1));
@@ -72,14 +50,13 @@ namespace pedestrian_simulator
         setting_dt_sub_ = this->create_subscription<std_msgs::msg::Float64>(
             "/pedestrian_simulator/dt", 1,
             std::bind(&PedestrianSimulator::SettingdtCallback, this, std::placeholders::_1));
+
+        // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
         // setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
-        RCLCPP_INFO(this->get_logger(), "Initializing4");
 
         xml_reader_.reset(new XMLReader());
-        ROSTOOLS_HOOK;
 
         random_generator_ = RosTools::RandomGenerator(CONFIG.seed_);
-        ROSTOOLS_HOOK;
 
         // Read pedestrian data
         switch (CONFIG.ped_type_)
@@ -111,13 +88,10 @@ namespace pedestrian_simulator
             }
             break;
         case PedestrianType::SOCIAL:
-            ROSTOOLS_HOOK;
 
             pedsim_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
-            ROSTOOLS_HOOK;
 
             pedsim_prediction_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
-            ROSTOOLS_HOOK;
 
             RCLCPP_INFO(this->get_logger(), "Pedestrian Simulator: Spawning social forces pedestrian");
             for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
@@ -155,7 +129,6 @@ namespace pedestrian_simulator
         // joystick_publisher_ = nh_.advertise<sensor_msgs::Joy>("/bluetooth_teleop/joy", 1); // Disable the deadman switch
         // }
         // Pick a path
-        ROSTOOLS_HOOK;
 
         Reset();
 
@@ -307,17 +280,14 @@ namespace pedestrian_simulator
         if (CONFIG.debug_output_)
             RCLCPP_INFO(this->get_logger(), "PedestrianSimulator: Update");
 
-        // std::cout << "preupdate\n";
         for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
             ped->PreUpdateComputations();
 
-        // std::cout << "update\n";
         for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
         {
             ped->Update();
             // ped->MoveFrame(vehicle_speed_);
         }
-        // std::cout << "done\n";
 
         Publish();
         PublishPredictions();

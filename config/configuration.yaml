@@ -24,3 +24,5 @@
         constant_velocity_predictions: false # If "false" will produce predictions that follow the pedestrian model
       binomial:
         p: 0.025 #0.01 # 0.05
+      social_forces:
+        strength: 10.

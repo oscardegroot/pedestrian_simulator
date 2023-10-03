@@ -26,20 +26,6 @@ find_package(pedsim_original REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
 
-
-# set(PROJECT_DEPENDENCIES 
-#   rclcpp
-#   rclcpp_components
-#   std_msgs
-#   nav_msgs
-#   derived_object_msgs
-#   lmpcc_msgs
-#   geometry_msgs
-#   ros_tools
-#   pedsim_original
-#   asr_rapidxml
-# )
-
 ## BUILD ###
 include_directories(
   include/${PROJECT_NAME}
@@ -95,23 +81,13 @@ install(
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
 )
-# install(
-#   TARGETS ${PROJECT_NAME}_node
-#   EXPORT export_${PROJECT_NAME}
-#   LIBRARY DESTINATION lib
-#   ARCHIVE DESTINATION lib
-#   RUNTIME DESTINATION bin
-# )
-
-# install(
-#   TARGETS ${PROJECT_NAME}_node
-#   DESTINATION lib/${PROJECT_NAME}
-# )
-
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 
 install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME})
+  
+install(DIRECTORY rviz
   DESTINATION share/${PROJECT_NAME})
 
 ## FINALIZE PACKAGE ##

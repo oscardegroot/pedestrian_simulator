@@ -13,13 +13,10 @@ namespace pedestrian_simulator
 {
     void XMLReader::Read()
     {
-        ROSTOOLS_HOOK;
 
         std::string map_file = RosTools::GetPackagePath("pedestrian_simulator") + "scenarios/" + CONFIG.scenario_file_;
-        ROSTOOLS_HOOK;
 
         auto logger = rclcpp::get_logger("pedestrian_simulator.xml_reader");
-        ROSTOOLS_HOOK;
 
         RCLCPP_INFO_STREAM(logger, "XMLReader: Reading " << map_file << " for pedestrian positions.");
         Read(map_file);
@@ -27,7 +24,6 @@ namespace pedestrian_simulator
 
     void XMLReader::Read(const std::string &file_name)
     {
-        ROSTOOLS_HOOK;
 
         // If the path does not contain the package, add it
         std::string map_file;
@@ -35,8 +31,6 @@ namespace pedestrian_simulator
             map_file = RosTools::GetPackagePath("pedestrian_simulator") + "/" + file_name;
         else
             map_file = file_name;
-
-        ROSTOOLS_HOOK;
 
         // Read the file with the correct file extension
         ReadXML(map_file);
@@ -54,7 +48,6 @@ namespace pedestrian_simulator
 
     void XMLReader::ReadXML(const std::string &file)
     {
-        ROSTOOLS_HOOK;
 
         rapidxml::file<> xmlFile(file.c_str()); // Default template is char
         rapidxml::xml_document<> doc;

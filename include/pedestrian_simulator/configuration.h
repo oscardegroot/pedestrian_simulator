@@ -76,6 +76,8 @@ namespace pedestrian_simulator
 
     bool success_;
 
+    double social_strength_;
+
   public:
     /* Retrieve paramater, if it doesn't exist return false */
     template <class T>
