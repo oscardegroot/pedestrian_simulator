@@ -2,33 +2,35 @@
 #define __WAYPOINT_PEDESTRIAN_H__
 
 #include <pedestrians/pedestrian.h>
-
-/** @deprecated Follow waypoints deterministically */
-class WaypointPedestrian : public Pedestrian
+namespace pedestrian_simulator
 {
-public:
-    WaypointPedestrian(const Waypoint &start, double velocity);
+    /** @deprecated Follow waypoints deterministically */
+    class WaypointPedestrian : public Pedestrian
+    {
+    public:
+        WaypointPedestrian(const Waypoint &start, double velocity);
 
-public:
-    unsigned int current_path_id_, current_waypoint_id_;
-    std::vector<Path> paths_;
+    public:
+        unsigned int current_path_id_, current_waypoint_id_;
+        std::vector<Path> paths_;
 
-    void Reset() override;
+        void Reset() override;
 
-    void Update() override;
+        void Update() override;
 
-    // Set the waypoint to the closest one
-    bool FindClosestWaypoint();
+        // Set the waypoint to the closest one
+        bool FindClosestWaypoint();
 
-    void PickPath();
+        void PickPath();
 
-    bool HasReachedWaypoint();
+        bool HasReachedWaypoint();
 
-    Waypoint &GetCurrentWaypoint();
+        Waypoint &GetCurrentWaypoint();
 
-protected:
-    bool done_;
+    protected:
+        bool done_;
 
-    RosTools::RandomGenerator random_generator;
+        RosTools::RandomGenerator random_generator;
+    };
 };
 #endif // __WAYPOINT_PEDESTRIAN_H__

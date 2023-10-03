@@ -1,85 +1,87 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
-#include <geometry_msgs/Pose.h>
-#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/msg/pose.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <Eigen/Dense>
 #include <ros_tools/helpers.h>
 
 #include <vector>
 
-struct Waypoint
+namespace pedestrian_simulator
 {
-    double x, y;
-    double og_x, og_y;
-
-    Waypoint(){};
-
-    Waypoint(double x, double y)
-        : x(x), y(y), og_x(x), og_y(y){};
-
-    double Distance(Waypoint &other)
+    struct Waypoint
     {
-        return std::sqrt(std::pow(other.x - x, 2) + std::pow(other.y - y, 2));
-    }
+        double x, y;
+        double og_x, og_y;
 
-    double Angle(Waypoint &other)
+        Waypoint(){};
+
+        Waypoint(double x, double y)
+            : x(x), y(y), og_x(x), og_y(y){};
+
+        double Distance(Waypoint &other)
+        {
+            return std::sqrt(std::pow(other.x - x, 2) + std::pow(other.y - y, 2));
+        }
+
+        double Angle(Waypoint &other)
+        {
+            return std::atan2(other.y - y, other.x - x);
+        }
+
+        Waypoint Translate(const geometry_msgs::msg::Pose &frame)
+        {
+            x -= frame.position.x;
+            y -= frame.position.y;
+            return *this;
+        }
+
+        /** @brief Transform a position to the position of the given frame, rotated with the given angle (in radians) */
+        void Transform(const geometry_msgs::msg::Pose &frame, double angle)
+        {
+            Eigen::Matrix2d R = RosTools::rotationMatrixFromHeading(-angle); // Rotation matrix
+
+            Eigen::Vector2d transform_pos(frame.position.x, frame.position.y); // Frame (x, y)
+            transform_pos = transform_pos + R * Eigen::Vector2d(x, y);         // Frame + rotated position
+
+            x = transform_pos(0); // Save
+            y = transform_pos(1);
+        }
+
+        void UndoTransform(const geometry_msgs::msg::Pose &frame)
+        {
+            x = og_x; // Reset the x, y
+            y = og_y;
+        }
+    };
+    /** @note Simple struct to simplify passing the robot state */
+    struct RobotState
     {
-        return std::atan2(other.y - y, other.x - x);
-    }
+        Eigen::Vector2d pos;
+        Eigen::Vector2d vel;
 
-    Waypoint Translate(const geometry_msgs::Pose &frame)
+        RobotState(){};
+
+        RobotState(const geometry_msgs::msg::PoseStamped::ConstPtr &msg)
+        {
+            pos(0) = msg->pose.position.x;
+            pos(1) = msg->pose.position.y;
+
+            vel(0) = std::cos(msg->pose.orientation.z) * msg->pose.position.z;
+            vel(1) = std::sin(msg->pose.orientation.z) * msg->pose.position.z;
+        }
+    };
+
+    struct StaticObstacle
     {
-        x -= frame.position.x;
-        y -= frame.position.y;
-        return *this;
-    }
+        double min_x, min_y;
+        double max_x, max_y;
 
-    /** @brief Transform a position to the position of the given frame, rotated with the given angle (in radians) */
-    void Transform(const geometry_msgs::Pose &frame, double angle)
-    {
-        Eigen::Matrix2d R = RosTools::rotationMatrixFromHeading(-angle); // Rotation matrix
+        StaticObstacle(double _min_x, double _min_y,
+                       double _max_x, double _max_y) : min_x(_min_x), min_y(_min_y), max_x(_max_x), max_y(_max_y) {}
+    };
 
-        Eigen::Vector2d transform_pos(frame.position.x, frame.position.y); // Frame (x, y)
-        transform_pos = transform_pos + R * Eigen::Vector2d(x, y);         // Frame + rotated position
-
-        x = transform_pos(0); // Save
-        y = transform_pos(1);
-    }
-
-    void UndoTransform(const geometry_msgs::Pose &frame)
-    {
-        x = og_x; // Reset the x, y
-        y = og_y;
-    }
+    typedef std::vector<Waypoint> Path;
 };
-/** @note Simple struct to simplify passing the robot state */
-struct RobotState
-{
-    Eigen::Vector2d pos;
-    Eigen::Vector2d vel;
-
-    RobotState(){};
-
-    RobotState(const geometry_msgs::PoseStamped::ConstPtr &msg)
-    {
-        pos(0) = msg->pose.position.x;
-        pos(1) = msg->pose.position.y;
-
-        vel(0) = std::cos(msg->pose.orientation.z) * msg->pose.position.z;
-        vel(1) = std::sin(msg->pose.orientation.z) * msg->pose.position.z;
-    }
-};
-
-struct StaticObstacle
-{
-    double min_x, min_y;
-    double max_x, max_y;
-
-    StaticObstacle(double _min_x, double _min_y,
-                   double _max_x, double _max_y) : min_x(_min_x), min_y(_min_y), max_x(_max_x), max_y(_max_y) {}
-};
-
-typedef std::vector<Waypoint> Path;
-
 #endif // __TYPES_H__

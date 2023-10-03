@@ -1,63 +1,26 @@
-pedestrian_simulator:
-  static: false
-  node:
-    debug_output: false
-    pretend_to_be_optitrack: false
-    # scenario: safe-horizon/crowded_gaussian.xml
-    # scenario: static/1_middle.xml
-    scenario: random_social/8_corridor.xml
-    # scenario: random_social/12_uncertain.xml
-    # scenario: random_social/4_corridor.xml
-    # scenario: cyberzoo/1_headon.xml
-    # scenario: cyberzoo/5_diagonal.xml
-    # scenario: cyberzoo/5_random.xml
-    # scenario: random/8_straight.xml
-    # PARTITION
-    # update_frequency: 50 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.05 # JACKAL
-    # horizon: 30 # JACKAL
-    # GMPCC
-    update_frequency: 50 # JACKAL   NOTE THIS SETTING
-    prediction_step: 0.2 # JACKAL
-    horizon: 30 # JACKAL
-    # GMPCC
-    # update_frequency: 50 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.2 #0.05 # JACKAL
-    # horizon: 30 # JACKAL
-    # ICRA GUIDANCE
-    # update_frequency: 20 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.05 # JACKAL
-    # horizon: 120 # JACKAL
-    # SIMPLESIM
-    # update_frequency: 10 # Simplesim   NOTE THIS SETTING
-    # prediction_step: 0.2 #0.05 # JACKAL
-    # horizon: 30 # JACKAL
-    # update_frequency: 10 # PARTITION
-    # prediction_step: 0.1 #PARTITION
-    # horizon: 30 # PARTITION
-    # ICRA Settings
-    # update_frequency: 20
-    # prediction_step: 0.05
-    # horizon: 120
-    use_path_origin: false
-  pedestrians:
-    seed: 5  # > 0,  -1 = random!
-    single_scenario: -1 # > 0 = run the scenario with this index | -1 = not a single scenario
-    # single_scenario: 20 # > 0 = run the scenario with this index | -1 = not a single scenario
-    type: gaussian # Only used if it is not in the scenario file
-    # process_noise:  [.8, .8] # Excessive
-    # process_noise:  [.3, .3] # Safe-Horizon
-    process_noise: [0.0, 0.0] # Deterministic
-    collision_free_spawn: true
-    interaction: true
-    constant_velocity_predictions: false # If "false" will produce predictions that follow the pedestrian model
-  binomial:
-    p: 0.025 #0.01 # 0.05
-  social_forces:
-    # strength: 5.0 #21.0 #3.0
-    # decay: 1.5 #0.3 # 0.5 # Larger means less rapid decay e^(-b/B)
-    # line_of_sight: 0.7 #0.7 # Between 0 - 1
-    strength: 10.
-    # strength: 4.3
-    decay: 1.07
-    line_of_sight: 0.7
+/**:
+  ros__parameters:
+    pedestrian_simulator:
+      static: false
+      node:
+        debug_output: false
+        pretend_to_be_optitrack: false
+        # scenario: static/1_middle.xml
+        scenario: "random_social/8_corridor.xml"
+        update_frequency: 50. # JACKAL   NOTE THIS SETTING
+        prediction_step: 0.2 # JACKAL
+        horizon: 30. # JACKAL
+        use_path_origin: false
+      pedestrians:
+        seed: 5  # > 0,  -1 = random!
+        single_scenario: -1 # > 0 = run the scenario with this index | -1 = not a single scenario
+        # single_scenario: 20 # > 0 = run the scenario with this index | -1 = not a single scenario
+        type: gaussian # Only used if it is not in the scenario file
+        # process_noise:  [.8, .8] # Excessive
+        # process_noise:  [.3, .3] # Safe-Horizon
+        process_noise: [0.0, 0.0] # Deterministic
+        collision_free_spawn: true
+        interaction: true
+        constant_velocity_predictions: false # If "false" will produce predictions that follow the pedestrian model
+      binomial:
+        p: 0.025 #0.01 # 0.05

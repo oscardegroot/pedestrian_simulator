@@ -9,44 +9,46 @@
 #include <string>
 #include <memory>
 
-class XMLReader
+namespace pedestrian_simulator
 {
-
-    /**
-     * @brief Class for reading map files and converting it into necessary formats
-     * @see types.h
-     */
-public:
-    XMLReader()
+    class XMLReader
     {
-        Read();
-    }
 
-    std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
-    std::vector<StaticObstacle> static_obstacles_;
-    std::vector<SpawnRandomizer> spawn_randomizers_;
+        /**
+         * @brief Class for reading map files and converting it into necessary formats
+         * @see types.h
+         */
+    public:
+        XMLReader()
+        {
+            Read();
+        }
 
-    std::vector<bool> is_random_;
+        std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
+        std::vector<StaticObstacle> static_obstacles_;
+        std::vector<SpawnRandomizer> spawn_randomizers_;
 
-    void GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs);
+        std::vector<bool> is_random_;
 
-public:
-    /**
-     * @brief Read an XML file with map data
-     *
-     * @param file the file path to read from
-     */
-    void Read();
+        void GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs);
 
-private:
-    /**
-     * @brief Read an XML file with map data
-     *
-     * @param file the file path to read from
-     */
-    void Read(const std::string &file);
+    public:
+        /**
+         * @brief Read an XML file with map data
+         *
+         * @param file the file path to read from
+         */
+        void Read();
 
-    void ReadXML(const std::string &file);
+    private:
+        /**
+         * @brief Read an XML file with map data
+         *
+         * @param file the file path to read from
+         */
+        void Read(const std::string &file);
+
+        void ReadXML(const std::string &file);
+    };
 };
-
 #endif // __XMLREADER_H__
