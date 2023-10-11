@@ -23,6 +23,7 @@ find_package(lmpcc_msgs REQUIRED)
 
 find_package(ros_tools REQUIRED)
 find_package(pedsim_original REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
 
@@ -65,6 +66,7 @@ ament_target_dependencies(${PROJECT_NAME}
   ros_tools
   pedsim_original
   asr_rapidxml
+  tf2_ros
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
@@ -102,5 +104,6 @@ ament_export_dependencies(geometry_msgs)
 ament_export_dependencies(ros_tools)
 ament_export_dependencies(pedsim_original)
 ament_export_dependencies(asr_rapidxml)
+ament_export_dependencies(tf2_ros)
 
 ament_package()

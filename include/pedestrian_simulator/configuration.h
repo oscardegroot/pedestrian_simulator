@@ -53,7 +53,7 @@ namespace pedestrian_simulator
     Eigen::Matrix2d origin_R_;
 
     double prediction_step_;
-    double horizon_N_;
+    int horizon_N_;
 
     std::string scenario_file_;
 

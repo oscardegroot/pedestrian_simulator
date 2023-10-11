@@ -9,8 +9,6 @@ namespace pedestrian_simulator
     PedsimManager::PedsimManager(std::vector<StaticObstacle> &static_obstacles)
 
     {
-        ROSTOOLS_HOOK;
-
         static_obstacles_ = &static_obstacles;
 
         pedsim_scene_ = new Ped::Tscene(-200, -200, 400, 400);

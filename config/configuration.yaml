@@ -9,7 +9,7 @@
         scenario: "random_social/8_corridor.xml"
         update_frequency: 50. # JACKAL   NOTE THIS SETTING
         prediction_step: 0.2 # JACKAL
-        horizon: 30. # JACKAL
+        horizon: 30 # JACKAL
         use_path_origin: false
       pedestrians:
         seed: 5  # > 0,  -1 = random!

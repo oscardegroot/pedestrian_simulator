@@ -25,7 +25,7 @@ def generate_launch_description():
                     plugin='pedestrian_simulator::PedestrianSimulator',
                     name='pedestrian_simulator',
                     # remappings=[('/image', '/burgerimage')],
-                    parameters=[params]
+                    parameters=[params]                    
                     # extra_arguments=[{'use_intra_process_comms': True}]),
                 )
 
@@ -35,7 +35,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             composable_node_descriptions=[node],
-            output='screen',
+            output={'both':'log'},
     )
 
     return launch.LaunchDescription([container])
