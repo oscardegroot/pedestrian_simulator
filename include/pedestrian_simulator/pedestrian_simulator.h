@@ -4,6 +4,7 @@
 #include <pedestrian_simulator/types.h>
 #include <pedestrian_simulator/xml_reader.h>
 #include <pedestrian_simulator/pedsim_manager.h>
+#include <pedestrian_simulator/autoware_interface.h>
 
 #include <ros_tools/helpers.h>
 #include <ros_tools/ros_visuals.h>
@@ -75,6 +76,8 @@ namespace pedestrian_simulator
         geometry_msgs::msg::Pose origin_;
 
         RobotState robot_state_;
+
+        std::unique_ptr<AutowareInterface> autoware_interface_;
 
         // rclcpp::Publisher<derived_object_msgs::msg::ObjectArray>::SharedPtr obstacle_pub_;
         rclcpp::Publisher<lmpcc_msgs::msg::ObstacleArray>::SharedPtr obstacle_prediction_pub_;

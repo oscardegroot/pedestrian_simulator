@@ -14,7 +14,7 @@ namespace pedestrian_simulator
     void XMLReader::Read()
     {
 
-        std::string map_file = RosTools::GetPackagePath("pedestrian_simulator") + "scenarios/" + CONFIG.scenario_file_;
+        std::string map_file = RosTools::GetSharedPath("pedestrian_simulator") + "scenarios/" + CONFIG.scenario_file_;
 
         auto logger = rclcpp::get_logger("pedestrian_simulator.xml_reader");
 
@@ -28,7 +28,7 @@ namespace pedestrian_simulator
         // If the path does not contain the package, add it
         std::string map_file;
         if (file_name.find("//pedestrian_simulator//") != std::string::npos)
-            map_file = RosTools::GetPackagePath("pedestrian_simulator") + "/" + file_name;
+            map_file = RosTools::GetSharedPath("pedestrian_simulator") + file_name;
         else
             map_file = file_name;
 

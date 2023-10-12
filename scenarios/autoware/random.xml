@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<tag type="velocity" value="0.0"/>
+
+<!--Obstacles-->
+<!-- <obstacle x1="-6.5" y1="-3.5" x2="39.5" y2="-3.5"/>
+<obstacle x1="-6.5" y1="3.5" x2="39.5" y2="3.5"/> -->
+
+<!-- Doors -->
+<!-- <obstacle x1="10" y1="-3.5" x2="10" y2="-1.5"/> -->
+<!-- <obstacle x1="10" y1="1.5" x2="10" y2="3.5"/> -->
+
+<!-- <random>
+    <range_x min="3700.0" max="3900.0"/>
+    <range_y min="73650.0" max="73750.0"/>
+    <range_v min="1.14" max="1.66"/>
+    <goal_offset x="30" y="0"/>
+</random> -->
+<pedestrian>
+    <start x="3812.23" y="73720.35"/>
+    <path>
+        <point x="12" y="-1.5"/>
+    </path>
+</pedestrian>
+
+<!-- <pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian>
+<pedestrian>
+    <tag type="random"/>
+</pedestrian> -->

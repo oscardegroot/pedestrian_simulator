@@ -35,7 +35,7 @@ def generate_launch_description():
             package='rclcpp_components',
             executable='component_container',
             composable_node_descriptions=[node],
-            output={'both':'log'},
+            output={'both':'screen'},
     )
 
     return launch.LaunchDescription([container])
