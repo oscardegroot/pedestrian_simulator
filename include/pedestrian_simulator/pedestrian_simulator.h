@@ -68,6 +68,7 @@ namespace pedestrian_simulator
 
     private:
         rclcpp::TimerBase::SharedPtr timer_;
+        int times_;
         // rclcpp::Node::SharedPtr node_;
 
         std::unique_ptr<XMLReader> xml_reader_;

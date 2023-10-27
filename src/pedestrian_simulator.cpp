@@ -314,6 +314,8 @@ namespace pedestrian_simulator
                 }
             }
         }
+
+        autoware_interface_->PublishVehicleInitialPositionAndGoal();
     }
 
     void PedestrianSimulator::Poll()
@@ -343,6 +345,11 @@ namespace pedestrian_simulator
         Publish();
         PublishPredictions();
         autoware_interface_->Publish(pedestrians_);
+
+        if (times_ == 100)
+            autoware_interface_->PublishVehicleInitialPositionAndGoal();
+        times_++;
+
         PublishDebugVisuals();
 
         VisualizeRobot();
