@@ -3,9 +3,13 @@ pedestrian_simulator:
   node:
     debug_output: false
     pretend_to_be_optitrack: false
-    # scenario: safe-horizon/crowded_gaussian.xml
+    # scenario: safe-horizon/4_crossing(copy).xml # non crowded Gaussian
+    scenario: safe-horizon/crowded_gaussian.xml
+    # scenario: safe-horizon/crowded_binomial.xml
+    # scenario: safe-horizon/4_binomial.xml
+    # scenario: safe-horizon/1_headon.xml
     # scenario: static/1_middle.xml
-    scenario: random_social/8_corridor.xml
+    # scenario: random_social/8_corridor.xml
     # scenario: random_social/12_uncertain.xml
     # scenario: random_social/4_corridor.xml
     # scenario: cyberzoo/1_headon.xml
@@ -20,10 +24,12 @@ pedestrian_simulator:
     update_frequency: 50 # JACKAL   NOTE THIS SETTING
     prediction_step: 0.2 # JACKAL
     horizon: 30 # JACKAL
-    # GMPCC
-    # update_frequency: 50 # JACKAL   NOTE THIS SETTING
-    # prediction_step: 0.2 #0.05 # JACKAL
-    # horizon: 30 # JACKAL
+    
+    # Safe Horizon
+    # update_frequency: 50
+    # prediction_step: 0.2 
+    # horizon: 20
+
     # ICRA GUIDANCE
     # update_frequency: 20 # JACKAL   NOTE THIS SETTING
     # prediction_step: 0.05 # JACKAL

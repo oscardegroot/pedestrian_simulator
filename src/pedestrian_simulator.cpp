@@ -11,9 +11,9 @@
 
 #include <tf/tf.h>
 #include <derived_object_msgs/Object.h>
-#include <lmpcc_msgs/obstacle_array.h>
-#include <lmpcc_msgs/obstacle_gmm.h>
-#include <lmpcc_msgs/gaussian.h>
+#include <mpc_msgs/obstacle_array.h>
+#include <mpc_msgs/obstacle_gmm.h>
+#include <mpc_msgs/gaussian.h>
 
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
@@ -32,8 +32,8 @@ PedestrianSimulator::PedestrianSimulator()
     ped_model_visuals_ = nh_.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
 
     obstacle_pub_ = nh_.advertise<derived_object_msgs::ObjectArray>("/pedestrian_simulator/pedestrians", 1);
-    // obstacle_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
-    obstacle_trajectory_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
+    // obstacle_prediction_pub_ = nh_.advertise<mpc_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
+    obstacle_trajectory_prediction_pub_ = nh_.advertise<mpc_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
 
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
@@ -353,12 +353,12 @@ void PedestrianSimulator::PublishPredictions()
 
     // Otherwise we use this function
 
-    lmpcc_msgs::obstacle_array prediction_array;
+    mpc_msgs::obstacle_array prediction_array;
     prediction_array.header.frame_id = "map";
 
     // Idea: Copy the pedestrian and step all of them one by one recording their positions then
     std::vector<std::unique_ptr<Pedestrian>> copied_pedestrians;
-    std::vector<lmpcc_msgs::gaussian> gaussian_msgs;
+    std::vector<mpc_msgs::gaussian> gaussian_msgs;
 
     RobotState copied_robot = robot_state_;
 
@@ -375,7 +375,7 @@ void PedestrianSimulator::PublishPredictions()
         copied_ped->LoadOtherPedestrians(&copied_pedestrians); // Link this pedestrian to the copied pedestrians
         copied_ped->LoadRobot(&copied_robot);
 
-        lmpcc_msgs::obstacle_gmm gmm_msg;
+        mpc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
         // Initial position
@@ -428,7 +428,7 @@ void PedestrianSimulator::PublishPredictions()
 void PedestrianSimulator::PublishSocialPredictions()
 {
 
-    lmpcc_msgs::obstacle_array prediction_array;
+    mpc_msgs::obstacle_array prediction_array;
     prediction_array.header.frame_id = "map";
 
     // Build up the scene
@@ -447,7 +447,7 @@ void PedestrianSimulator::PublishSocialPredictions()
 
     // Idea: Copy the pedestrian and step all of them one by one recording their positions then
     // std::vector<std::unique_ptr<Pedestrian>> copied_pedestrians;
-    std::vector<lmpcc_msgs::gaussian> gaussian_msgs;
+    std::vector<mpc_msgs::gaussian> gaussian_msgs;
 
     // RobotState copied_robot = robot_state_;
 
@@ -457,7 +457,7 @@ void PedestrianSimulator::PublishSocialPredictions()
         if (ped->gettype() == (int)AgentType::ROBOT)
             continue;
 
-        lmpcc_msgs::obstacle_gmm gmm_msg;
+        mpc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
         // Initial position
@@ -513,13 +513,13 @@ void PedestrianSimulator::PublishSocialPredictions()
 void PedestrianSimulator::PublishGaussianPredictions()
 {
 
-    lmpcc_msgs::obstacle_array prediction_array;
+    mpc_msgs::obstacle_array prediction_array;
 
     unsigned int id = 0;
     for (auto &ped : pedestrians_)
     {
 
-        lmpcc_msgs::obstacle_gmm gmm_msg;
+        mpc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
@@ -527,7 +527,7 @@ void PedestrianSimulator::PublishGaussianPredictions()
         gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
         // We simply load the uncertainty, to be integrated on the controller side
-        lmpcc_msgs::gaussian gaussian_msg;
+        mpc_msgs::gaussian gaussian_msg;
         geometry_msgs::PoseStamped pose;
         pose.pose = gmm_msg.pose;
 
@@ -561,13 +561,13 @@ void PedestrianSimulator::PublishGaussianPredictions()
 
 void PedestrianSimulator::PublishBinomialPredictions()
 {
-    lmpcc_msgs::obstacle_array prediction_array;
+    mpc_msgs::obstacle_array prediction_array;
 
     unsigned int id = 0;
     for (auto &general_ped : pedestrians_)
     {
         BinomialPedestrian *ped = (BinomialPedestrian *)(general_ped.get());
-        lmpcc_msgs::obstacle_gmm gmm_msg;
+        mpc_msgs::obstacle_gmm gmm_msg;
         gmm_msg.id = id;
 
         gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
@@ -580,7 +580,7 @@ void PedestrianSimulator::PublishBinomialPredictions()
             // For each state in the horizon we need to define a Gaussian + the case where the ped does not cross
             for (int k_mode = 0; k_mode < CONFIG.horizon_N_ + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
             {
-                lmpcc_msgs::gaussian gaussian_msg;
+                mpc_msgs::gaussian gaussian_msg;
                 // We simply load the uncertainty, to be integrated on the controller side
                 geometry_msgs::PoseStamped pose;
                 pose.pose = gmm_msg.pose;
@@ -623,7 +623,7 @@ void PedestrianSimulator::PublishBinomialPredictions()
         }
         else // If we already crossed, move straight
         {
-            lmpcc_msgs::gaussian gaussian_msg;
+            mpc_msgs::gaussian gaussian_msg;
             geometry_msgs::PoseStamped pose;
             pose.pose = gmm_msg.pose;
 

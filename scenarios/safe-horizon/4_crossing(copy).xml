@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tag type="gaussian"/>
+<tag type="velocity" value="1.3"/>
 <pedestrian>
     <start x="2.5" y="3"/>
     <path>

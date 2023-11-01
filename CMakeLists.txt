@@ -12,7 +12,7 @@ roscpp
 std_msgs
 ros_tools
 pedsim_original
-lmpcc_msgs
+mpc_msgs
 asr_rapidxml
 roslib
 )
