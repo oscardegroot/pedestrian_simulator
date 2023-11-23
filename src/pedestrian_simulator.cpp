@@ -286,6 +286,7 @@ namespace pedestrian_simulator
 
     void PedestrianSimulator::Reset()
     {
+        times_ = 101;
         vehicle_frame_ = geometry_msgs::msg::Pose();
 
         if (pedsim_manager_)
@@ -348,6 +349,9 @@ namespace pedestrian_simulator
 
         if (times_ == 100)
             autoware_interface_->PublishVehicleInitialPositionAndGoal();
+
+        if (times_ == 120)
+            autoware_interface_->EnableAutonomousMode();
         times_++;
 
         PublishDebugVisuals();

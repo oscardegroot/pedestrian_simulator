@@ -7,6 +7,7 @@
 #include <pedestrian_simulator/configuration.h>
 
 #include <ros_tools/helpers.h>
+#include <ros_tools/ros2_wrappers.h>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 
@@ -21,6 +22,8 @@
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <sensor_msgs/point_cloud2_iterator.hpp>
+
+#include <autoware_adapi_v1_msgs/srv/change_operation_mode.hpp>
 
 #include <boost/uuid/string_generator.hpp>
 #include <boost/uuid/uuid.hpp>
@@ -63,6 +66,10 @@ namespace pedestrian_simulator
 			initial_pose_pub_ = node->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 1);
 			goal_pose_pub_ = node->create_publisher<geometry_msgs::msg::PoseStamped>("/planning/mission_planning/goal", 1);
 
+			// A service client for changing directly to autonomous mode
+			start_autonomous_client_ = node->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
+
+			node_ = node;
 			// rclcpp::QoS qos{1};
 			// qos.transient_local();
 			// pointcloud_pub_ = node->create_publisher<sensor_msgs::msg::PointCloud2>("/perception/obstacle_segmentation/pointcloud", qos);
@@ -267,23 +274,33 @@ namespace pedestrian_simulator
 			geometry_msgs::msg::PoseWithCovarianceStamped initial_pose;
 			initial_pose.header.frame_id = "map";
 			initial_pose.header.stamp = clock_->now();
-			initial_pose.pose.pose.position.x = 3794.768310546875;
-			initial_pose.pose.pose.position.y = 73711.0;
-			initial_pose.pose.pose.orientation.z = 0.259162674103377;
-			initial_pose.pose.pose.orientation.w = 0.9658336856579329;
+			initial_pose.pose.pose.position.x = CONFIG.initial_x_;
+			initial_pose.pose.pose.position.y = CONFIG.initial_y_;
+			initial_pose.pose.pose.orientation.z = CONFIG.initial_orientation_z_;
+			initial_pose.pose.pose.orientation.w = CONFIG.initial_orientation_w_;
 			initial_pose_pub_->publish(initial_pose);
 
-			rclcpp::sleep_for(std::chrono::nanoseconds(static_cast<int64_t>(1. * 1e9)));
+			rclcpp::sleep_for(std::chrono::nanoseconds(static_cast<int64_t>(1. * 1e9))); // Wait 1s
 
 			geometry_msgs::msg::PoseStamped goal_pose;
 			goal_pose.header.frame_id = "map";
 			goal_pose.header.stamp = clock_->now();
 
-			goal_pose.pose.position.x = 3838.702880859375;
-			goal_pose.pose.position.y = 73734.1640625;
-			goal_pose.pose.orientation.z = 0.275600213339034;
-			goal_pose.pose.orientation.w = 0.9612723455959185;
+			goal_pose.pose.position.x = CONFIG.goal_x_;
+			goal_pose.pose.position.y = CONFIG.goal_y_;
+			goal_pose.pose.orientation.z = CONFIG.goal_orientation_z_;
+			goal_pose.pose.orientation.w = CONFIG.goal_orientation_w_;
 			goal_pose_pub_->publish(goal_pose);
+
+			// rclcpp::sleep_for(std::chrono::nanoseconds(static_cast<int64_t>(3. * 1e9))); // Wait 3s
+			// THE SERVICE CALL SHOULD HAPPEN LATER
+
+		}
+
+		void EnableAutonomousMode()
+		{
+			RosTools::callServiceWithoutResponse<autoware_adapi_v1_msgs::srv::ChangeOperationMode>(start_autonomous_client_, logger_);
+
 		}
 
 		/** @note: Publishes the rivz dummy (will also simulate point clouds but only constant velocity behavior) */
@@ -368,8 +385,11 @@ namespace pedestrian_simulator
 		rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_pub_;
 		rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr goal_pose_pub_;
 
+		rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr start_autonomous_client_;
+
 		rclcpp::Logger logger_;
 		rclcpp::Clock::SharedPtr clock_;
+		rclcpp::Node *node_;
 	};
 }
 

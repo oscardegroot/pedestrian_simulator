@@ -27,6 +27,7 @@ find_package(tf2_ros REQUIRED)
 
 find_package(autoware_auto_perception_msgs REQUIRED)
 find_package(dummy_perception_publisher REQUIRED)
+find_package(autoware_adapi_v1_msgs REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
 
@@ -72,6 +73,7 @@ ament_target_dependencies(${PROJECT_NAME}
   pedsim_original
   asr_rapidxml
   tf2_ros
+  autoware_adapi_v1_msgs
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}

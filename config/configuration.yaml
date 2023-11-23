@@ -7,9 +7,10 @@
         pretend_to_be_optitrack: false
         # scenario: static/1_middle.xml
         # scenario: "autoware/random.xml"
-        scenario: "autoware/headon.xml"
+        scenario: "autoware/top_map.xml"
+        # scenario: "autoware/test.xml"
         # AUTOWARE
-        update_frequency: 20.
+        update_frequency: 10.
         prediction_step: 0.2
         horizon: 20
         use_path_origin: false
@@ -24,6 +25,21 @@
         collision_free_spawn: true
         interaction: true
         constant_velocity_predictions: false # If "false" will produce predictions that follow the pedestrian model
+      vehicle:
+        initial:
+          position:
+            x: 3749.8623046875
+            y: 73787.9765625
+          orientation:
+            z: 0.2384254714563514
+            w: 0.9711607974793961
+        goal:
+          position:
+            x: 3779.37158203125
+            y: 73749.65625
+          orientation:
+            z: -0.9714401084194684
+            w: 0.23728488311304544
       binomial:
         p: 0.025 #0.01 # 0.05
       social_forces:

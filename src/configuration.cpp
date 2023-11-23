@@ -27,8 +27,17 @@ namespace pedestrian_simulator
     retrieveParameter(node, "pedestrian_simulator.pedestrians.collision_free_spawn", collision_free_spawn_, true);
     retrieveParameter(node, "pedestrian_simulator.pedestrians.constant_velocity_predictions", constant_velocity_predictions_, true);
     retrieveParameter(node, "pedestrian_simulator.pedestrians.interaction", interaction_, false);
-
     retrieveParameter(node, "pedestrian_simulator.pedestrians.process_noise", process_noise_);
+
+    retrieveParameter(node, "pedestrian_simulator.vehicle.initial.position.x", initial_x_);
+    retrieveParameter(node, "pedestrian_simulator.vehicle.initial.position.y", initial_y_);
+    retrieveParameter(node, "pedestrian_simulator.vehicle.initial.orientation.z", initial_orientation_z_);
+    retrieveParameter(node, "pedestrian_simulator.vehicle.initial.orientation.w", initial_orientation_w_);
+
+    retrieveParameter(node, "pedestrian_simulator.vehicle.goal.position.x", goal_x_);
+    retrieveParameter(node, "pedestrian_simulator.vehicle.goal.position.y", goal_y_);
+    retrieveParameter(node, "pedestrian_simulator.vehicle.goal.orientation.z", goal_orientation_z_);
+    retrieveParameter(node, "pedestrian_simulator.vehicle.goal.orientation.w", goal_orientation_w_);
 
     retrieveParameter(node, "pedestrian_simulator.binomial.p", p_binomial_);
 
