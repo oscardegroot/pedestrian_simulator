@@ -56,7 +56,7 @@ namespace pedestrian_simulator
 				"/perception/object_recognition/detection/objects", 1);
 
 			predicted_pub_ = node->create_publisher<autoware_auto_perception_msgs::msg::PredictedObjects>(
-				"/perception/object_recognition/objects", 1);
+				"/perception/object_recognition/virtual_objects", 1);
 
 			// pub_ = node->create_publisher<dummy_perception_publisher::msg::Object>(
 			// "/simulation/dummy_perception_publisher/object_info", 1);
