@@ -1,13 +1,21 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="pedestrian_scenario" default="" />
-    <arg name="overwrite_pedestrian_scenario" default="false" />
+    <arg name="update_frequency" default="50" />
+    <arg name="prediction_step" default="0.2" />
+    <arg name="horizon" default="20" />
+
+    <arg name="pedestrian_scenario" default="random_social/8_corridor.xml" />
     <arg name="config_file" default="$(find pedestrian_simulator)/config/configuration.yaml"/>
 
     <rosparam command="load" file="$(arg config_file)"/>
 
-    <param name="pedestrian_simulator/node/scenario" value="$(arg pedestrian_scenario)" if="$(arg overwrite_pedestrian_scenario)"/>
+    <!-- <param name="pedestrian_simulator/node/scenario" value="$(arg pedestrian_scenario)" if="$(arg overwrite_pedestrian_scenario)"/> -->
 
-    <node pkg="pedestrian_simulator" type="pedestrian_simulator_node" name="pedestrian_simulator_node" cwd="node" respawn="false" output="screen"/>    
+    <node pkg="pedestrian_simulator" type="pedestrian_simulator_node" name="pedestrian_simulator_node" cwd="node" respawn="false" output="screen">
+        <param name="horizon" value="$(arg horizon)" />
+        <param name="prediction_step" value="$(arg prediction_step)" />
+        <param name="update_frequency" value="$(arg update_frequency)" />
+        <param name="pedestrian_simulator/node/scenario" value="$(arg pedestrian_scenario)" />
+    </node>    
 </launch>  

@@ -4,17 +4,18 @@ project(pedestrian_simulator)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-deprecated-declarations")
 
 set(PEDSIM_SIMULATOR_DEPENDENCIES
-geometry_msgs
-roscpp
-std_msgs
-ros_tools
-pedsim_original
-lmpcc_msgs
-asr_rapidxml
-roslib
+  geometry_msgs
+  roscpp
+  std_msgs
+  ros_tools
+  pedsim_original
+  mpc_planner_msgs
+  asr_rapidxml
+  roslib
 )
 
 find_package(catkin REQUIRED COMPONENTS ${PEDSIM_SIMULATOR_DEPENDENCIES})
@@ -33,7 +34,6 @@ catkin_package(
 # ##########
 # # Build ##
 # ##########
-
 include_directories(
   include
   include/pedestrian_simulator

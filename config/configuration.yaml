@@ -52,10 +52,10 @@ pedestrian_simulator:
     # single_scenario: 20 # > 0 = run the scenario with this index | -1 = not a single scenario
     type: gaussian # Only used if it is not in the scenario file
     # process_noise:  [.8, .8] # Excessive
-    # process_noise:  [.3, .3] # Safe-Horizon
-    process_noise: [0.0, 0.0] # Deterministic
+    process_noise:  [.3, .3] # Safe-Horizon
+    # process_noise: [0.0, 0.0] # Deterministic
     collision_free_spawn: true
-    interaction: true
+    interaction: false #true
     constant_velocity_predictions: true # If "false" will produce predictions that follow the pedestrian model
   binomial:
     p: 0.025 #0.01 # 0.05
