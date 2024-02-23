@@ -3,23 +3,17 @@
 
 #include "pedestrian_simulator.h"
 
+#include <memory>
+
+std::unique_ptr<PedestrianSimulator> simulator;
+
 int main(int argc, char **argv)
 {
-    try
-    {
-        ros::init(argc, argv, ros::this_node::getName());
-        PedestrianSimulator simulator;
+    ros::init(argc, argv, ros::this_node::getName());
 
-        // spin node, till ROS node is running on
-        ROS_INFO_STREAM_NAMED("%s INITIALIZE SUCCESSFULLY!!", ros::this_node::getName().c_str());
-        ros::spin();
-    }
+    simulator.reset(new PedestrianSimulator());
 
-    catch (ros::Exception &e)
-    {
-        ROS_ERROR("predictive_control_node: Error occured: %s ", e.what());
-        exit(1);
-    }
+    ros::spin();
 
     return 0;
 }

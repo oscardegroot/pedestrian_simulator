@@ -10,8 +10,10 @@
 
 #include <geometry_msgs/Pose.h>
 #include <nav_msgs/Path.h>
-#include <std_msgs/Float64.h>
+#include <std_msgs/Int32.h>
+#include <std_msgs/Float32.h>
 #include <derived_object_msgs/ObjectArray.h>
+#include <std_srvs/Empty.h>
 
 #include <vector>
 #include <ros/ros.h>
@@ -29,6 +31,8 @@ public:
 public:
     RosTools::RandomGenerator random_generator_;
 
+    void Start();
+
     void ResetCallback(const std_msgs::Empty &msg);
     void VehicleVelocityCallback(const geometry_msgs::Twist &msg); /* For pretending that the vehicle is moving! */
 
@@ -36,9 +40,11 @@ public:
     void OriginCallback(const nav_msgs::Path &msg);
     void RobotStateCallback(const geometry_msgs::PoseStamped::ConstPtr &msg);
 
-    void SettingNCallback(const std_msgs::Float64 &msg);
-    void SettingdtCallback(const std_msgs::Float64 &msg);
-    void SettingHzCallback(const std_msgs::Float64 &msg);
+    bool startCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res);
+
+    void SettingNCallback(const std_msgs::Int32 &msg);
+    void SettingdtCallback(const std_msgs::Float32 &msg);
+    void SettingHzCallback(const std_msgs::Float32 &msg);
 
     void Poll(const ros::TimerEvent &event);
 
@@ -72,6 +78,8 @@ private:
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
     ros::Publisher ped_model_visuals_;
     ros::Publisher joystick_publisher_;
+
+    ros::ServiceServer start_server;
 
     std::vector<ros::Publisher> optitrack_publishers_;
     std::vector<ros::Publisher> carla_position_pub_, carla_velocity_pub_;

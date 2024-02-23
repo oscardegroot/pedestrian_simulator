@@ -16,6 +16,7 @@ set(PEDSIM_SIMULATOR_DEPENDENCIES
   mpc_planner_msgs
   asr_rapidxml
   roslib
+  std_srvs
 )
 
 find_package(catkin REQUIRED COMPONENTS ${PEDSIM_SIMULATOR_DEPENDENCIES})

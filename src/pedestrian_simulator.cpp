@@ -39,9 +39,9 @@ PedestrianSimulator::PedestrianSimulator()
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
     robot_state_sub_ = nh_.subscribe("/robot_state", 1, &PedestrianSimulator::RobotStateCallback, this);
 
-    setting_N_sub_ = nh_.subscribe("/pedestrian_simulator/N", 1, &PedestrianSimulator::SettingNCallback, this);
-    setting_dt_sub_ = nh_.subscribe("/pedestrian_simulator/dt", 1, &PedestrianSimulator::SettingdtCallback, this);
-    // setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/Hz", 1, &PedestrianSimulator::SettingHzCallback, this);
+    setting_N_sub_ = nh_.subscribe("/pedestrian_simulator/horizon", 1, &PedestrianSimulator::SettingNCallback, this);
+    setting_dt_sub_ = nh_.subscribe("/pedestrian_simulator/integrator_step", 1, &PedestrianSimulator::SettingdtCallback, this);
+    setting_hz_sub_ = nh_.subscribe("/pedestrian_simulator/clock_frequency", 1, &PedestrianSimulator::SettingHzCallback, this);
 
     xml_reader_.reset(new XMLReader());
     random_generator_ = RosTools::RandomGenerator(CONFIG.seed_);
@@ -120,13 +120,23 @@ PedestrianSimulator::PedestrianSimulator()
     for (size_t i = 0; i < colors_.size(); i++)
         colors_[i] /= 256.;
 
-    // Initialize the node loop
-    timer_ = nh_.createTimer(ros::Duration(1.0 / CONFIG.update_frequency_), &PedestrianSimulator::Poll, this);
-
     if (CONFIG.use_path_origin_)
         path_origin_sub_ = nh_.subscribe("/roadmap/reference", 1, &PedestrianSimulator::OriginCallback, this);
 
+    start_server = nh_.advertiseService("/pedestrian_simulator/start", &PedestrianSimulator::startCallback, this);
     ROS_INFO("PedestrianSimulator: Ready");
+}
+
+bool PedestrianSimulator::startCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
+{
+    if (CONFIG.debug_output_)
+        ROS_WARN_STREAM("Pedestrian Simulator: Start service called.");
+
+    ROS_INFO_STREAM("Pedestrian Simulator [horizon = " << CONFIG.horizon_N_ << ", dt = " << CONFIG.prediction_step_ << ", Hz = " << CONFIG.update_frequency_ << "]");
+
+    // Implement the service server logic here
+    timer_ = nh_.createTimer(ros::Duration(1.0 / CONFIG.update_frequency_), &PedestrianSimulator::Poll, this);
+    return true;
 }
 
 void PedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
@@ -193,30 +203,29 @@ void PedestrianSimulator::OriginCallback(const nav_msgs::Path &msg)
     }
 }
 
-void PedestrianSimulator::SettingNCallback(const std_msgs::Float64 &msg)
+void PedestrianSimulator::SettingNCallback(const std_msgs::Int32 &msg)
 {
     if (CONFIG.debug_output_)
-        ROS_WARN_STREAM("Pedestrian Simulator: Received N = " << msg.data);
+        ROS_INFO_STREAM("Pedestrian Simulator: horizon = " << (int)msg.data);
 
-    CONFIG.horizon_N_ = msg.data;
+    CONFIG.horizon_N_ = (int)msg.data;
 }
 
-void PedestrianSimulator::SettingdtCallback(const std_msgs::Float64 &msg)
+void PedestrianSimulator::SettingdtCallback(const std_msgs::Float32 &msg)
 {
     if (CONFIG.debug_output_)
-        ROS_WARN_STREAM("Pedestrian Simulator: Received dt = " << msg.data);
+        ROS_INFO_STREAM("Pedestrian Simulator: integrator_step = " << (double)msg.data);
 
-    CONFIG.prediction_step_ = msg.data;
+    CONFIG.prediction_step_ = (double)msg.data;
 }
 
-void PedestrianSimulator::SettingHzCallback(const std_msgs::Float64 &msg)
+void PedestrianSimulator::SettingHzCallback(const std_msgs::Float32 &msg)
 {
     if (CONFIG.debug_output_)
-        ROS_WARN_STREAM("Pedestrian Simulator: Received update rate = " << msg.data);
+        ROS_INFO_STREAM("Pedestrian Simulator: clock_frequency = " << (double)msg.data);
 
-    CONFIG.update_frequency_ = msg.data;
+    CONFIG.update_frequency_ = (double)msg.data;
     CONFIG.delta_t_ = 1.0 / CONFIG.update_frequency_;
-    timer_ = nh_.createTimer(ros::Duration(1.0 / (double)CONFIG.update_frequency_), &PedestrianSimulator::Poll, this); // Restart the timer
 }
 
 void PedestrianSimulator::Reset()
