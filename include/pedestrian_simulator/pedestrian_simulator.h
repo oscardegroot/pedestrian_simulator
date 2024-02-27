@@ -88,6 +88,8 @@ private:
     ros::Subscriber setting_N_sub_, setting_dt_sub_, setting_hz_sub_;
     ros::Subscriber robot_state_sub_;
 
+    bool set_N_{false}, set_dt_{false}, set_hz_{false};
+
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
 
     std::unique_ptr<RosTools::ROSMarkerPublisher> debug_visuals_;

@@ -132,6 +132,24 @@ bool PedestrianSimulator::startCallback(std_srvs::Empty::Request &req, std_srvs:
     if (CONFIG.debug_output_)
         ROS_WARN_STREAM("Pedestrian Simulator: Start service called.");
 
+    if (!set_N_)
+    {
+        ROS_INFO_STREAM("Pedestrian Simulator: Horizon not set yet, ignoring start call");
+        return false;
+    }
+
+    if (!set_dt_)
+    {
+        ROS_INFO_STREAM("Pedestrian Simulator: prediction step not set yet, ignoring start call");
+        return false;
+    }
+
+    if (!set_hz_)
+    {
+        ROS_INFO_STREAM("Pedestrian Simulator: Update frequency not set yet, ignoring start call");
+        return false;
+    }
+
     ROS_INFO_STREAM("Pedestrian Simulator [horizon = " << CONFIG.horizon_N_ << ", dt = " << CONFIG.prediction_step_ << ", Hz = " << CONFIG.update_frequency_ << "]");
 
     // Implement the service server logic here
@@ -209,6 +227,7 @@ void PedestrianSimulator::SettingNCallback(const std_msgs::Int32 &msg)
         ROS_INFO_STREAM("Pedestrian Simulator: horizon = " << (int)msg.data);
 
     CONFIG.horizon_N_ = (int)msg.data;
+    set_N_ = true;
 }
 
 void PedestrianSimulator::SettingdtCallback(const std_msgs::Float32 &msg)
@@ -217,6 +236,7 @@ void PedestrianSimulator::SettingdtCallback(const std_msgs::Float32 &msg)
         ROS_INFO_STREAM("Pedestrian Simulator: integrator_step = " << (double)msg.data);
 
     CONFIG.prediction_step_ = (double)msg.data;
+    set_dt_ = true;
 }
 
 void PedestrianSimulator::SettingHzCallback(const std_msgs::Float32 &msg)
@@ -226,6 +246,8 @@ void PedestrianSimulator::SettingHzCallback(const std_msgs::Float32 &msg)
 
     CONFIG.update_frequency_ = (double)msg.data;
     CONFIG.delta_t_ = 1.0 / CONFIG.update_frequency_;
+
+    set_hz_ = true;
 }
 
 void PedestrianSimulator::Reset()
@@ -342,14 +364,16 @@ void PedestrianSimulator::PublishPredictions()
     switch (CONFIG.ped_type_)
     {
     case PedestrianType::GAUSSIAN:
-
         PublishGaussianPredictions();
         return;
     case PedestrianType::BINOMIAL:
         PublishBinomialPredictions();
         return;
     case PedestrianType::SOCIAL:
-        PublishSocialPredictions(); // With libpedsim
+        if (CONFIG.constant_velocity_predictions_)
+            PublishGaussianPredictions();
+        else
+            PublishSocialPredictions(); // With libpedsim
         return;
     default:
         if (CONFIG.constant_velocity_predictions_)
