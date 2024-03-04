@@ -5,13 +5,14 @@
 #include <pedestrian_simulator/xml_reader.h>
 #include <pedestrian_simulator/pedsim_manager.h>
 
-#include <ros_tools/helpers.h>
-#include <ros_tools/ros_visuals.h>
+#include <ros_tools/random_generator.h>
+#include <ros_tools/visuals.h>
 
 #include <geometry_msgs/Pose.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/Empty.h>
 #include <derived_object_msgs/ObjectArray.h>
 #include <std_srvs/Empty.h>
 
@@ -91,10 +92,6 @@ private:
     bool set_N_{false}, set_dt_{false}, set_hz_{false};
 
     std::vector<std::unique_ptr<Pedestrian>> pedestrians_;
-
-    std::unique_ptr<RosTools::ROSMarkerPublisher> debug_visuals_;
-    std::unique_ptr<RosTools::ROSMarkerPublisher> static_obstacle_visuals_;
-    std::unique_ptr<RosTools::ROSMarkerPublisher> robot_visual_;
 
     geometry_msgs::Pose vehicle_frame_; /* For pretending that the vehicle is moving! */
 

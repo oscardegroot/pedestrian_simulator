@@ -9,6 +9,8 @@
 #include <pedestrians/social_forces_pedestrian.h>
 #include <pedestrians/waypoint_pedestrian.h>
 
+#include <ros_tools/convertions.h>
+
 #include <tf/tf.h>
 #include <derived_object_msgs/Object.h>
 #include <mpc_planner_msgs/obstacle_array.h>
@@ -24,10 +26,7 @@ PedestrianSimulator::PedestrianSimulator()
     ROS_INFO("PedestrianSimulator: Initializing");
 
     Config::Get().Init();
-
-    debug_visuals_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/debug", "map", 50));
-    static_obstacle_visuals_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/static_obstacles", "map", 50));
-    robot_visual_.reset(new RosTools::ROSMarkerPublisher(nh_, "pedestrian_simulator/robot", "map", 5));
+    VISUALS.init(&nh_);
 
     ped_model_visuals_ = nh_.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
 
@@ -690,13 +689,14 @@ void PedestrianSimulator::PublishBinomialPredictions()
 
 void PedestrianSimulator::PublishDebugVisuals()
 {
-    RosTools::ROSPointMarker &arrow = debug_visuals_->getNewPointMarker("ARROW");
+    auto &debug_visuals = VISUALS.getPublisher("debug");
+    RosTools::ROSPointMarker &arrow = debug_visuals.getNewPointMarker("ARROW");
     arrow.setScale(0.8 * 1.5, 0.15 * 1.5, 0.15 * 1.5);
 
-    RosTools::ROSPointMarker &start_goal_marker = debug_visuals_->getNewPointMarker("SPHERE"); // Plot the start and goal locations of the pedestrians
+    RosTools::ROSPointMarker &start_goal_marker = debug_visuals.getNewPointMarker("SPHERE"); // Plot the start and goal locations of the pedestrians
     start_goal_marker.setScale(0.4, 0.4, 0.4);
 
-    RosTools::ROSPointMarker &robot_position = debug_visuals_->getNewPointMarker("Cube");
+    RosTools::ROSPointMarker &robot_position = debug_visuals.getNewPointMarker("Cube");
     robot_position.setScale(0.4, 0.4, 0.05);
     robot_position.setColorInt(3, 1., RosTools::Colormap::BRUNO);
 
@@ -756,7 +756,7 @@ void PedestrianSimulator::PublishDebugVisuals()
 
     robot_position.addPointMarker(Eigen::Vector3d(robot_state_.pos(0), robot_state_.pos(1), 0.));
 
-    debug_visuals_->publish();
+    debug_visuals.publish();
 }
 
 void PedestrianSimulator::VisualizeRobot()
@@ -764,7 +764,8 @@ void PedestrianSimulator::VisualizeRobot()
     if ((!pedsim_manager_) || pedsim_manager_->GetRobot() == nullptr)
         return;
 
-    RosTools::ROSPointMarker &obstacle_marker = robot_visual_->getNewPointMarker("CYLINDER");
+    auto &robot_visual = VISUALS.getPublisher("robot_position");
+    RosTools::ROSPointMarker &obstacle_marker = robot_visual.getNewPointMarker("CYLINDER");
     obstacle_marker.setColorInt(0, 1.);
     obstacle_marker.setScale(pedsim_manager_->GetRobot()->getradius() * 2,
                              pedsim_manager_->GetRobot()->getradius() * 2,
@@ -773,7 +774,7 @@ void PedestrianSimulator::VisualizeRobot()
     obstacle_marker.addPointMarker(Eigen::Vector3d(pedsim_manager_->GetRobot()->getx(),
                                                    pedsim_manager_->GetRobot()->gety(), 0.05));
 
-    robot_visual_->publish();
+    robot_visual.publish();
 }
 
 void PedestrianSimulator::VisualizePedestrians()
@@ -831,7 +832,8 @@ void PedestrianSimulator::VisualizePedestrians()
 
 void PedestrianSimulator::VisualizeStaticObstacles()
 {
-    RosTools::ROSPointMarker &obstacle_marker = static_obstacle_visuals_->getNewPointMarker("Cube");
+    auto &static_obstacle_visual = VISUALS.getPublisher("static_obstacles");
+    RosTools::ROSPointMarker &obstacle_marker = static_obstacle_visual.getNewPointMarker("Cube");
     double min_dim = 0.5;
     obstacle_marker.setColor(0.1, 0.1, 0.1, 0.8);
 
@@ -845,5 +847,5 @@ void PedestrianSimulator::VisualizeStaticObstacles()
                                                        1.));
     }
 
-    static_obstacle_visuals_->publish();
+    static_obstacle_visual.publish();
 }

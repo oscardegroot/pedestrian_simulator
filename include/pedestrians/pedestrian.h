@@ -3,6 +3,8 @@
 
 #include <pedestrian_simulator/types.h>
 
+#include <ros_tools/random_generator.h>
+
 #include <geometry_msgs/Twist.h>
 
 enum class PedState

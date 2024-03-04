@@ -25,6 +25,7 @@
   <depend>geometry_msgs</depend>
   <depend>asr_rapidxml</depend>
   <depend>roslib</depend>
+  <!-- <depend>ros_tools</depend> -->
   <depend>ros_tools</depend>
   <depend>pedsim_original</depend>
   <depend>mpc_planner_msgs</depend>

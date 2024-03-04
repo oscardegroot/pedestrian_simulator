@@ -1,31 +1,31 @@
 #include <xml_reader.h>
 
-#include <ros_tools/helpers.h>
 #include <pedestrian_simulator/configuration.h>
 #include <rapidxml_utils.hpp>
 
-#include <ros/ros.h>
-#include <ros/package.h>
+#include <ros_tools/paths.h>
+#include <ros_tools/logging.h>
+
 #include <stdlib.h> /* atoi */
 #include <map>
 
 void XMLReader::Read()
 {
 
-    std::string map_file = ros::package::getPath("pedestrian_simulator") + "/scenarios/" + CONFIG.scenario_file_;
-    ROS_INFO_STREAM("XMLReader: Reading " << map_file << " for pedestrian positions.");
+    std::string map_file = getPackagePath("pedestrian_simulator") + "/scenarios/" + CONFIG.scenario_file_;
+    LOG_INFO("XMLReader: Reading " << map_file << " for pedestrian positions.");
     Read(map_file);
 }
 
 void XMLReader::Read(const std::string &file_name)
 {
 
-    ROS_INFO("Reading map file");
+    LOG_INFO("Reading map file");
 
     // If the path does not contain the package, add it
     std::string map_file;
     if (file_name.find("//pedestrian_simulator//") != std::string::npos)
-        map_file = ros::package::getPath("pedestrian_simulator") + "/" + file_name;
+        map_file = getPackagePath("pedestrian_simulator") + "/" + file_name;
     else
         map_file = file_name;
 
