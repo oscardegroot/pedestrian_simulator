@@ -3,7 +3,7 @@
 <tag type="static" />
 <tag type="velocity" value="0."/>
 <pedestrian>
-    <start x="3.0" y="0.0"/>
+    <start x="10.0" y="0.0"/>
     <path>
         <point x="0.0" y="0.5"/>
     </path>

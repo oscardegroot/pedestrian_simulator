@@ -340,7 +340,14 @@ void PedestrianSimulator::PublishPredictions()
         PublishBinomialPredictions();
         return;
     case PedestrianType::SOCIAL:
-        PublishSocialPredictions(); // With libpedsim
+        if (CONFIG.constant_velocity_predictions_)
+        {
+            PublishGaussianPredictions();
+        }
+        else
+        {
+            PublishSocialPredictions(); // With libpedsim
+        }
         return;
     default:
         if (CONFIG.constant_velocity_predictions_)

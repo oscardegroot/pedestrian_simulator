@@ -63,8 +63,8 @@ void BinomialPedestrian::Reset()
     counter = 0;
 
     // SH-MPC EXPERIMENTS!
-    // direction_ = start_.x < 6. ? 1. : -1.;
+    direction_ = start_.x < 6. ? 1. : -1.;
 
     // PRIUS DRIVING
-    direction_ = start_.y > 0 ? -1 : 1;
+    // direction_ = start_.y > 0 ? -1 : 1;
 }

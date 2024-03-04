@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="binomial"/>
+<tag type="velocity" value="0.7"/>
+<!-- 1 -->
+<pedestrian>
+    <start x="4.5" y="-3"/>
+    <path>
+        <point x="12" y="-1.5"/>
+    </path>
+</pedestrian>
+<pedestrian> 
+    <start x="4.5" y="0.5"/>
+    <path>
+        <point x="15" y="-1"/>
+    </path>
+</pedestrian>
+<!-- 3 -->
+<pedestrian>
+    <start x="10" y="-3.5"/>
+    <path>
+        <point x="0" y="-2"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="10" y="5"/>
+    <path>
+        <point x="0" y="0"/>
+    </path>
+</pedestrian>
+<!-- 5 -->
+<pedestrian>
+    <start x="3" y="0"/>
+    <path>
+        <point x="10" y="0.5"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="3" y="1.0"/>
+    <path>
+        <point x="12" y="4"/>
+    </path>
+</pedestrian>
+<!-- 7 -->
+<pedestrian>
+    <start x="3.5" y="-3.5"/>
+    <path>
+        <point x="7.5" y="6"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="5" y="-1"/>
+    <path>
+        <point x="9" y="0"/>
+    </path>
+</pedestrian>
