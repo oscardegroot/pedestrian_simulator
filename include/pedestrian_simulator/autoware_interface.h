@@ -36,7 +36,8 @@
 // class Pedestrian;
 namespace pedestrian_simulator
 {
-#define AUTOWARE_Z 19.5897274017334
+#define AUTOWARE_Z 0.0 //19.5897274017334
+#define OBSTACLE_RADIUS 0.5
 
 	inline unique_identifier_msgs::msg::UUID generateUUIDMsg(const std::string &input) // Hoisted from detection_sensor.cpp
 	{
@@ -146,8 +147,8 @@ namespace pedestrian_simulator
 				detected_object.existence_probability = 1.;
 
 				detected_object.shape.type = autoware_auto_perception_msgs::msg::Shape::CYLINDER;
-				detected_object.shape.dimensions.x = 2 * 1.0;
-				detected_object.shape.dimensions.y = 2 * 1.0; // Not relevant for cylinder
+				detected_object.shape.dimensions.x = 2 * OBSTACLE_RADIUS;
+				detected_object.shape.dimensions.y = 2 * OBSTACLE_RADIUS; // Not relevant for cylinder
 				detected_object.shape.dimensions.z = 1.8;
 
 				detected_object.kinematics.pose_with_covariance.pose.position.x = ped->position_.x;
@@ -206,8 +207,8 @@ namespace pedestrian_simulator
 				autoware_auto_perception_msgs::msg::PredictedObject object;
 				object.shape.type = autoware_auto_perception_msgs::msg::Shape::CYLINDER;
 
-				object.shape.dimensions.x = 2 * 1.0;
-				object.shape.dimensions.y = 2 * 1.0; // Not relevant for cylinder
+				object.shape.dimensions.x = 2 * OBSTACLE_RADIUS;
+				object.shape.dimensions.y = 2 * OBSTACLE_RADIUS; // Not relevant for cylinder
 				object.shape.dimensions.z = 1.8;
 				detected_object.shape = object.shape;
 

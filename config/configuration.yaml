@@ -1,13 +1,14 @@
 /**:
   ros__parameters:
     pedestrian_simulator:
-      static: false
+      static: true
       node:
         debug_output: false
         pretend_to_be_optitrack: false
         # scenario: static/1_middle.xml
         # scenario: "autoware/random.xml"
-        scenario: "autoware/top_map.xml"
+        # scenario: "autoware/top_map.xml"
+        scenario: "autoware/rss-paper.xml"
         # scenario: "autoware/test.xml"
         # AUTOWARE
         update_frequency: 10.

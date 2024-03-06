@@ -895,7 +895,7 @@ namespace pedestrian_simulator
                                    "models/walking.dae";
             marker.pose.position.x = ped->position_.x;
             marker.pose.position.y = ped->position_.y;
-            marker.pose.position.z = 19.5; // AUTOWARE!
+            marker.pose.position.z = 0.; // AUTOWARE!
 
             // Account for the origin rotation in the velocity
             Eigen::Vector2d rotated_twist = CONFIG.origin_R_ * Eigen::Vector2d(
