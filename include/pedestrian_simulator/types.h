@@ -18,13 +18,13 @@ struct Prediction
     Prediction(){};
 
     void Add(const Eigen::Vector2d &p, const double a, const Eigen::Vector2d &v,
-             const double major_axis = 0, const double minor_axis = 0)
+             const double _major_axis = 0, const double _minor_axis = 0)
     {
         pos.push_back(p);
         angle.push_back(a);
         vel.push_back(v);
-        major_axis.push_back(major_axis);
-        minor_axis.push_back(minor_axis);
+        major_axis.push_back(_major_axis);
+        minor_axis.push_back(_minor_axis);
     }
 };
 
@@ -82,10 +82,10 @@ struct RobotState
     RobotState(){};
 
     RobotState(const Eigen::Vector2d &pos, const double angle, double velocity)
-        : pos(pos), vel(vel){};
+        : pos(pos)
     {
         vel(0) = std::cos(angle) * velocity;
-        vel(1) = std::sin(angle) * velocity
+        vel(1) = std::sin(angle) * velocity;
     }
 };
 

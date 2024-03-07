@@ -1,21 +1,25 @@
 #ifndef ROS1_PEDESTRIAN_SIMULATOR_H
 #define ROS1_PEDESTRIAN_SIMULATOR_H
+#include <pedestrian_simulator/pedestrian_simulator.h>
 
+#include <ros/ros.h>
 #include <std_srvs/Empty.h>
 #include <std_msgs/Empty.h>
 #include <std_msgs/Int32.h>
 #include <std_msgs/Float32.h>
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <nav_msgs/Path.h>
+#include <derived_object_msgs/ObjectArray.h>
+#include <mpc_planner_msgs/obstacle_array.h>
+#include <mpc_planner_msgs/gaussian.h>
+
+class Prediction;
 
 class ROSPedestrianSimulator
 {
 public:
-    // Constructor
     ROSPedestrianSimulator();
-
-    // Destructor
-    ~ROSPedestrianSimulator();
 
     void ResetCallback(const std_msgs::Empty &msg);
     void VehicleVelocityCallback(const geometry_msgs::Twist &msg); /* For pretending that the vehicle is moving! */
@@ -33,12 +37,17 @@ public:
     void Loop(const ros::TimerEvent &event);
 
 private:
+    ros::NodeHandle _nh;
+    std::unique_ptr<PedestrianSimulator> _simulator;
+
     ros::Timer timer_;
 
-    void initializePublishersAndSubscribers();
+    void InitializePublishersAndSubscribers();
 
     derived_object_msgs::ObjectArray PredictionsToObjectArray(const std::vector<Prediction> &predictions);
-    mpc_planner_msgs::ObstacleArray PredictionsToObstacleArray(const std::vector<Prediction> &predictions);
+    mpc_planner_msgs::obstacle_array PredictionsToObstacleArray(const std::vector<Prediction> &predictions);
+
+    bool set_N_{false}, set_dt_{false}, set_hz_{false};
 
     ros::Publisher obstacle_pub_, obstacle_prediction_pub_, obstacle_trajectory_prediction_pub_;
     ros::Publisher ped_model_visuals_;

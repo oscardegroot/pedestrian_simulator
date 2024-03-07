@@ -5,8 +5,6 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wno-deprecated-declarations")
-
 set(PEDSIM_SIMULATOR_DEPENDENCIES
   geometry_msgs
   roscpp
@@ -55,13 +53,14 @@ add_library(pedestrian_simulator
   src/pedestrians/pedestrian.cpp
   src/pedestrians/random_gaussian_pedestrian.cpp
   src/pedestrians/social_forces_pedestrian.cpp
-  src/pedestrians/waypoint_pedestrian.cpp
 )
 add_dependencies(pedestrian_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(pedestrian_simulator_node src/pedestrian_simulator_node.cpp)
+add_executable(pedestrian_simulator_node src/ros1_pedestrian_simulator.cpp)
 target_link_libraries(pedestrian_simulator_node pedestrian_simulator ${catkin_LIBRARIES})
 add_dependencies(pedestrian_simulator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+add_definitions(-DMPC_PLANNER_ROS)
 
 # ############
 # # Install ##

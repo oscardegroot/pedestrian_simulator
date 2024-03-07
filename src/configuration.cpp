@@ -8,7 +8,7 @@ Config::~Config()
 // read predicitve configuration paramter from paramter server
 void Config::Init() // const std::string& node_handle_name
 {
-#ifdef MPC_ROS_PLANNER
+#ifdef MPC_PLANNER_ROS
   ros::NodeHandle node;
 #else
   auto node = rclcpp::Node::make_shared("guidance_planner"); // Create a node

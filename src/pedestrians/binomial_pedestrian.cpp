@@ -19,8 +19,8 @@ void BinomialPedestrian::Update(const double dt)
     {
     case PedState::STRAIGHT:
 
-        twist_.linear.x = B_straight(0) * velocity_ * direction_;
-        twist_.linear.y = B_straight(1) * velocity_ * direction_;
+        twist_(0) = B_straight(0) * velocity_ * direction_;
+        twist_(1) = B_straight(1) * velocity_ * direction_;
 
         // Transition
         if ((counter % 4 == 0) && (random_generator_->Double() <= p)) // Do this only once every 4 times
@@ -31,8 +31,8 @@ void BinomialPedestrian::Update(const double dt)
         break;
     case PedState::CROSS:
 
-        twist_.linear.x = B_cross(0) * velocity_ * direction_;
-        twist_.linear.y = B_cross(1) * velocity_ * direction_;
+        twist_(0) = B_cross(0) * velocity_ * direction_;
+        twist_(1) = B_cross(1) * velocity_ * direction_;
 
         break;
     }
@@ -42,11 +42,11 @@ void BinomialPedestrian::Update(const double dt)
                                                                                      CONFIG.process_noise_[1],
                                                                                      0.);
 
-    noisy_twist_.linear.x = twist_.linear.x + process_noise_realization(0);
-    noisy_twist_.linear.y = twist_.linear.y + process_noise_realization(1);
+    noisy_twist_(0) = twist_(0) + process_noise_realization(0);
+    noisy_twist_(1) = twist_(1) + process_noise_realization(1);
 
     // Update the position using the velocity and Gaussian process noise (and taking the frame into account)
-    UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y, dt);
+    UpdatePosition(noisy_twist_(0), noisy_twist_(1), dt);
 }
 
 void BinomialPedestrian::Reset()

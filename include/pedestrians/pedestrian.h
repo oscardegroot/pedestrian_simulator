@@ -5,6 +5,8 @@
 
 #include <ros_tools/random_generator.h>
 
+#include <memory>
+
 enum class PedState
 {
     STRAIGHT = 0,

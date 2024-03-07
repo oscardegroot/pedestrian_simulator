@@ -62,6 +62,7 @@ void PedestrianSimulator::ReadScenario()
         }
         break;
     case PedestrianType::SOCIAL:
+        LOG_HOOK();
         pedsim_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
 
         pedsim_prediction_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
@@ -121,20 +122,14 @@ void PedestrianSimulator::Loop()
     if (CONFIG.debug_output_)
         LOG_INFO("PedestrianSimulator: Update");
 
-    // std::cout << "preupdate\n";
     for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
         ped->PreUpdateComputations();
 
-    // std::cout << "update\n";
     for (std::unique_ptr<Pedestrian> &ped : pedestrians_)
     {
         ped->Update();
         // ped->MoveFrame(vehicle_speed_);
     }
-    // std::cout << "done\n";
-
-    Publish();
-    PublishPredictions();
 
     PublishDebugVisuals();
 
@@ -145,53 +140,47 @@ void PedestrianSimulator::Loop()
     VisualizeStaticObstacles();
 }
 
-std::vector<Prediction> PedestrianSimulator::Publish()
+std::vector<Prediction> PedestrianSimulator::GetPedestrians()
 {
-    // std::vector<Prediction> predictions;
+    std::vector<Prediction> predictions;
 
-    // unsigned int id = 0;
-    // for (auto &ped : pedestrians_)
-    // {
-    //     predictions.emplace_back();
-    //     auto &prediction = predictions.back();
-    //     prediction.id = id;
+    unsigned int id = 0;
+    for (auto &ped : pedestrians_)
+    {
+        predictions.emplace_back();
+        auto &prediction = predictions.back();
+        prediction.id = id;
 
-    //     prediction.Add(
-    //         Eigen::Vector2d(ped->position_.x - vehicle_frame_(0),
-    //                         ped->position_.y - vehicle_frame_(1)),
-    //         std::atan2(ped->twist_(1), ped->twist_(0)),
-    //         ped->noisy_twist_);
+        prediction.Add(
+            Eigen::Vector2d(ped->position_.x - vehicle_frame_(0),
+                            ped->position_.y - vehicle_frame_(1)),
+            std::atan2(ped->twist_(1), ped->twist_(0)),
+            ped->noisy_twist_);
 
-    //     id++;
-    // }
+        id++;
+    }
 
-    // return predictions;
+    return predictions;
 }
 
-void PedestrianSimulator::PublishPredictions()
+std::vector<Prediction> PedestrianSimulator::GetPredictions()
 {
     // Decide how to compute predictions
     switch (CONFIG.ped_type_)
     {
     case PedestrianType::GAUSSIAN:
-        PublishGaussianPredictions();
-        return;
-    case PedestrianType::BINOMIAL:
-        PublishBinomialPredictions();
-        return;
+        return GetGaussianPredictions();
+    // case PedestrianType::BINOMIAL:
+    // PublishBinomialPredictions();
+    // return;
     case PedestrianType::SOCIAL:
         if (CONFIG.constant_velocity_predictions_)
-            PublishGaussianPredictions();
+            return GetGaussianPredictions();
         else
-            PublishSocialPredictions(); // With libpedsim
-        return;
+            return GetSocialPredictions(); // With libpedsim
     default:
-        if (CONFIG.constant_velocity_predictions_)
-        {
-            PublishGaussianPredictions();
-            return;
-        }
-        break;
+
+        return GetGaussianPredictions();
     }
 
     // Otherwise we use this function
@@ -224,7 +213,7 @@ void PedestrianSimulator::PublishPredictions()
             // Initial position
             gmm_msg.pose.position.x = copied_ped->position_.x - vehicle_frame_.position.x;
             gmm_msg.pose.position.y = copied_ped->position_.y - vehicle_frame_.position.y;
-            gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(copied_ped->twist_.linear.y, copied_ped->twist_.linear.x));
+            gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(copied_ped->twist_(1), copied_ped->twist_(0)));
 
             prediction_array.obstacles.push_back(gmm_msg);
 
@@ -247,7 +236,7 @@ void PedestrianSimulator::PublishPredictions()
                 geometry_msgs::PoseStamped pose;
                 pose.pose.position.x = ped->position_.x;
                 pose.pose.position.y = ped->position_.y;
-                pose.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
+                pose.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_(1), ped->twist_(0)));
 
                 gaussian_msgs[id].mean.poses.push_back(pose);
 
@@ -268,7 +257,7 @@ void PedestrianSimulator::PublishPredictions()
         obstacle_trajectory_prediction_pub_.publish(prediction_array);*/
 }
 
-std::vector<Prediction> PedestrianSimulator::PublishSocialPredictions()
+std::vector<Prediction> PedestrianSimulator::GetSocialPredictions()
 {
     std::vector<Prediction> predictions;
 
@@ -309,7 +298,6 @@ std::vector<Prediction> PedestrianSimulator::PublishSocialPredictions()
 
     for (int k = 0; k < CONFIG.horizon_N_; k++)
     {
-        // copied_robot.pos += copied_robot.vel * CONFIG.delta_t_; // Update the robot position assuming constant velocity
         pedsim_prediction_manager_->Update(CONFIG.prediction_step_);
         id = 0;
         for (auto &ped : pedsim_prediction_manager_->GetAllAgents())
@@ -323,171 +311,46 @@ std::vector<Prediction> PedestrianSimulator::PublishSocialPredictions()
                 Eigen::Vector2d(ped->getvx(), ped->getvy()),
                 CONFIG.process_noise_[0],
                 CONFIG.process_noise_[1]);
-            // gaussian_msgs[id].mean.poses.push_back(pose);
 
             id++;
         }
     }
 
     return predictions;
-
-    // id = 0;
-    // for (auto &ped : pedsim_prediction_manager_->GetAllAgents())
-    // {
-    //     if (ped->gettype() == (int)AgentType::ROBOT)
-    //         continue;
-
-    //     prediction_array.obstacles[id].gaussians.push_back(gaussian_msgs[id]);
-    //     prediction_array.obstacles[id].probabilities.push_back(1.0);
-    //     id++;
-    // }
-    // prediction_array.header.stamp = ros::Time::now();
-    // obstacle_trajectory_prediction_pub_.publish(prediction_array);
 }
 
-void PedestrianSimulator::PublishGaussianPredictions()
+std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
 {
+    std::vector<Prediction> predictions;
 
-    // mpc_planner_msgs::obstacle_array prediction_array;
+    unsigned int id = 0;
+    for (auto &ped : pedestrians_)
+    {
 
-    // unsigned int id = 0;
-    // for (auto &ped : pedestrians_)
-    // {
+        predictions.emplace_back();
+        auto &prediction = predictions.back();
+        prediction.id = id;
 
-    //     mpc_planner_msgs::obstacle_gmm gmm_msg;
-    //     gmm_msg.id = id;
+        Eigen::Vector2d pos(ped->position_.x - vehicle_frame_(0),
+                            ped->position_.y - vehicle_frame_(1));
 
-    //     gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
-    //     gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
-    //     gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
+        for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
+        {
+            Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_(0), ped->twist_(1));
 
-    //     // We simply load the uncertainty, to be integrated on the controller side
-    //     mpc_planner_msgs::gaussian gaussian_msg;
-    //     geometry_msgs::PoseStamped pose;
-    //     pose.pose = gmm_msg.pose;
+            pos(0) += rotated_predict(0) * CONFIG.prediction_step_;
+            pos(1) += rotated_predict(1) * CONFIG.prediction_step_;
 
-    //     for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
-    //     {
-    //         Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_.linear.x, ped->twist_.linear.y);
+            prediction.Add(pos,
+                           std::atan2(ped->twist_(1), ped->twist_(0)),
+                           ped->noisy_twist_,
+                           CONFIG.process_noise_[0],
+                           CONFIG.process_noise_[1]);
+        }
+        id++;
+    }
 
-    //         pose.pose.position.x += rotated_predict(0) * CONFIG.prediction_step_;
-    //         pose.pose.position.y += rotated_predict(1) * CONFIG.prediction_step_;
-
-    //         // We simply add the mean so that we can determine the samples in the controller
-    //         gaussian_msg.mean.poses.push_back(pose);
-
-    //         // The variance is simply the uncertainty per stage
-    //         gaussian_msg.major_semiaxis.push_back(CONFIG.process_noise_[0]);
-    //         gaussian_msg.minor_semiaxis.push_back(CONFIG.process_noise_[1]);
-    //     }
-
-    //     gmm_msg.gaussians.push_back(gaussian_msg);
-    //     gmm_msg.probabilities.push_back(1.0);
-
-    //     prediction_array.obstacles.push_back(gmm_msg);
-    //     id++;
-    // }
-
-    // prediction_array.header.stamp = ros::Time::now();
-    // prediction_array.header.frame_id = "map";
-
-    // obstacle_trajectory_prediction_pub_.publish(prediction_array);
-}
-
-void PedestrianSimulator::PublishBinomialPredictions()
-{
-    // mpc_planner_msgs::obstacle_array prediction_array;
-
-    // unsigned int id = 0;
-    // for (auto &general_ped : pedestrians_)
-    // {
-    //     BinomialPedestrian *ped = (BinomialPedestrian *)(general_ped.get());
-    //     mpc_planner_msgs::obstacle_gmm gmm_msg;
-    //     gmm_msg.id = id;
-
-    //     gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
-    //     gmm_msg.pose.position.y = ped->position_.y - vehicle_frame_.position.y;
-    //     gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
-
-    //     if (ped->state == PedState::STRAIGHT)
-    //     {
-
-    //         // For each state in the horizon we need to define a Gaussian + the case where the ped does not cross
-    //         for (int k_mode = 0; k_mode < CONFIG.horizon_N_ + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
-    //         {
-    //             mpc_planner_msgs::gaussian gaussian_msg;
-    //             // We simply load the uncertainty, to be integrated on the controller side
-    //             geometry_msgs::PoseStamped pose;
-    //             pose.pose = gmm_msg.pose;
-
-    //             double prob = 1.;
-
-    //             // Loop over each time step of motion prediction
-    //             for (int k = 0; k < CONFIG.horizon_N_; k++)
-    //             {
-    //                 if ((k_mode == CONFIG.horizon_N_) || (k < k_mode)) // If this is the last mode OR we are not crossing yet
-    //                 {
-    //                     prob *= (1.0 - ped->p); // We did not start crossing yet
-    //                     Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->B_straight(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_straight(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
-
-    //                     pose.pose.position.x += rotated_predict(0);
-    //                     pose.pose.position.y += rotated_predict(1);
-    //                 }
-    //                 else // If we are crossing
-    //                 {
-    //                     if (k_mode == k)
-    //                         prob *= ped->p; // We cross from here
-
-    //                     Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_ * CONFIG.prediction_step_);
-
-    //                     pose.pose.position.x += rotated_predict(0);
-    //                     pose.pose.position.y += rotated_predict(1);
-    //                 }
-
-    //                 // We simply add the mean so that we can determine the samples in the controller
-    //                 gaussian_msg.mean.poses.push_back(pose);
-
-    //                 // The variance is simply the uncertainty per stage
-    //                 gaussian_msg.major_semiaxis.push_back(CONFIG.process_noise_[0]);
-    //                 gaussian_msg.minor_semiaxis.push_back(CONFIG.process_noise_[1]);
-    //             }
-
-    //             gmm_msg.gaussians.push_back(gaussian_msg);
-    //             gmm_msg.probabilities.push_back(prob);
-    //         }
-    //     }
-    //     else // If we already crossed, move straight
-    //     {
-    //         mpc_planner_msgs::gaussian gaussian_msg;
-    //         geometry_msgs::PoseStamped pose;
-    //         pose.pose = gmm_msg.pose;
-
-    //         for (int k = 0; k < CONFIG.horizon_N_; k++)
-    //         {
-    //             Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->B_cross(0) * ped->direction_ * CONFIG.ped_velocity_, ped->B_cross(1) * ped->direction_ * CONFIG.ped_velocity_);
-
-    //             pose.pose.position.x += rotated_predict(0) * CONFIG.prediction_step_;
-    //             pose.pose.position.y += rotated_predict(1) * CONFIG.prediction_step_;
-
-    //             // We simply add the mean so that we can determine the samples in the controller
-    //             gaussian_msg.mean.poses.push_back(pose);
-
-    //             // The variance is simply the uncertainty per stage
-    //             gaussian_msg.major_semiaxis.push_back(CONFIG.process_noise_[0]);
-    //             gaussian_msg.minor_semiaxis.push_back(CONFIG.process_noise_[1]);
-    //         }
-
-    //         gmm_msg.gaussians.push_back(gaussian_msg);
-    //         gmm_msg.probabilities.push_back(1.0);
-    //     }
-
-    //     prediction_array.obstacles.push_back(gmm_msg);
-    //     id++;
-    // }
-    // prediction_array.header.stamp = ros::Time::now();
-    // prediction_array.header.frame_id = "map";
-
-    // obstacle_trajectory_prediction_pub_.publish(prediction_array);
+    return predictions;
 }
 
 void PedestrianSimulator::PublishDebugVisuals()
@@ -517,8 +380,8 @@ void PedestrianSimulator::PublishDebugVisuals()
 
         arrow.setOrientation(std::atan2(ped->twist_(1), ped->twist_(0)));
 
-        arrow.addPointMarker(Eigen::Vector2d(ped->position_.x - vehicle_frame_(0),
-                                             ped->position_.y - vehicle_frame_(1)));
+        arrow.addPointMarker(Eigen::Vector3d(ped->position_.x - vehicle_frame_(0),
+                                             ped->position_.y - vehicle_frame_(1), 0.));
 
         start_goal_marker.setColor(1., 0., 0.);
         start_goal_marker.addPointMarker(Eigen::Vector3d(ped->start_.x, ped->start_.y, 0.));
@@ -568,7 +431,7 @@ void PedestrianSimulator::VisualizePedestrians()
         select = (int)(colors_.size() / 3) - 1 - select;
         ped_model.setColor(colors_[3 * select + 0], colors_[3 * select + 1], colors_[3 * select + 2], 1.0);
 
-        ped_model.addPointMarker(Eigen::Vector2d(ped->position_.x, ped->position_.y));
+        ped_model.addPointMarker(Eigen::Vector3d(ped->position_.x, ped->position_.y, 0.));
     }
     ped_visual.publish();
 }

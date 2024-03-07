@@ -27,16 +27,16 @@ void GaussianPedestrian::Update(const double dt)
                                                                                      CONFIG.process_noise_[1],
                                                                                      angle);
 
-    twist_.linear.x = B(0) * velocity_;
-    twist_.linear.y = B(1) * velocity_;
+    twist_(0) = B(0) * velocity_;
+    twist_(1) = B(1) * velocity_;
     noisy_twist_ = twist_;
 
     // Major / minor -> Cov = [major^2, 0; 0 minor^2]
     if (!CONFIG.static_) // If static, do not update the position
     {
-        noisy_twist_.linear.x += process_noise_realization(0);
-        noisy_twist_.linear.y += process_noise_realization(1);
-        UpdatePosition(noisy_twist_.linear.x, noisy_twist_.linear.y, dt);
+        noisy_twist_(0) += process_noise_realization(0);
+        noisy_twist_(1) += process_noise_realization(1);
+        UpdatePosition(noisy_twist_(0), noisy_twist_(1), dt);
     }
 
     // std::cout << "x = " << position_.x << ", y = " << position_.y << std::endl;

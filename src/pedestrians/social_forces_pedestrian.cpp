@@ -57,19 +57,19 @@ void SocialForcesPedestrian::Update(const double dt)
     {
         position_.x = pedsim_agent_->getx();
         position_.y = pedsim_agent_->gety();
-        twist_.linear.x = pedsim_agent_->getVelocity().x;
-        twist_.linear.y = pedsim_agent_->getVelocity().y;
+        twist_(0) = pedsim_agent_->getVelocity().x;
+        twist_(1) = pedsim_agent_->getVelocity().y;
 
         if (CONFIG.process_noise_.size() > 1 && CONFIG.process_noise_[0] > 1e-4) // If there is noise
         {
-            double angle = std::atan2(twist_.linear.y, twist_.linear.x);
+            double angle = std::atan2(twist_(1), twist_(0));
 
             Eigen::Vector2d noise = random_generator_->BivariateGaussian(Eigen::Vector2d(0., 0.),
                                                                          CONFIG.process_noise_[0],
                                                                          CONFIG.process_noise_[1],
                                                                          angle);
-            // twist_.linear.x = pedsim_agent_->getVelocity().x + noise(0);
-            // twist_.linear.y = pedsim_agent_->getVelocity().y + noise(1);
+            // twist_(0) = pedsim_agent_->getVelocity().x + noise(0);
+            // twist_(1) = pedsim_agent_->getVelocity().y + noise(1);
             position_.x = pedsim_agent_->getx() + noise(0) * CONFIG.delta_t_;
             position_.y = pedsim_agent_->gety() + noise(1) * CONFIG.delta_t_;
 
@@ -113,7 +113,7 @@ bool SocialForcesPedestrian::AddGoalForce(Eigen::Vector2d &force)
 
     double direction = position_.Angle(goal_);
     force += (Eigen::Vector2d(std::cos(direction) * velocity_, std::sin(direction) * velocity_) -
-              Eigen::Vector2d(twist_.linear.x, twist_.linear.y)) /
+              Eigen::Vector2d(twist_(0), twist_(1))) /
              0.5;
 
     return false;
@@ -227,7 +227,7 @@ Eigen::Vector2d SocialForcesPedestrian::GetPedRepulsiveForce(const Eigen::Vector
     // angular interaction
     double n_prime = 3;
 
-    double heading = std::atan2(twist_.linear.y, twist_.linear.x);
+    double heading = std::atan2(twist_(1), twist_(0));
     // double c = std::cos(heading);
     // double s = std::sin(heading);
     // c, s = np.cos(current_heading), np.sin(current_heading)

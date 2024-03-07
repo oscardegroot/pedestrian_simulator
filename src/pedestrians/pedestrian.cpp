@@ -30,5 +30,5 @@ void Pedestrian::UpdatePosition(const double vx, const double vy, const double d
     position_.y += rotated_delta_p(1);
 }
 
-Eigen::Vector2d Pedestrian::GetSpeed() const { return Eigen::Vector2d(twist_.linear.x, twist_.linear.y); };
+Eigen::Vector2d Pedestrian::GetSpeed() const { return Eigen::Vector2d(twist_(0), twist_(1)); };
 Eigen::Vector2d Pedestrian::GetPosition() const { return Eigen::Vector2d(position_.x, position_.y); };
