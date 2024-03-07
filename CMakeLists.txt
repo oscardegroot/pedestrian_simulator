@@ -25,6 +25,10 @@ find_package(ros_tools REQUIRED)
 find_package(pedsim_original REQUIRED)
 find_package(tf2_ros REQUIRED)
 
+find_package(autoware_auto_perception_msgs REQUIRED)
+find_package(dummy_perception_publisher REQUIRED)
+find_package(autoware_adapi_v1_msgs REQUIRED)
+
 find_package(asr_rapidxml REQUIRED)
 
 find_package(eigen3_cmake_module REQUIRED)
@@ -64,6 +68,8 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp_components
   std_msgs
   nav_msgs
+  autoware_auto_perception_msgs
+  dummy_perception_publisher
   derived_object_msgs
   mpc_planner_msgs
   geometry_msgs
@@ -71,6 +77,7 @@ ament_target_dependencies(${PROJECT_NAME}
   pedsim_original
   asr_rapidxml
   tf2_ros
+  autoware_adapi_v1_msgs
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
@@ -95,6 +102,13 @@ install(DIRECTORY config
   
 install(DIRECTORY rviz
   DESTINATION share/${PROJECT_NAME})
+  
+install(DIRECTORY models
+  DESTINATION share/${PROJECT_NAME})
+  
+# Pedestrian scenarios
+install(DIRECTORY scenarios
+  DESTINATION share/${PROJECT_NAME})
 
 ## FINALIZE PACKAGE ##
 # ament_export_include_directories(include/${PROJECT_NAME})
@@ -109,5 +123,7 @@ ament_export_dependencies(ros_tools)
 ament_export_dependencies(pedsim_original)
 ament_export_dependencies(asr_rapidxml)
 ament_export_dependencies(tf2_ros)
+ament_export_dependencies(autoware_auto_perception_msgs)
+ament_export_dependencies(dummy_perception_publisher)
 
 ament_package()

@@ -13,7 +13,7 @@ int main(int argc, char **argv)
 
         // spin node, till ROS node is running on
         // ROS_INFO_STREAM_NAMED("%s INITIALIZE SUCCESSFULLY!!", ros::this_node::getName().c_str());
-        rclcpp::spin();
+        rclcpp::spin(simulator);
     }
 
     catch (ros::Exception &e)

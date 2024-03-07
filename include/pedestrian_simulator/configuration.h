@@ -76,6 +76,11 @@ namespace pedestrian_simulator
 
     bool success_;
 
+    double initial_x_, initial_y_;
+    double initial_orientation_z_, initial_orientation_w_;
+    double goal_x_, goal_y_;
+    double goal_orientation_z_, goal_orientation_w_;
+
     double social_strength_;
 
   public:
