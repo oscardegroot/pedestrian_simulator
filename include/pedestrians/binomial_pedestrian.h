@@ -3,6 +3,8 @@
 
 #include <pedestrians/pedestrian.h>
 
+#include <ros_tools/random_generator.h>
+
 namespace pedestrian_simulator
 {
     /** @brief Pedestrian that may cross with a probability, in the binomial sense */

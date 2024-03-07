@@ -4,7 +4,7 @@
 #include <pedestrian_simulator/types.h>
 
 #include <asr_rapidxml/rapidxml_utils.hpp>
-#include <ros_tools/helpers.h>
+#include <ros_tools/random_generator.h>
 
 #include <string>
 

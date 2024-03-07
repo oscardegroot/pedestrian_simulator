@@ -5,13 +5,13 @@
 #include <pedestrian_simulator/xml_reader.h>
 #include <pedestrian_simulator/pedsim_manager.h>
 
-#include <ros_tools/helpers.h>
 #include <ros_tools/ros_visuals.h>
 
-#include <lmpcc_msgs/msg/obstacle_array.hpp>
-#include <lmpcc_msgs/msg/obstacle_gmm.hpp>
-#include <lmpcc_msgs/msg/gaussian.hpp>
+#include <mpc_planner_msgs/msg/obstacle_array.hpp>
+#include <mpc_planner_msgs/msg/obstacle_gmm.hpp>
+#include <mpc_planner_msgs/msg/gaussian.hpp>
 
+#include <std_msgs/msg/empty.hpp>
 #include <geometry_msgs/msg/pose.hpp>
 #include <nav_msgs/msg/path.hpp>
 #include <std_msgs/msg/float64.hpp>
@@ -77,8 +77,8 @@ namespace pedestrian_simulator
         RobotState robot_state_;
 
         // rclcpp::Publisher<derived_object_msgs::msg::ObjectArray>::SharedPtr obstacle_pub_;
-        rclcpp::Publisher<lmpcc_msgs::msg::ObstacleArray>::SharedPtr obstacle_prediction_pub_;
-        rclcpp::Publisher<lmpcc_msgs::msg::ObstacleArray>::SharedPtr obstacle_trajectory_prediction_pub_;
+        rclcpp::Publisher<mpc_planner_msgs::msg::ObstacleArray>::SharedPtr obstacle_prediction_pub_;
+        rclcpp::Publisher<mpc_planner_msgs::msg::ObstacleArray>::SharedPtr obstacle_trajectory_prediction_pub_;
         rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr ped_model_visuals_;
         // rclcpp::Publisher<>::SharedPtr obstacle_prediction_pub_;
 

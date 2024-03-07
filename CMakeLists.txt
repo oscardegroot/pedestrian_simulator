@@ -19,7 +19,7 @@ find_package(std_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(derived_object_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(lmpcc_msgs REQUIRED)
+find_package(mpc_planner_msgs REQUIRED)
 
 find_package(ros_tools REQUIRED)
 find_package(pedsim_original REQUIRED)
@@ -27,10 +27,15 @@ find_package(tf2_ros REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
 
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
+add_definitions(${EIGEN_DEFINITIONS})
+
 ## BUILD ###
 include_directories(
   include/${PROJECT_NAME}
   include/pedestrians
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 add_library(${PROJECT_NAME} SHARED
@@ -49,8 +54,7 @@ add_library(${PROJECT_NAME} SHARED
   src/pedestrians/waypoint_pedestrian.cpp
 )
 
-target_include_directories(${PROJECT_NAME}
-  PUBLIC
+target_include_directories(${PROJECT_NAME} PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
     "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
@@ -61,7 +65,7 @@ ament_target_dependencies(${PROJECT_NAME}
   std_msgs
   nav_msgs
   derived_object_msgs
-  lmpcc_msgs
+  mpc_planner_msgs
   geometry_msgs
   ros_tools
   pedsim_original

@@ -9,7 +9,8 @@
 #include <pedestrians/social_forces_pedestrian.h>
 #include <pedestrians/waypoint_pedestrian.h>
 
-#include <ros_tools/ros2_wrappers.h>
+#include <ros_tools/convertions.h>
+#include <ros_tools/paths.h>
 
 #include <std_msgs/msg/empty.hpp>
 #include <geometry_msgs/msg/twist.hpp>
@@ -32,8 +33,8 @@ namespace pedestrian_simulator
         ped_model_visuals_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/pedestrian_simulator/visualization", 5);
 
         // obstacle_pub_ = nh_.advertise<derived_object_msgs::ObjectArray>("/pedestrian_simulator/pedestrians", 1);
-        // obstacle_prediction_pub_ = nh_.advertise<lmpcc_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
-        obstacle_trajectory_prediction_pub_ = this->create_publisher<lmpcc_msgs::msg::ObstacleArray>("/pedestrian_simulator/trajectory_predictions", 1);
+        // obstacle_prediction_pub_ = nh_.advertise<mpc_planner_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
+        obstacle_trajectory_prediction_pub_ = this->create_publisher<mpc_planner_msgs::msg::ObstacleArray>("/pedestrian_simulator/trajectory_predictions", 1);
 
         reset_sub_ = this->create_subscription<std_msgs::msg::Empty>(
             "/lmpcc/reset_environment", 1,
@@ -375,12 +376,12 @@ namespace pedestrian_simulator
 
         // Otherwise we use this function
 
-        lmpcc_msgs::msg::ObstacleArray prediction_array;
+        mpc_planner_msgs::msg::ObstacleArray prediction_array;
         prediction_array.header.frame_id = "map";
 
         // Idea: Copy the pedestrian and step all of them one by one recording their positions then
         std::vector<std::unique_ptr<Pedestrian>> copied_pedestrians;
-        std::vector<lmpcc_msgs::msg::Gaussian> gaussian_msgs;
+        std::vector<mpc_planner_msgs::msg::Gaussian> gaussian_msgs;
 
         RobotState copied_robot = robot_state_;
 
@@ -397,7 +398,7 @@ namespace pedestrian_simulator
             copied_ped->LoadOtherPedestrians(&copied_pedestrians); // Link this pedestrian to the copied pedestrians
             copied_ped->LoadRobot(&copied_robot);
 
-            lmpcc_msgs::msg::ObstacleGMM gmm_msg;
+            mpc_planner_msgs::msg::ObstacleGMM gmm_msg;
             gmm_msg.id = id;
 
             // Initial position
@@ -450,7 +451,7 @@ namespace pedestrian_simulator
     void PedestrianSimulator::PublishSocialPredictions()
     {
 
-        lmpcc_msgs::msg::ObstacleArray prediction_array;
+        mpc_planner_msgs::msg::ObstacleArray prediction_array;
         prediction_array.header.frame_id = "map";
 
         // Build up the scene
@@ -469,7 +470,7 @@ namespace pedestrian_simulator
 
         // Idea: Copy the pedestrian and step all of them one by one recording their positions then
         // std::vector<std::unique_ptr<Pedestrian>> copied_pedestrians;
-        std::vector<lmpcc_msgs::msg::Gaussian> gaussian_msgs;
+        std::vector<mpc_planner_msgs::msg::Gaussian> gaussian_msgs;
 
         // RobotState copied_robot = robot_state_;
 
@@ -479,7 +480,7 @@ namespace pedestrian_simulator
             if (ped->gettype() == (int)AgentType::ROBOT)
                 continue;
 
-            lmpcc_msgs::msg::ObstacleGMM gmm_msg;
+            mpc_planner_msgs::msg::ObstacleGMM gmm_msg;
             gmm_msg.id = id;
 
             // Initial position
@@ -535,13 +536,13 @@ namespace pedestrian_simulator
     void PedestrianSimulator::PublishGaussianPredictions()
     {
 
-        lmpcc_msgs::msg::ObstacleArray prediction_array;
+        mpc_planner_msgs::msg::ObstacleArray prediction_array;
 
         unsigned int id = 0;
         for (auto &ped : pedestrians_)
         {
 
-            lmpcc_msgs::msg::ObstacleGMM gmm_msg;
+            mpc_planner_msgs::msg::ObstacleGMM gmm_msg;
             gmm_msg.id = id;
 
             gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
@@ -549,7 +550,7 @@ namespace pedestrian_simulator
             gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->twist_.linear.y, ped->twist_.linear.x));
 
             // We simply load the uncertainty, to be integrated on the controller side
-            lmpcc_msgs::msg::Gaussian gaussian_msg;
+            mpc_planner_msgs::msg::Gaussian gaussian_msg;
             geometry_msgs::msg::PoseStamped pose;
             pose.pose = gmm_msg.pose;
 
@@ -583,13 +584,13 @@ namespace pedestrian_simulator
 
     void PedestrianSimulator::PublishBinomialPredictions()
     {
-        lmpcc_msgs::msg::ObstacleArray prediction_array;
+        mpc_planner_msgs::msg::ObstacleArray prediction_array;
 
         unsigned int id = 0;
         for (auto &general_ped : pedestrians_)
         {
             BinomialPedestrian *ped = (BinomialPedestrian *)(general_ped.get());
-            lmpcc_msgs::msg::ObstacleGMM gmm_msg;
+            mpc_planner_msgs::msg::ObstacleGMM gmm_msg;
             gmm_msg.id = id;
 
             gmm_msg.pose.position.x = ped->position_.x - vehicle_frame_.position.x;
@@ -602,7 +603,7 @@ namespace pedestrian_simulator
                 // For each state in the horizon we need to define a Gaussian + the case where the ped does not cross
                 for (int k_mode = 0; k_mode < CONFIG.horizon_N_ + 1; k_mode++) // Mode k_mode is the mode where the ped switches to crossing at k=k_mode
                 {
-                    lmpcc_msgs::msg::Gaussian gaussian_msg;
+                    mpc_planner_msgs::msg::Gaussian gaussian_msg;
                     // We simply load the uncertainty, to be integrated on the controller side
                     geometry_msgs::msg::PoseStamped pose;
                     pose.pose = gmm_msg.pose;
@@ -645,7 +646,7 @@ namespace pedestrian_simulator
             }
             else // If we already crossed, move straight
             {
-                lmpcc_msgs::msg::Gaussian gaussian_msg;
+                mpc_planner_msgs::msg::Gaussian gaussian_msg;
                 geometry_msgs::msg::PoseStamped pose;
                 pose.pose = gmm_msg.pose;
 
@@ -784,7 +785,7 @@ namespace pedestrian_simulator
             // marker.action = visualization_msgs::Marker::ADD;
             // marker.mesh_resource = "package://pedestrian_simulator/models/walking.dae";
 
-            marker.mesh_resource = "file://" + RosTools::GetPackagePath("pedestrian_simulator") + "models/walking.dae";
+            marker.mesh_resource = "file://" + getPackagePath("pedestrian_simulator") + "models/walking.dae";
             marker.pose.position.x = ped->position_.x;
             marker.pose.position.y = ped->position_.y;
             marker.pose.position.z = 0;

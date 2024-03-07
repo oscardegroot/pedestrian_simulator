@@ -4,7 +4,7 @@
 #include <geometry_msgs/msg/pose.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <Eigen/Dense>
-#include <ros_tools/helpers.h>
+#include <ros_tools/math.h>
 
 #include <vector>
 

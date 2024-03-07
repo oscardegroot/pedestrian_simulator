@@ -24,7 +24,7 @@
   <depend>asr_rapidxml</depend>
   <depend>ros_tools</depend>
   <depend>pedsim_original</depend>
-  <depend>lmpcc_msgs</depend>
+  <depend>mpc_planner_msgs</depend>
 
 
   <export>

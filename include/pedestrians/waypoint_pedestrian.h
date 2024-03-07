@@ -2,6 +2,9 @@
 #define __WAYPOINT_PEDESTRIAN_H__
 
 #include <pedestrians/pedestrian.h>
+
+#include <ros_tools/random_generator.h>
+
 namespace pedestrian_simulator
 {
     /** @deprecated Follow waypoints deterministically */

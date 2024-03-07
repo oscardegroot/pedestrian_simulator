@@ -3,6 +3,8 @@
 
 #include <pedestrians/pedestrian.h>
 
+#include <ros_tools/random_generator.h>
+
 namespace pedestrian_simulator
 {
     /** @brief Pedestrian that moves under Gaussian process noise */
