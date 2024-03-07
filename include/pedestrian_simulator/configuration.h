@@ -2,7 +2,8 @@
 #define CONFIGURATION_H
 
 #include <Eigen/Dense>
-#include <ros/ros.h>
+
+#include <ros_tools/base_configuration.h>
 
 #include <string>
 #include <vector>
@@ -17,7 +18,7 @@ enum class PedestrianType
   SOCIAL = 3
 };
 
-class Config
+class Config : public RosTools::BaseConfiguration
 {
 
   /**
@@ -77,33 +78,6 @@ public:
   bool success_;
 
 public:
-  /* Retrieve paramater, if it doesn't exist return false */
-  template <class T>
-  static bool retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value)
-  {
-
-    if (!nh.getParam(name, value))
-    {
-      ROS_WARN_STREAM(" Parameter " << name << " not set on node " << ros::this_node::getName().c_str());
-      return false;
-    }
-    else
-    {
-      return true;
-    }
-  }
-
-  /* Retrieve parameter, if it doesn't exist use the default */
-  template <class T>
-  static void retrieveParameter(const ros::NodeHandle &nh, const std::string &name, T &value, const T &default_value)
-  {
-
-    if (!retrieveParameter(nh, name, value))
-    {
-      ROS_WARN_STREAM(" Setting " << name << " to default value: " << default_value);
-      value = default_value;
-    }
-  }
 };
 
 #endif

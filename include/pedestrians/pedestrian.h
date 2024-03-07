@@ -5,8 +5,6 @@
 
 #include <ros_tools/random_generator.h>
 
-#include <geometry_msgs/Twist.h>
-
 enum class PedState
 {
     STRAIGHT = 0,
@@ -40,8 +38,8 @@ public:
     Waypoint start_, goal_;
     Waypoint position_;
 
-    geometry_msgs::Twist twist_;
-    geometry_msgs::Twist noisy_twist_;
+    Eigen::Vector2d twist_;
+    Eigen::Vector2d noisy_twist_;
 
     double velocity_; // This is the preferred velocity
 };

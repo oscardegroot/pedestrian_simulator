@@ -11,8 +11,6 @@ set(PEDSIM_SIMULATOR_DEPENDENCIES
   geometry_msgs
   roscpp
   std_msgs
-
-  # ros_tools
   ros_tools
   pedsim_original
   mpc_planner_msgs
