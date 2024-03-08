@@ -53,6 +53,7 @@ void SocialForcesPedestrian::PreUpdateComputations(const double dt)
 
 void SocialForcesPedestrian::Update(const double dt)
 {
+    (void)dt;
     if (!CONFIG.static_)
     {
         position_.x = pedsim_agent_->getx();
@@ -159,6 +160,7 @@ Eigen::Vector2d SocialForcesPedestrian::GetRepulsiveForce(const Eigen::Vector2d 
 
 Eigen::Vector2d SocialForcesPedestrian::GetPedRepulsiveForce(const Eigen::Vector2d &other_pos, const Eigen::Vector2d &other_vel, const double dt)
 {
+    (void)dt;
     // PEDSIM_ROS VERSION!
     // define relative importance of position vs velocity vector
     // (set according to Moussaid-Helbing 2009)

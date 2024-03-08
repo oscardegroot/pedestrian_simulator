@@ -17,9 +17,9 @@ void Pedestrian::Reset()
 
 // If computations should happen before we update the positions of all pedestrians
 void Pedestrian::PreUpdateComputations() { PreUpdateComputations(CONFIG.delta_t_); }
-void Pedestrian::PreUpdateComputations(const double dt){};
+void Pedestrian::PreUpdateComputations(const double dt) { (void)dt; };
 void Pedestrian::Update() { Update(CONFIG.delta_t_); }
-void Pedestrian::Update(const double dt){};
+void Pedestrian::Update(const double dt) { (void)dt; };
 void Pedestrian::UpdatePosition(const double vx, const double vy) { UpdatePosition(vx, vy, CONFIG.delta_t_); }
 void Pedestrian::UpdatePosition(const double vx, const double vy, const double dt)
 {

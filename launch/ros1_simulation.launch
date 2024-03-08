@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+    <arg name="pedestrian_scenario" default="random_social/8_corridor.xml" />
+    <arg name="config_file" default="$(find pedestrian_simulator)/config/configuration.yaml"/>
+
+    <rosparam command="load" file="$(arg config_file)"/>
+
+    <!-- <param name="pedestrian_simulator/node/scenario" value="$(arg pedestrian_scenario)" if="$(arg overwrite_pedestrian_scenario)"/> -->
+
+    <node pkg="pedestrian_simulator" type="pedestrian_simulator_node" name="pedestrian_simulator" cwd="node" respawn="false" output="screen">
+        <param name="node/scenario" value="$(arg pedestrian_scenario)"/>
+    </node>    
+</launch>  

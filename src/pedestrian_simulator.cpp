@@ -62,7 +62,6 @@ void PedestrianSimulator::ReadScenario()
         }
         break;
     case PedestrianType::SOCIAL:
-        LOG_HOOK();
         pedsim_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
 
         pedsim_prediction_manager_.reset(new PedsimManager(xml_reader_->static_obstacles_)); // Initialize the libpedsim backend
@@ -88,8 +87,6 @@ void PedestrianSimulator::ReadScenario()
 
 void PedestrianSimulator::Reset()
 {
-    vehicle_frame_ = Eigen::Vector2d();
-
     if (pedsim_manager_)
         pedsim_manager_->Reset();
 
@@ -152,8 +149,8 @@ std::vector<Prediction> PedestrianSimulator::GetPedestrians()
         prediction.id = id;
 
         prediction.Add(
-            Eigen::Vector2d(ped->position_.x - vehicle_frame_(0),
-                            ped->position_.y - vehicle_frame_(1)),
+            Eigen::Vector2d(ped->position_.x,
+                            ped->position_.y),
             std::atan2(ped->twist_(1), ped->twist_(0)),
             ped->noisy_twist_);
 
@@ -288,8 +285,8 @@ std::vector<Prediction> PedestrianSimulator::GetSocialPredictions()
 
         // Initial position
         prediction.Add(
-            Eigen::Vector2d(ped->getx() - vehicle_frame_(0),
-                            ped->gety() - vehicle_frame_(1)),
+            Eigen::Vector2d(ped->getx(),
+                            ped->gety()),
             std::atan2(ped->getvy(), ped->getvx()),
             Eigen::Vector2d(ped->getvx(), ped->getvy()));
 
@@ -331,9 +328,7 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
         auto &prediction = predictions.back();
         prediction.id = id;
 
-        Eigen::Vector2d pos(ped->position_.x - vehicle_frame_(0),
-                            ped->position_.y - vehicle_frame_(1));
-
+        Eigen::Vector2d pos(ped->position_.x, ped->position_.y);
         for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
         {
             Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_(0), ped->twist_(1));
@@ -380,14 +375,13 @@ void PedestrianSimulator::PublishDebugVisuals()
 
         arrow.setOrientation(std::atan2(ped->twist_(1), ped->twist_(0)));
 
-        arrow.addPointMarker(Eigen::Vector3d(ped->position_.x - vehicle_frame_(0),
-                                             ped->position_.y - vehicle_frame_(1), 0.));
+        arrow.addPointMarker(Eigen::Vector3d(ped->position_.x, ped->position_.y, 0.));
 
-        start_goal_marker.setColor(1., 0., 0.);
-        start_goal_marker.addPointMarker(Eigen::Vector3d(ped->start_.x, ped->start_.y, 0.));
+        // start_goal_marker.setColor(1., 0., 0.);
+        // start_goal_marker.addPointMarker(Eigen::Vector3d(ped->start_.x, ped->start_.y, 0.));
 
-        start_goal_marker.setColor(0., 1., 0.);
-        start_goal_marker.addPointMarker(Eigen::Vector3d(ped->goal_.x, ped->goal_.y, 0.));
+        // start_goal_marker.setColor(0., 1., 0.);
+        // start_goal_marker.addPointMarker(Eigen::Vector3d(ped->goal_.x, ped->goal_.y, 0.));
     }
 
     robot_position.addPointMarker(Eigen::Vector3d(robot_state_.pos(0), robot_state_.pos(1), 0.));
@@ -418,7 +412,6 @@ void PedestrianSimulator::VisualizePedestrians()
     auto &ped_visual = VISUALS.getPublisher("visualization");
     auto &ped_model = ped_visual.getNewModelMarker();
 
-    int cur_id = 0;
     for (auto &ped : pedestrians_) // Publish a pedestrian model
     {
         Eigen::Vector2d rotated_twist = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_(0), ped->twist_(1));

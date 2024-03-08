@@ -42,7 +42,6 @@ public:
     void VisualizeStaticObstacles();
 
     RobotState robot_state_;
-    Eigen::Vector2d vehicle_frame_;
 
 private:
     std::unique_ptr<XMLReader> xml_reader_;

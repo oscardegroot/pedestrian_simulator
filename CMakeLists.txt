@@ -1,46 +1,49 @@
-cmake_minimum_required(VERSION 3.0.2)
+cmake_minimum_required(VERSION 3.5)
 project(pedestrian_simulator)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 17)
 endif()
 
-set(PEDSIM_SIMULATOR_DEPENDENCIES
-  geometry_msgs
-  roscpp
-  std_msgs
-  ros_tools
-  pedsim_original
-  mpc_planner_msgs
-  asr_rapidxml
-  roslib
-  std_srvs
-)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+add_compile_options(-DCMAKE_BUILD_TYPE=Release)
 
-find_package(catkin REQUIRED COMPONENTS ${PEDSIM_SIMULATOR_DEPENDENCIES})
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclcpp_components REQUIRED)
 
+## PACKAGES ##
+find_package(std_srvs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(derived_object_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(mpc_planner_msgs REQUIRED)
+
+find_package(ros_tools REQUIRED)
+find_package(pedsim_original REQUIRED)
+find_package(tf2_ros REQUIRED)
+
+# find_package(autoware_auto_perception_msgs REQUIRED)
+# find_package(dummy_perception_publisher REQUIRED)
+# find_package(autoware_adapi_v1_msgs REQUIRED)
+
+find_package(asr_rapidxml REQUIRED)
+
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3 REQUIRED)
+add_definitions(${EIGEN_DEFINITIONS})
+
+## BUILD ###
 include_directories(
-  include/pedestrian_simulator
+  include/${PROJECT_NAME}
   include/pedestrians
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
-catkin_package(
-  CATKIN_DEPENDS ${PEDSIM_SIMULATOR_DEPENDENCIES}
-  INCLUDE_DIRS include include/${PROJECT_NAME}
-  LIBRARIES pedestrian_simulator
-)
-
-# ##########
-# # Build ##
-# ##########
-include_directories(
-  include
-  include/pedestrian_simulator
-  ${catkin_INCLUDE_DIRS}
-)
-
-# # Declare a C++ library
-add_library(pedestrian_simulator
+add_library(${PROJECT_NAME} SHARED
   src/pedestrian_simulator.cpp
   src/pedsim_manager.cpp
   src/xml_reader.cpp
@@ -54,16 +57,67 @@ add_library(pedestrian_simulator
   src/pedestrians/random_gaussian_pedestrian.cpp
   src/pedestrians/social_forces_pedestrian.cpp
 )
-add_dependencies(pedestrian_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-add_executable(pedestrian_simulator_node src/ros1_pedestrian_simulator.cpp)
-target_link_libraries(pedestrian_simulator_node pedestrian_simulator ${catkin_LIBRARIES})
-add_dependencies(pedestrian_simulator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_include_directories(${PROJECT_NAME} PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
 
-add_definitions(-DMPC_PLANNER_ROS)
+ament_target_dependencies(${PROJECT_NAME}
+  rclcpp
+  rclcpp_components
+  std_msgs
+  std_srvs
+  nav_msgs
+  # autoware_auto_perception_msgs
+  # dummy_perception_publisher
+  # autoware_adapi_v1_msgs
+  derived_object_msgs
+  mpc_planner_msgs
+  geometry_msgs
+  ros_tools
+  pedsim_original
+  asr_rapidxml
+  tf2_ros
+)
 
-# ############
-# # Install ##
-# ############
-install(FILES "${PROJECT_NAME}Config.cmake" "${PROJECT_NAME}ConfigVersion.cmake"
-  DESTINATION "share/${PROJECT_NAME}/cmake")
+add_executable(${PROJECT_NAME}_node src/ros2_pedestrian_simulator.cpp)
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
+
+## INSTALL ##
+# The library
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
+install(DIRECTORY config
+  DESTINATION share/${PROJECT_NAME})
+  
+# Pedestrian scenarios
+install(DIRECTORY scenarios
+  DESTINATION share/${PROJECT_NAME})
+
+## FINALIZE PACKAGE ##
+# ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_dependencies(rclcpp)
+ament_export_dependencies(rclcpp_components)
+ament_export_dependencies(std_msgs)
+ament_export_dependencies(std_srvs)
+ament_export_dependencies(nav_msgs)
+ament_export_dependencies(derived_object_msgs)
+ament_export_dependencies(lmpcc_msgs)
+ament_export_dependencies(geometry_msgs)
+ament_export_dependencies(ros_tools)
+ament_export_dependencies(pedsim_original)
+ament_export_dependencies(asr_rapidxml)
+ament_export_dependencies(tf2_ros)
+# ament_export_dependencies(autoware_auto_perception_msgs)
+# ament_export_dependencies(dummy_perception_publisher)
+
+ament_package()

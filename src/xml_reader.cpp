@@ -1,7 +1,7 @@
 #include <xml_reader.h>
 
 #include <pedestrian_simulator/configuration.h>
-#include <rapidxml_utils.hpp>
+#include <asr_rapidxml/rapidxml_utils.hpp>
 
 #include <ros_tools/paths.h>
 #include <ros_tools/logging.h>
