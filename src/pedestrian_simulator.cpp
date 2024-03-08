@@ -13,7 +13,7 @@
 
 PedestrianSimulator::PedestrianSimulator()
 {
-    LOG_INFO("PedestrianSimulator: Initializing");
+    LOG_INFO("Initializing");
 
     Config::Get().Init();
 
@@ -24,7 +24,7 @@ PedestrianSimulator::PedestrianSimulator()
     for (size_t i = 0; i < colors_.size(); i++)
         colors_[i] /= 256.;
 
-    LOG_INFO("PedestrianSimulator: Ready");
+    LOG_SUCCESS("Ready");
 }
 
 void PedestrianSimulator::ReadScenario()

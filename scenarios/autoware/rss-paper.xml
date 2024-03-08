@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<tag type="velocity" value="1.4"/>
+<pedestrian>
+    <start x="3758.3169" y="73791.4297"/>
+    <path>
+        <point x="3758.6745" y="73792.3636"/>
+    </path>
+</pedestrian>
+<pedestrian>
+    <start x="3765.4233" y="73794.5938"/>
+    <path>
+        <point x="3764.5156" y="73794.1741"/>
+    </path>
+</pedestrian>

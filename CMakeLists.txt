@@ -8,11 +8,9 @@ endif()
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
-add_compile_options(-DCMAKE_BUILD_TYPE=Release)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(rclcpp_components REQUIRED)
 
 ## PACKAGES ##
 find_package(std_srvs REQUIRED)
@@ -26,9 +24,9 @@ find_package(ros_tools REQUIRED)
 find_package(pedsim_original REQUIRED)
 find_package(tf2_ros REQUIRED)
 
-# find_package(autoware_auto_perception_msgs REQUIRED)
-# find_package(dummy_perception_publisher REQUIRED)
-# find_package(autoware_adapi_v1_msgs REQUIRED)
+find_package(autoware_auto_perception_msgs REQUIRED)
+find_package(dummy_perception_publisher REQUIRED)
+find_package(autoware_adapi_v1_msgs REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
 
@@ -65,13 +63,12 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 ament_target_dependencies(${PROJECT_NAME}
   rclcpp
-  rclcpp_components
   std_msgs
   std_srvs
   nav_msgs
-  # autoware_auto_perception_msgs
-  # dummy_perception_publisher
-  # autoware_adapi_v1_msgs
+  autoware_auto_perception_msgs
+  dummy_perception_publisher
+  autoware_adapi_v1_msgs
   derived_object_msgs
   mpc_planner_msgs
   geometry_msgs
@@ -93,6 +90,10 @@ install(
   ARCHIVE DESTINATION lib
   RUNTIME DESTINATION bin
 )
+
+install(TARGETS ${PROJECT_NAME}_node
+  DESTINATION lib/${PROJECT_NAME})
+
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME})
 
@@ -105,11 +106,14 @@ install(DIRECTORY scenarios
 
 ## FINALIZE PACKAGE ##
 # ament_export_include_directories(include/${PROJECT_NAME})
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
 ament_export_dependencies(rclcpp)
-ament_export_dependencies(rclcpp_components)
 ament_export_dependencies(std_msgs)
 ament_export_dependencies(std_srvs)
 ament_export_dependencies(nav_msgs)
+ament_export_dependencies(autoware_auto_perception_msgs)
+ament_export_dependencies(dummy_perception_publisher)
+ament_export_dependencies(autoware_adapi_v1_msgs)
 ament_export_dependencies(derived_object_msgs)
 ament_export_dependencies(lmpcc_msgs)
 ament_export_dependencies(geometry_msgs)
@@ -117,7 +121,4 @@ ament_export_dependencies(ros_tools)
 ament_export_dependencies(pedsim_original)
 ament_export_dependencies(asr_rapidxml)
 ament_export_dependencies(tf2_ros)
-# ament_export_dependencies(autoware_auto_perception_msgs)
-# ament_export_dependencies(dummy_perception_publisher)
-
 ament_package()

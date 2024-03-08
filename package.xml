@@ -15,15 +15,15 @@
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>TODO</license>
 
+  <depend>ament_cmake</depend>
   <depend>rclcpp</depend>
-  <depend>rclcpp_components</depend>
   <depend>std_msgs</depend>
   <depend>std_srvs</depend>
   <depend>nav_msgs</depend>
   <depend>derived_object_msgs</depend>
-  <!-- <depend>autoware_auto_perception_msgs</depend> -->
-  <!-- <depend>dummy_perception_publisher</depend> -->
-  <!-- <depend>autoware_adapi_v1_msgs</depend> -->
+  <depend>autoware_auto_perception_msgs</depend>
+  <depend>dummy_perception_publisher</depend>
+  <depend>autoware_adapi_v1_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>asr_rapidxml</depend>
   <depend>ros_tools</depend>
