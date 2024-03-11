@@ -29,7 +29,7 @@ void ROSPedestrianSimulator::InitializePublishersAndSubscribers()
         "/pedestrian_simulator/trajectory_predictions", 1);
 
     reset_sub_ = this->create_subscription<std_msgs::msg::Empty>(
-        "/lmpcc/reset_environment", 1,
+        "/pedestrian_simulator/reset", 1,
         std::bind(&ROSPedestrianSimulator::ResetCallback, this, std::placeholders::_1));
     robot_state_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         "/robot_state", 1,
