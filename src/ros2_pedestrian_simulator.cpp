@@ -197,6 +197,9 @@ mpc_planner_msgs::msg::ObstacleArray ROSPedestrianSimulator::PredictionsToObstac
         obstacle_array_msg.obstacles.emplace_back();
         obstacle_array_msg.obstacles.back().id = prediction.id;
         obstacle_array_msg.obstacles.back().gaussians.emplace_back();
+        obstacle_array_msg.obstacles.back().pose.position.x = prediction.pos[0](0);
+        obstacle_array_msg.obstacles.back().pose.position.y = prediction.pos[0](1);
+        obstacle_array_msg.obstacles.back().pose.orientation = RosTools::angleToQuaternion(prediction.angle[0]);
 
         auto &gaussian = obstacle_array_msg.obstacles.back().gaussians.back();
 

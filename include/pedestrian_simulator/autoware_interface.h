@@ -15,9 +15,6 @@
 #include <autoware_auto_perception_msgs/msg/predicted_objects.hpp>
 #include <autoware_auto_perception_msgs/msg/detected_objects.hpp>
 
-// Publish rviz tool
-#include <dummy_perception_publisher/msg/object.hpp>
-
 // Tier 4 tool?
 #include <tier4_perception_msgs/msg/detected_objects_with_feature.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -36,7 +33,7 @@
 // class Pedestrian;
 namespace pedestrian_simulator
 {
-#define AUTOWARE_Z 0.0 //19.5897274017334
+#define AUTOWARE_Z 0.0 // 19.5897274017334
 #define OBSTACLE_RADIUS 0.5
 
 	inline unique_identifier_msgs::msg::UUID generateUUIDMsg(const std::string &input) // Hoisted from detection_sensor.cpp
@@ -295,13 +292,11 @@ namespace pedestrian_simulator
 
 			// rclcpp::sleep_for(std::chrono::nanoseconds(static_cast<int64_t>(3. * 1e9))); // Wait 3s
 			// THE SERVICE CALL SHOULD HAPPEN LATER
-
 		}
 
 		void EnableAutonomousMode()
 		{
 			RosTools::callServiceWithoutResponse<autoware_adapi_v1_msgs::srv::ChangeOperationMode>(start_autonomous_client_, logger_);
-
 		}
 
 		/** @note: Publishes the rivz dummy (will also simulate point clouds but only constant velocity behavior) */

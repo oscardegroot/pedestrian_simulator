@@ -25,7 +25,6 @@ find_package(pedsim_original REQUIRED)
 find_package(tf2_ros REQUIRED)
 
 find_package(autoware_auto_perception_msgs REQUIRED)
-find_package(dummy_perception_publisher REQUIRED)
 find_package(autoware_adapi_v1_msgs REQUIRED)
 
 find_package(asr_rapidxml REQUIRED)
@@ -67,7 +66,6 @@ ament_target_dependencies(${PROJECT_NAME}
   std_srvs
   nav_msgs
   autoware_auto_perception_msgs
-  dummy_perception_publisher
   autoware_adapi_v1_msgs
   derived_object_msgs
   mpc_planner_msgs
@@ -112,7 +110,6 @@ ament_export_dependencies(std_msgs)
 ament_export_dependencies(std_srvs)
 ament_export_dependencies(nav_msgs)
 ament_export_dependencies(autoware_auto_perception_msgs)
-ament_export_dependencies(dummy_perception_publisher)
 ament_export_dependencies(autoware_adapi_v1_msgs)
 ament_export_dependencies(derived_object_msgs)
 ament_export_dependencies(lmpcc_msgs)
