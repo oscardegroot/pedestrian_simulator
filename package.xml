@@ -21,8 +21,8 @@
   <depend>std_srvs</depend>
   <depend>nav_msgs</depend>
   <depend>derived_object_msgs</depend>
-  <depend>autoware_auto_perception_msgs</depend>
-  <depend>autoware_adapi_v1_msgs</depend>
+  <!-- <depend>autoware_auto_perception_msgs</depend>
+  <depend>autoware_adapi_v1_msgs</depend> -->
   <depend>geometry_msgs</depend>
   <depend>asr_rapidxml</depend>
   <depend>ros_tools</depend>

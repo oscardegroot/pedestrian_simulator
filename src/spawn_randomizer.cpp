@@ -1,5 +1,7 @@
 #include <pedestrian_simulator/spawn_randomizer.h>
 
+#include <ros_tools/random_generator.h>
+
 double Range::GenerateRandom(RosTools::RandomGenerator *random_generator)
 {
     return min + random_generator->Double() * (max - min);

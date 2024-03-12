@@ -13,7 +13,7 @@ void XMLReader::Read()
 {
 
     std::string map_file = getPackagePath("pedestrian_simulator") + "/scenarios/" + CONFIG.scenario_file_;
-    LOG_INFO("XMLReader: Reading " << map_file << " for pedestrian positions.");
+    LOG_VALUE("Pedestrian Scenario", map_file);
     Read(map_file);
 }
 

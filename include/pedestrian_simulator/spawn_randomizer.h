@@ -4,9 +4,11 @@
 #include <pedestrian_simulator/types.h>
 
 #include <asr_rapidxml/rapidxml_utils.hpp>
-#include <ros_tools/random_generator.h>
 
-#include <string>
+namespace RosTools
+{
+    class RandomGenerator;
+}
 
 struct Range
 {

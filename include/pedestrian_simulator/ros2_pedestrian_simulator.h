@@ -1,6 +1,5 @@
-#ifndef ROS1_PEDESTRIAN_SIMULATOR_H
-#define ROS1_PEDESTRIAN_SIMULATOR_H
-#include <pedestrian_simulator/pedestrian_simulator.h>
+#ifndef ROS2_PEDESTRIAN_SIMULATOR_H
+#define ROS2_PEDESTRIAN_SIMULATOR_H
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -16,6 +15,7 @@
 #include <mpc_planner_msgs/msg/gaussian.hpp>
 
 class Prediction;
+class PedestrianSimulator;
 
 class ROSPedestrianSimulator : public rclcpp::Node
 {
@@ -64,4 +64,4 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::PoseStamped>::SharedPtr robot_state_sub_;
 };
 
-#endif // ROS1_PEDESTRIAN_SIMULATOR_H
+#endif // ROS2_PEDESTRIAN_SIMULATOR_H

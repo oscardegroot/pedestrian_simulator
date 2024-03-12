@@ -1,9 +1,9 @@
 #ifndef __PEDESTRIAN_SIMULATOR_H__
 #define __PEDESTRIAN_SIMULATOR_H__
+#include <pedestrian_simulator/pedsim_manager.h>
 
 #include <pedestrian_simulator/types.h>
 #include <pedestrian_simulator/xml_reader.h>
-#include <pedestrian_simulator/pedsim_manager.h>
 
 #include <ros_tools/random_generator.h>
 #include <ros_tools/visuals.h>

@@ -1,14 +1,14 @@
 
 #include <pedestrian_simulator/ros2_pedestrian_simulator.h>
 
+#include <pedestrian_simulator/pedestrian_simulator.h>
+
 #include <pedestrian_simulator/types.h>
 #include <pedestrian_simulator/configuration.h>
 
 #include <ros_tools/visuals.h>
 #include <ros_tools/convertions.h>
 #include <ros_tools/logging.h>
-
-#include <memory>
 
 ROSPedestrianSimulator::ROSPedestrianSimulator()
     : rclcpp::Node("pedestrian_simulator")
