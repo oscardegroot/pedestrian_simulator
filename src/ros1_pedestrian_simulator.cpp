@@ -24,8 +24,7 @@ void ROSPedestrianSimulator::InitializePublishersAndSubscribers()
     ped_model_visuals_ = _nh.advertise<visualization_msgs::MarkerArray>("/pedestrian_simulator/visualization", 5);
 
     obstacle_pub_ = _nh.advertise<derived_object_msgs::ObjectArray>("/pedestrian_simulator/pedestrians", 1);
-    // obstacle_prediction_pub_ = nh_.advertise<mpc_planner_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
-    obstacle_trajectory_prediction_pub_ = _nh.advertise<mpc_planner_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
+    obstacle_trajectory_prediction_pub_ = _nh.advertise<mpc_planner_msgs::ObstacleArray>("/pedestrian_simulator/trajectory_predictions", 1);
 
     reset_sub_ = _nh.subscribe("/lmpcc/reset_environment", 1, &ROSPedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = _nh.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
@@ -161,19 +160,22 @@ void ROSPedestrianSimulator::Loop(const ros::TimerEvent &event)
     obstacle_pub_.publish(obstacles_msg);
 
     std::vector<Prediction> predictions = _simulator->GetPredictions();
-    mpc_planner_msgs::obstacle_array predictions_msg = PredictionsToObstacleArray(predictions);
+    mpc_planner_msgs::ObstacleArray predictions_msg = PredictionsToObstacleArray(predictions);
     obstacle_trajectory_prediction_pub_.publish(predictions_msg);
 }
 
-mpc_planner_msgs::obstacle_array ROSPedestrianSimulator::PredictionsToObstacleArray(const std::vector<Prediction> &predictions)
+mpc_planner_msgs::ObstacleArray ROSPedestrianSimulator::PredictionsToObstacleArray(const std::vector<Prediction> &predictions)
 {
-    mpc_planner_msgs::obstacle_array obstacle_array_msg;
+    mpc_planner_msgs::ObstacleArray obstacle_array_msg;
 
     for (auto &prediction : predictions)
     {
         obstacle_array_msg.obstacles.emplace_back();
         obstacle_array_msg.obstacles.back().id = prediction.id;
         obstacle_array_msg.obstacles.back().gaussians.emplace_back();
+        obstacle_array_msg.obstacles.back().pose.position.x = prediction.pos[0](0);
+        obstacle_array_msg.obstacles.back().pose.position.y = prediction.pos[0](1);
+        obstacle_array_msg.obstacles.back().pose.orientation = RosTools::angleToQuaternion(prediction.angle[0]);
 
         auto &gaussian = obstacle_array_msg.obstacles.back().gaussians.back();
 

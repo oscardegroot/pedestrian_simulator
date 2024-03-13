@@ -295,8 +295,9 @@ std::vector<Prediction> PedestrianSimulator::GetSocialPredictions()
 
     for (int k = 0; k < CONFIG.horizon_N_; k++)
     {
-        pedsim_prediction_manager_->Update(CONFIG.prediction_step_);
         id = 0;
+        pedsim_prediction_manager_->Update(CONFIG.prediction_step_);
+
         for (auto &ped : pedsim_prediction_manager_->GetAllAgents())
         {
             if (ped->gettype() == (int)AgentType::ROBOT)
@@ -329,6 +330,14 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
         prediction.id = id;
 
         Eigen::Vector2d pos(ped->position_.x, ped->position_.y);
+
+        // Add the current position as first prediction
+        prediction.Add(pos,
+                       std::atan2(ped->twist_(1), ped->twist_(0)),
+                       ped->noisy_twist_,
+                       CONFIG.process_noise_[0],
+                       CONFIG.process_noise_[1]);
+
         for (int k = 0; k < CONFIG.horizon_N_; k++) // 1 - N
         {
             Eigen::Vector2d rotated_predict = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_(0), ped->twist_(1));

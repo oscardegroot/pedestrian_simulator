@@ -3,7 +3,7 @@
 
 #include <pedestrian_simulator/types.h>
 
-#include <asr_rapidxml/rapidxml_utils.hpp>
+#include <rapidxml_utils.hpp>
 
 namespace RosTools
 {

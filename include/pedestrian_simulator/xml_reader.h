@@ -1,7 +1,7 @@
 #ifndef __XMLREADER_H__
 #define __XMLREADER_H__
 
-#include <pedestrian.h>
+#include <pedestrians/pedestrian.h>
 #include <pedestrian_simulator/spawn_randomizer.h>
 #include <pedestrian_simulator/types.h>
 

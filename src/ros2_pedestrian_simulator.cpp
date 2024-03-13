@@ -203,7 +203,7 @@ mpc_planner_msgs::msg::ObstacleArray ROSPedestrianSimulator::PredictionsToObstac
 
         auto &gaussian = obstacle_array_msg.obstacles.back().gaussians.back();
 
-        for (size_t i = 0; i < prediction.pos.size(); i++) // The first is the current position
+        for (size_t i = 1; i < prediction.pos.size(); i++) // The first is the current position
         {
             gaussian.mean.poses.emplace_back();
             gaussian.mean.poses.back().pose.position.x = prediction.pos[i](0);
