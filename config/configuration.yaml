@@ -17,7 +17,7 @@ pedestrian_simulator:
     process_noise: [0.0, 0.0] # Deterministic
     collision_free_spawn: true
     interaction: true
-    constant_velocity_predictions: false # If "false" will produce predictions that follow the pedestrian model
+    constant_velocity_predictions: true # If "false" will produce predictions that follow the pedestrian model
   binomial:
     p: 0.025
   social_forces:

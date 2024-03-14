@@ -1,11 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(pedestrian_simulator)
 
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
-endif()
-
-set(PEDSIM_SIMULATOR_DEPENDENCIES
+set(DEPENDENCIES
   geometry_msgs
   roscpp
   std_msgs
@@ -17,30 +13,21 @@ set(PEDSIM_SIMULATOR_DEPENDENCIES
   std_srvs
 )
 
-find_package(catkin REQUIRED COMPONENTS ${PEDSIM_SIMULATOR_DEPENDENCIES})
+find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
 
-include_directories(
-  include/pedestrian_simulator
-  include/pedestrians
-)
-
-catkin_package(
-  CATKIN_DEPENDS ${PEDSIM_SIMULATOR_DEPENDENCIES}
-  INCLUDE_DIRS include include/${PROJECT_NAME}
-  LIBRARIES pedestrian_simulator
-)
-
-# ##########
-# # Build ##
-# ##########
 include_directories(
   include
-  include/pedestrian_simulator
   ${catkin_INCLUDE_DIRS}
 )
 
+catkin_package(
+  CATKIN_DEPENDS ${DEPENDENCIES}
+  INCLUDE_DIRS include include/${PROJECT_NAME}
+  LIBRARIES ${PROJECT_NAME}
+)
+
 # # Declare a C++ library
-add_library(pedestrian_simulator
+add_library(${PROJECT_NAME} STATIC
   src/pedestrian_simulator.cpp
   src/pedsim_manager.cpp
   src/xml_reader.cpp
@@ -54,16 +41,26 @@ add_library(pedestrian_simulator
   src/pedestrians/random_gaussian_pedestrian.cpp
   src/pedestrians/social_forces_pedestrian.cpp
 )
-add_dependencies(pedestrian_simulator ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
 
-add_executable(pedestrian_simulator_node src/ros1_pedestrian_simulator.cpp)
-target_link_libraries(pedestrian_simulator_node pedestrian_simulator ${catkin_LIBRARIES})
-add_dependencies(pedestrian_simulator_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_executable(${PROJECT_NAME}_node src/ros1_pedestrian_simulator.cpp)
+add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 add_definitions(-DMPC_PLANNER_ROS)
 
-# ############
-# # Install ##
-# ############
-install(FILES "${PROJECT_NAME}Config.cmake" "${PROJECT_NAME}ConfigVersion.cmake"
-  DESTINATION "share/${PROJECT_NAME}/cmake")
+install(TARGETS ${PROJECT_NAME}_node
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  PATTERN ".svn" EXCLUDE
+)
