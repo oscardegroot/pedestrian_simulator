@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<tag type="velocity" value="1.4"/>
+<pedestrian>
+	<start x="94083.9062" y="62025.1016"/>
+	<path>
+		<point x="94084.8168" y="62025.5150"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94087.5859" y="62027.6602"/>
+	<path>
+		<point x="94088.5130" y="62028.0350"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94124.6094" y="62020.4922"/>
+	<path>
+		<point x="94124.2179" y="62021.4124"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94124.0234" y="62025.2617"/>
+	<path>
+		<point x="94123.6393" y="62026.1850"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94120.0391" y="62035.9883"/>
+	<path>
+		<point x="94119.1178" y="62036.3773"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94147.0312" y="62058.7109"/>
+	<path>
+		<point x="94146.2331" y="62058.1084"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94146.4062" y="62055.9609"/>
+	<path>
+		<point x="94145.5742" y="62055.4062"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94080.3594" y="62053.7969"/>
+	<path>
+		<point x="94080.7566" y="62052.8791"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94079.9375" y="62069.5000"/>
+	<path>
+		<point x="94080.1865" y="62068.5315"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94062.1016" y="62061.3945"/>
+	<path>
+		<point x="94062.5136" y="62060.4834"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94097.6562" y="61987.0234"/>
+	<path>
+		<point x="94097.8245" y="61988.0092"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94099.2266" y="61995.7344"/>
+	<path>
+		<point x="94098.7611" y="61996.6194"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94110.0469" y="61971.0430"/>
+	<path>
+		<point x="94109.6136" y="61971.9442"/>
+	</path>
+</pedestrian>
