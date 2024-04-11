@@ -13,6 +13,8 @@
 ROSPedestrianSimulator::ROSPedestrianSimulator()
     : rclcpp::Node("pedestrian_simulator")
 {
+    STATIC_NODE_POINTER.init(this);
+
     InitializePublishersAndSubscribers();
 
     _simulator = std::make_unique<PedestrianSimulator>();

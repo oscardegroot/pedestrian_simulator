@@ -2,8 +2,8 @@
 <tag type="gaussian"/>
 <tag type="velocity" value="1.4"/>
 <pedestrian>
-	<start x="3801.2466" y="73815.6953"/>
+	<start x="94114.7422" y="62044.7773"/>
 	<path>
-		<point x="3800.3638" y="73815.2255"/>
+		<point x="94113.8273" y="62044.3735"/>
 	</path>
 </pedestrian>
