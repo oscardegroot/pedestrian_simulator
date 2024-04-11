@@ -36,6 +36,9 @@ public:
     // void PublishBinomialPredictions();
     std::vector<Prediction> GetSocialPredictions();
     std::vector<Prediction> GetGaussianPredictions();
+
+    void SetRobotState(const RobotState &state);
+
     void PublishDebugVisuals();
     void VisualizeRobot();
     void VisualizePedestrians();

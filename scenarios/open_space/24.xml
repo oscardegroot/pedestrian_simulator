@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="social"/>
+
+<!--Obstacles-->
+<obstacle x1="-2" y1="-2" x2="28" y2="-2"/>
+<obstacle x1="-2" y1="-2" x2="-2" y2="28"/>
+<obstacle x1="-2" y1="28" x2="28" y2="28"/>
+<obstacle x1="28" y1="-2" x2="28" y2="28"/>
+
+<random>
+    <range_x min="2" max="28"/>
+    <range_y min="2" max="28"/>
+    <range_v min="1.14" max="1.66"/>
+    <travel_time value="15"/>
+    <!-- <goal_inflation value="20.0"/> -->
+</random>
+
+<random_pedestrians value="50"/>

@@ -56,8 +56,8 @@ Ped::Tagent *PedsimManager::AddAgent(double start_x, double start_y,
                                      double goal_x, double goal_y)
 {
     Ped::Tagent *agent = new Ped::Tagent();
-    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_x, start_y, 5.);
-    Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_x, goal_y, 5.);
+    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_x, start_y, 3.);
+    Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_x, goal_y, 3.);
     agent->addWaypoint(w1);
     agent->addWaypoint(w2);
 
@@ -69,6 +69,21 @@ Ped::Tagent *PedsimManager::AddAgent(double start_x, double start_y,
 
     return agent;
 }
+
+/** @todo types for robot and pedestrians */
+// Ped::Tagent *PedsimManager::addGoal(Ped::Tagent *agent, double goal_x, double goal_y)
+// {
+//     auto waypoints = agent->getWaypoints();
+
+//     agent->clearWaypoints();
+
+//     Ped::Twaypoint *w1 = waypoints.back();
+//     Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_x, goal_y, 5.);
+//     agent->addWaypoint(w1);
+//     agent->addWaypoint(w2);
+
+//     return agent;
+// }
 
 void PedsimManager::AddRobot()
 {

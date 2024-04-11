@@ -28,7 +28,7 @@ void ROSPedestrianSimulator::InitializePublishersAndSubscribers()
 
     reset_sub_ = _nh.subscribe("/lmpcc/reset_environment", 1, &ROSPedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = _nh.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
-    robot_state_sub_ = _nh.subscribe("/robot_state", 1, &ROSPedestrianSimulator::RobotStateCallback, this);
+    robot_state_sub_ = _nh.subscribe("/pedestrian_simulator/robot_state", 1, &ROSPedestrianSimulator::RobotStateCallback, this);
 
     setting_N_sub_ = _nh.subscribe("/pedestrian_simulator/horizon", 1, &ROSPedestrianSimulator::SettingNCallback, this);
     setting_dt_sub_ = _nh.subscribe("/pedestrian_simulator/integrator_step", 1, &ROSPedestrianSimulator::SettingdtCallback, this);
@@ -79,16 +79,10 @@ void ROSPedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 
 void ROSPedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
-    _simulator->robot_state_ = RobotState(
+    _simulator->SetRobotState(RobotState(
         Eigen::Vector2d(msg->pose.position.x, msg->pose.position.y),
         RosTools::quaternionToAngle(msg->pose.orientation),
-        0.);
-
-    // if (pedsim_manager_)
-    // {
-    //     pedsim_manager_->SetRobotPosition(robot_state_.pos(0), robot_state_.pos(1));
-    //     pedsim_manager_->SetRobotVelocity(robot_state_.vel(0), robot_state_.vel(1));
-    // }
+        0.));
 }
 
 void ROSPedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)

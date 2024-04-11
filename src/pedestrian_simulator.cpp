@@ -398,6 +398,16 @@ void PedestrianSimulator::PublishDebugVisuals()
     debug_visuals.publish();
 }
 
+void PedestrianSimulator::SetRobotState(const RobotState &state)
+{
+    robot_state_ = state;
+    if (pedsim_manager_)
+    {
+        pedsim_manager_->SetRobotPosition(robot_state_.pos(0), robot_state_.pos(1));
+        pedsim_manager_->SetRobotVelocity(robot_state_.vel(0), robot_state_.vel(1));
+    }
+}
+
 void PedestrianSimulator::VisualizeRobot()
 {
     if ((!pedsim_manager_) || pedsim_manager_->GetRobot() == nullptr)

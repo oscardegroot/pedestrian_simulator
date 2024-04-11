@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<package format="3">
+<package format="2">
   <name>pedestrian_simulator</name>
   <version>0.0.0</version>
   <description>The pedestrian_simulator package</description>
@@ -15,21 +15,23 @@
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>TODO</license>
 
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
-
-  <depend>rclcpp</depend>
-  <depend>std_msgs</depend>
-  <depend>std_srvs</depend>
-  <depend>nav_msgs</depend>
-  <depend>derived_object_msgs</depend>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  
   <depend>geometry_msgs</depend>
   <depend>asr_rapidxml</depend>
+  <depend>roslib</depend>
   <depend>ros_tools</depend>
   <depend>pedsim_original</depend>
   <depend>mpc_planner_msgs</depend>
+  <depend>std_srvs</depend>
 
   <export>
-    <build_type>ament_cmake</build_type>
+    <build_type>catkin</build_type>
   </export>
 </package>

@@ -62,7 +62,7 @@ void SpawnRandomizer::ReadFrom(rapidxml::xml_node<> *tag)
     if (goal_range_tag)
         goal_range_ = atof(goal_range_tag->first_attribute("value")->value());
     else
-        goal_range_ = 5.;
+        goal_range_ = 3.;
 
     auto *travel_time_tag = tag->first_node("travel_time");
     if (travel_time_tag)

@@ -79,6 +79,17 @@ void XMLReader::ReadXML(const std::string &file)
         if (std::string(tag->first_attribute("type")->value()).compare("velocity") == 0)
             CONFIG.ped_velocity_ = atof(tag->first_attribute("value")->value());
     }
+    auto *random_pedestrian_tag = doc.first_node("random_pedestrians");
+    if (random_pedestrian_tag)
+    {
+        int num_peds = atoi(random_pedestrian_tag->first_attribute("value")->value());
+        for (int i = 0; i < num_peds; i++)
+        {
+            pedestrians_.emplace_back();
+            pedestrians_.back().reset(new Pedestrian(Waypoint(0., 0.), 0.));
+            is_random_.push_back(true);
+        }
+    }
 
     // For all pedestrians in the file
     for (rapidxml::xml_node<> *ped = doc.first_node("pedestrian"); ped; ped = ped->next_sibling("pedestrian"))
