@@ -7,6 +7,9 @@
 <obstacle x1="-2" y1="28" x2="28" y2="28"/>
 <obstacle x1="28" y1="-2" x2="28" y2="28"/>
 
+<!-- <obstacle x1="0" y1="10" x2="5" y2="10"/>
+<obstacle x1="12" y1="14" x2="20" y2="14"/> -->
+
 <random>
     <range_x min="2" max="28"/>
     <range_y min="2" max="28"/>
