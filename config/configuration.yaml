@@ -4,9 +4,9 @@ pedestrian_simulator:
     debug_output: false
     pretend_to_be_optitrack: false
     scenario: random_social/8_corridor.xml
-    update_frequency: 50
+    update_frequency: 20
     prediction_step: 0.2
-    horizon: 50
+    horizon: 30
     use_path_origin: false
   pedestrians:
     seed: 5 # > 0,  -1 = random!

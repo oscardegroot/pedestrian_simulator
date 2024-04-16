@@ -7,7 +7,6 @@ set(DEPENDENCIES
   std_msgs
   ros_tools
   pedsim_original
-  mpc_planner_msgs
   asr_rapidxml
   roslib
   std_srvs

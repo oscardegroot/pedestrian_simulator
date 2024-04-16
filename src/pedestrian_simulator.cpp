@@ -152,7 +152,7 @@ std::vector<Prediction> PedestrianSimulator::GetPedestrians()
             Eigen::Vector2d(ped->position_.x,
                             ped->position_.y),
             std::atan2(ped->twist_(1), ped->twist_(0)),
-            ped->noisy_twist_);
+            ped->twist_);
 
         id++;
     }

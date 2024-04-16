@@ -11,8 +11,10 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/Path.h>
 #include <derived_object_msgs/ObjectArray.h>
-#include <mpc_planner_msgs/ObstacleArray.h>
-#include <mpc_planner_msgs/Gaussian.h>
+#include <costmap_converter/ObstacleArrayMsg.h>
+
+// #include <mpc_planner_msgs/ObstacleArray.h>
+// #include <mpc_planner_msgs/Gaussian.h>
 
 class Prediction;
 
@@ -44,8 +46,9 @@ private:
 
     void InitializePublishersAndSubscribers();
 
-    derived_object_msgs::ObjectArray PredictionsToObjectArray(const std::vector<Prediction> &predictions);
-    mpc_planner_msgs::ObstacleArray PredictionsToObstacleArray(const std::vector<Prediction> &predictions);
+    // derived_object_msgs::ObjectArray PredictionsToObjectArray(const std::vector<Prediction> &predictions);
+    // mpc_planner_msgs::ObstacleArray PredictionsToObstacleArray(const std::vector<Prediction> &predictions);
+    costmap_converter::ObstacleArrayMsg PredictionsToObjectArray(const std::vector<Prediction> &predictions);
 
     bool set_N_{false}, set_dt_{false}, set_hz_{false};
 
