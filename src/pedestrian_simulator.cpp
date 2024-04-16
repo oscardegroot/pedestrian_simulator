@@ -11,9 +11,11 @@
 
 #include <tf/tf.h>
 #include <derived_object_msgs/Object.h>
-#include <mpc_msgs/obstacle_array.h>
-#include <mpc_msgs/obstacle_gmm.h>
-#include <mpc_msgs/gaussian.h>
+// #include <mpc_msgs/obstacle_array.h>
+// #include <mpc_msgs/obstacle_gmm.h>
+// #include <mpc_msgs/gaussian.h>
+
+#include <costmap_converter/ObstacleArrayMsg.h>
 
 #include <std_msgs/Empty.h>
 #include <geometry_msgs/Twist.h>
@@ -33,7 +35,7 @@ PedestrianSimulator::PedestrianSimulator()
 
     obstacle_pub_ = nh_.advertise<derived_object_msgs::ObjectArray>("/pedestrian_simulator/pedestrians", 1);
     // obstacle_prediction_pub_ = nh_.advertise<mpc_msgs::obstacle_array>("/pedestrian_simulator/predictions", 1);
-    obstacle_trajectory_prediction_pub_ = nh_.advertise<mpc_msgs::obstacle_array>("/pedestrian_simulator/trajectory_predictions", 1);
+    obstacle_trajectory_prediction_pub_ = nh_.advertise<costmap_converter::ObstacleArrayMsg>("/move_base/TebLocalPlannerROS/obstacles", 1);
 
     reset_sub_ = nh_.subscribe("/lmpcc/reset_environment", 1, &PedestrianSimulator::ResetCallback, this);
     // vehicle_speed_sub_ = nh_.subscribe("/lmpcc/vehicle_speed", 1, &PedestrianSimulator::VehicleVelocityCallback, this);
@@ -353,7 +355,7 @@ void PedestrianSimulator::PublishPredictions()
 
     // Otherwise we use this function
 
-    mpc_msgs::obstacle_array prediction_array;
+    /*mpc_msgs::obstacle_array prediction_array;
     prediction_array.header.frame_id = "map";
 
     // Idea: Copy the pedestrian and step all of them one by one recording their positions then
@@ -399,7 +401,7 @@ void PedestrianSimulator::PublishPredictions()
         id = 0;
         for (auto &ped : copied_pedestrians)
         {
-            ped->Update(CONFIG.prediction_step_); /** @note Using the prediction time step, not update step */
+            ped->Update(CONFIG.prediction_step_); 
 
             geometry_msgs::PoseStamped pose;
             pose.pose.position.x = ped->position_.x;
@@ -422,13 +424,14 @@ void PedestrianSimulator::PublishPredictions()
         prediction_array.obstacles[id].probabilities.push_back(1.0);
     }
     prediction_array.header.stamp = ros::Time::now();
-    obstacle_trajectory_prediction_pub_.publish(prediction_array);
+    obstacle_trajectory_prediction_pub_.publish(prediction_array);*/
 }
 
 void PedestrianSimulator::PublishSocialPredictions()
 {
 
-    mpc_msgs::obstacle_array prediction_array;
+    // mpc_msgs::obstacle_array prediction_array;
+    costmap_converter::ObstacleArrayMsg prediction_array;
     prediction_array.header.frame_id = "map";
 
     // Build up the scene
@@ -447,7 +450,7 @@ void PedestrianSimulator::PublishSocialPredictions()
 
     // Idea: Copy the pedestrian and step all of them one by one recording their positions then
     // std::vector<std::unique_ptr<Pedestrian>> copied_pedestrians;
-    std::vector<mpc_msgs::gaussian> gaussian_msgs;
+    // std::vector<mpc_msgs::gaussian> gaussian_msgs;
 
     // RobotState copied_robot = robot_state_;
 
@@ -457,21 +460,58 @@ void PedestrianSimulator::PublishSocialPredictions()
         if (ped->gettype() == (int)AgentType::ROBOT)
             continue;
 
-        mpc_msgs::obstacle_gmm gmm_msg;
-        gmm_msg.id = id;
+        costmap_converter::ObstacleMsg obstacle_msg;
+
+        obstacle_msg.id = id;
+        obstacle_msg.radius = 0.4;
 
         // Initial position
-        gmm_msg.pose.position.x = ped->getx() - vehicle_frame_.position.x;
-        gmm_msg.pose.position.y = ped->gety() - vehicle_frame_.position.y;
-        gmm_msg.pose.orientation = RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+        geometry_msgs::Polygon polygon;
+        polygon.points.emplace_back();
+        auto& point = polygon.points[0];
+        point.x = ped->getx() - vehicle_frame_.position.x;
+        point.y = ped->gety() - vehicle_frame_.position.y;
+        obstacle_msg.polygon = polygon;
 
-        prediction_array.obstacles.push_back(gmm_msg);
+        obstacle_msg.orientation = RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+        obstacle_msg.velocities.twist.linear.x = ped->getvx();
+        obstacle_msg.velocities.twist.linear.y = ped->getvy();
 
-        gaussian_msgs.emplace_back();
+        prediction_array.obstacles.push_back(obstacle_msg);
+
+        // gaussian_msgs.emplace_back();
         id++;
     }
 
-    for (int k = 0; k < CONFIG.horizon_N_; k++)
+// CORRIDOR ONLY
+    for (auto &obstacle : xml_reader_->static_obstacles_)
+    {
+                costmap_converter::ObstacleMsg obstacle_msg;
+                obstacle_msg.id = id;
+
+        // Initial position 
+        geometry_msgs::Polygon polygon;
+        polygon.points.emplace_back();
+        polygon.points.emplace_back();
+        auto& point_one = polygon.points[0];
+        point_one.x = obstacle.min_x;
+        point_one.y = (obstacle.min_y + obstacle.max_y) / 2.;       
+        
+         auto& point_two = polygon.points[1];
+        point_two.x = obstacle.max_x;
+        point_two.y = (obstacle.min_y + obstacle.max_y) / 2.;
+        obstacle_msg.polygon = polygon;
+
+        obstacle_msg.orientation.x = 0.;//RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+        obstacle_msg.orientation.y = 0.;//RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+        obstacle_msg.orientation.z = 0.;//RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+        obstacle_msg.orientation.w = 1.;//RosTools::angleToQuaternion(std::atan2(ped->getvy(), ped->getvx()));
+        obstacle_msg.velocities.twist.linear.x = 0;//ped->getvx();
+        obstacle_msg.velocities.twist.linear.y = 0;//ped->getvy();
+
+        prediction_array.obstacles.push_back(obstacle_msg);
+    }
+    /*for (int k = 0; k < CONFIG.horizon_N_; k++)
     {
         // copied_robot.pos += copied_robot.vel * CONFIG.delta_t_; // Update the robot position assuming constant velocity
         pedsim_prediction_manager_->Update(CONFIG.prediction_step_);
@@ -505,14 +545,14 @@ void PedestrianSimulator::PublishSocialPredictions()
         prediction_array.obstacles[id].gaussians.push_back(gaussian_msgs[id]);
         prediction_array.obstacles[id].probabilities.push_back(1.0);
         id++;
-    }
+    }*/
     prediction_array.header.stamp = ros::Time::now();
     obstacle_trajectory_prediction_pub_.publish(prediction_array);
 }
 
 void PedestrianSimulator::PublishGaussianPredictions()
 {
-
+/*
     mpc_msgs::obstacle_array prediction_array;
 
     unsigned int id = 0;
@@ -556,12 +596,11 @@ void PedestrianSimulator::PublishGaussianPredictions()
     prediction_array.header.stamp = ros::Time::now();
     prediction_array.header.frame_id = "map";
 
-    obstacle_trajectory_prediction_pub_.publish(prediction_array);
-}
+    obstacle_trajectory_prediction_pub_.publish(prediction_array);*/}
 
 void PedestrianSimulator::PublishBinomialPredictions()
 {
-    mpc_msgs::obstacle_array prediction_array;
+    /*mpc_msgs::obstacle_array prediction_array;
 
     unsigned int id = 0;
     for (auto &general_ped : pedestrians_)
@@ -652,7 +691,7 @@ void PedestrianSimulator::PublishBinomialPredictions()
     prediction_array.header.stamp = ros::Time::now();
     prediction_array.header.frame_id = "map";
 
-    obstacle_trajectory_prediction_pub_.publish(prediction_array);
+    obstacle_trajectory_prediction_pub_.publish(prediction_array);*/
 }
 
 void PedestrianSimulator::PublishDebugVisuals()
