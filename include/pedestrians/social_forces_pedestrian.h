@@ -31,6 +31,7 @@ public:
     virtual void Reset();
 
 protected:
+    Waypoint GetGoal(Waypoint start, double min_travel_time);
     bool AddGoalForce(Eigen::Vector2d &force);
 
     void AddRepulsivePedestrianForce(Eigen::Vector2d &force, Pedestrian &other_ped, const double dt);
