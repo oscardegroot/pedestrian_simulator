@@ -1,10 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tag type="gaussian"/>
-<tag type="static" />
+<!-- <tag type="static" /> -->
 <tag type="velocity" value="1.4"/>
+
+<pedestrian>
+    <start x="300" y="-300"/>
+    <path>
+        <point x="300" y="300"/>
+    </path>
+</pedestrian>
+
+<pedestrian>
+    <start x="300" y="-300"/>
+    <path>
+        <point x="300" y="300"/>
+    </path>
+</pedestrian>
+
+<pedestrian>
+    <start x="300" y="-300"/>
+    <path>
+        <point x="300" y="300"/>
+    </path>
+</pedestrian>
+
+<pedestrian>
+    <start x="300" y="-300"/>
+    <path>
+        <point x="300" y="300"/>
+    </path>
+</pedestrian>
+
+
 <pedestrian>
     <start x="8.0" y="0.0"/>
     <path>
-        <point x="0.0" y="0.5"/>
+        <point x="0.0" y="0.0"/>
     </path>
 </pedestrian>
+
+<!-- <pedestrian>
+    <start x="8.0" y="4.0"/>
+    <path>
+        <point x="6.0" y="-2.0"/>
+    </path>
+</pedestrian> -->

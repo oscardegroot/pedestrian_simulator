@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="social"/>
+
+<!--Obstacles-->
+<obstacle x1="-6.5" y1="-3.5" x2="39.5" y2="-3.5"/>
+<obstacle x1="-6.5" y1="3.5" x2="39.5" y2="3.5"/>

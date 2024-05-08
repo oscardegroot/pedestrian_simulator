@@ -36,6 +36,7 @@ public:
     virtual Eigen::Vector2d GetPosition() const;
 
     unsigned int id_;
+    bool done_{false};
 
     Waypoint start_, goal_;
     Waypoint position_;

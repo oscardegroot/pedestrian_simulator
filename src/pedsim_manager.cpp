@@ -56,9 +56,9 @@ Ped::Tagent *PedsimManager::AddAgent(double start_x, double start_y,
                                      double goal_x, double goal_y)
 {
     Ped::Tagent *agent = new Ped::Tagent();
-    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_x, start_y, 3.);
+    // Ped::Twaypoint *w1 = new Ped::Twaypoint(start_x, start_y, 3.);
     Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_x, goal_y, 3.);
-    agent->addWaypoint(w1);
+    // agent->addWaypoint(w1);
     agent->addWaypoint(w2);
 
     agent->setPosition(start_x, start_y, 0.);
@@ -90,7 +90,8 @@ void PedsimManager::AddRobot()
     pedsim_robot_ = new Ped::Tagent();
 
     Ped::Twaypoint *w1 = new Ped::Twaypoint(0., 0., 5.);
-    Ped::Twaypoint *w2 = new Ped::Twaypoint(25., 0., 5.);
+    // Ped::Twaypoint *w2 = new Ped::Twaypoint(25., 0., 5.);
+    Ped::Twaypoint *w2 = new Ped::Twaypoint(26., 26., 5.);
     pedsim_robot_->addWaypoint(w1);
     pedsim_robot_->addWaypoint(w2);
 

@@ -2,14 +2,14 @@
 <tag type="gaussian"/>
 <tag type="velocity" value="1.0"/>
 <pedestrian>
-    <start x="3.5" y="-2.5"/>
+    <start x="3" y="-2.5"/>
     <path>
-        <point x="3.5" y="3"/>
+        <point x="3" y="3"/>
     </path>
 </pedestrian>
 <pedestrian> 
-    <start x="3.5" y="2.5"/>
+    <start x="4.5" y="2.5"/>
     <path>
-        <point x="3.5" y="-3"/>
+        <point x="4.5" y="-3"/>
     </path>
 </pedestrian>

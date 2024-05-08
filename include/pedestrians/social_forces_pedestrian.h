@@ -37,6 +37,7 @@ protected:
     Eigen::Vector2d GetRepulsiveForce(const Eigen::Vector2d &other_pos, const Eigen::Vector2d &other_vel, const double dt);
     Eigen::Vector2d GetPedRepulsiveForce(const Eigen::Vector2d &other_pos, const Eigen::Vector2d &other_vel, const double dt);
 
+    Waypoint GetGoal(Waypoint start, double min_travel_time);
     std::unique_ptr<RosTools::RandomGenerator> random_generator_;
     int seed_mp_, cur_seed_;
 

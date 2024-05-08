@@ -82,46 +82,82 @@ void SocialForcesPedestrian::Update(const double dt)
             Eigen::Vector2d(position_.x, position_.y),
             Eigen::Vector2d(goal_.x, goal_.y));
 
-        if (dist_to_goal < spawn_randomizer_.GetGoalRange() + 1.)
+        if (dist_to_goal < 2.) // spawn_randomizer_.GetGoalRange() + 1.)
         {
-            goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
-            pedsim_agent_->addWaypoint(new Ped::Twaypoint(goal_.x, goal_.y, spawn_randomizer_.GetGoalRange()));
-            // pedsim_scene_->addWaypoint(pedsim_agent_, goal_.x, goal_.y);
+            done_ = true;
+            //     goal_ = GetGoal(goal_, spawn_randomizer_.GetMinTravelTime()); // spawn_randomizer_.GenerateGoal(random_generator_.get());
+            //     pedsim_agent_->addWaypoint(new Ped::Twaypoint(goal_.x, goal_.y, spawn_randomizer_.GetGoalRange()));
+            //     // pedsim_scene_->addWaypoint(pedsim_agent_, goal_.x, goal_.y);
         }
     }
 }
 
 void SocialForcesPedestrian::Reset()
 {
+    done_ = false;
     cur_seed_++;
     random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
     start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
-    velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
-
-    goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
-    for (int i = 0; start_.Distance(goal_) < velocity_ * spawn_randomizer_.GetMinTravelTime() && i < 1000; i++) // Make sure the goal is far enough away (20s)
-    {
-        goal_ = spawn_randomizer_.GenerateGoal(random_generator_.get());
-
-        if (i == 99)
-            LOG_ERROR("Could not find a goal far enough away from the start position!");
-    }
-
+    // velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
     pedsim_agent_ = new Ped::Tagent();
-    Ped::Twaypoint *w1 = new Ped::Twaypoint(start_.x, start_.y, spawn_randomizer_.GetGoalRange());
+    velocity_ = pedsim_agent_->getvmax(); // Determined by libpedsim
+
+    goal_ = GetGoal(start_, spawn_randomizer_.GetMinTravelTime());
+
+    // Ped::Twaypoint *w1 = new Ped::Twaypoint(start_.x, start_.y, spawn_randomizer_.GetGoalRange());
     Ped::Twaypoint *w2 = new Ped::Twaypoint(goal_.x, goal_.y, spawn_randomizer_.GetGoalRange());
-    pedsim_agent_->addWaypoint(w1);
+    // pedsim_agent_->addWaypoint(w1);
     pedsim_agent_->addWaypoint(w2);
 
     pedsim_agent_->setPosition(start_.x, start_.y, 0.);
     pedsim_agent_->setRadius(CONFIG.ped_radius_);
 
-    velocity_ = pedsim_agent_->getvmax(); // Determined by libpedsim
+    // velocity_ = pedsim_agent_->getvmax(); // Determined by libpedsim
 
     pedsim_scene_->addAgent(pedsim_agent_);
 
     Pedestrian::Reset();
+}
+
+Waypoint SocialForcesPedestrian::GetGoal(Waypoint start, double min_travel_time)
+{
+
+    // int wall_select = random_generator_->Int(3);
+
+    // double x, y;
+    // if (wall_select < 2)
+    // {
+    //     x = (wall_select % 2 == 0 ? 26.0 : 2.);
+    //     y = random_generator_->Double() * 24. + 2.;
+    // }
+    // else
+    // {
+    //     y = (wall_select % 2 == 0 ? 26.0 : 2.);
+    //     x = random_generator_->Double() * 24. + 2.;
+    // }
+    // return Waypoint(x, y);
+
+    Waypoint goal = spawn_randomizer_.GenerateGoal(random_generator_.get());
+    Waypoint best_goal;
+    double best_dist = 0.;
+    for (int i = 0; start_.Distance(goal) < velocity_ * spawn_randomizer_.GetMinTravelTime() && i < 1000; i++) // Make sure the goal is far enough away (20s)
+    {
+        if (start_.Distance(goal) > best_dist)
+        {
+            best_dist = start_.Distance(goal);
+            best_goal = goal;
+        }
+
+        goal = spawn_randomizer_.GenerateGoal(random_generator_.get());
+
+        if (i == 999)
+        {
+            // LOG_ERROR("Could not find a goal far enough away from the start position!");
+            return best_goal;
+        }
+    }
+    return goal;
 }
 
 bool SocialForcesPedestrian::AddGoalForce(Eigen::Vector2d &force)

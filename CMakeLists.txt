@@ -11,6 +11,7 @@ set(DEPENDENCIES
   asr_rapidxml
   roslib
   std_srvs
+  message_filters
 )
 
 find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
@@ -48,9 +49,15 @@ add_executable(${PROJECT_NAME}_node src/ros1_pedestrian_simulator.cpp)
 add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
 
+add_executable(collision_checker_node src/ros1_collision_checker_node.cpp)
+target_link_libraries(collision_checker_node ${catkin_LIBRARIES})
+add_dependencies(collision_checker_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 add_definitions(-DMPC_PLANNER_ROS)
 
-install(TARGETS ${PROJECT_NAME}_node
+install(TARGETS
+  ${PROJECT_NAME}_node
+  collision_checker_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
