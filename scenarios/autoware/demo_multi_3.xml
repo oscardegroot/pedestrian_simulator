@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="gaussian"/>
+<tag type="velocity" value="1.4"/>
+<pedestrian>
+	<start x="94105.1406" y="61864.7383"/>
+	<path>
+		<point x="94104.2627" y="61864.2595"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94099.5156" y="61844.0039"/>
+	<path>
+		<point x="94099.7615" y="61844.9732"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94097.4609" y="61846.6211"/>
+	<path>
+		<point x="94097.6316" y="61847.6064"/>
+	</path>
+</pedestrian>
+<pedestrian>
+	<start x="94081.1797" y="61852.1211"/>
+	<path>
+		<point x="94081.9500" y="61852.7588"/>
+	</path>
+</pedestrian>
