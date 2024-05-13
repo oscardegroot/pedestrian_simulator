@@ -122,7 +122,8 @@ void SocialForcesPedestrian::Reset()
 
 Waypoint SocialForcesPedestrian::GetGoal(Waypoint start, double min_travel_time)
 {
-
+    (void)start;
+    (void)min_travel_time;
     // int wall_select = random_generator_->Int(3);
 
     // double x, y;
