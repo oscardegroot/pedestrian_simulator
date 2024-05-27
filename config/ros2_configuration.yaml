@@ -11,12 +11,12 @@
         horizon: 50
         use_path_origin: false
       pedestrians:
-        seed: 5 # > 0,  -1 = random!
+        seed: 6 # > 0,  -1 = random!
         single_scenario: -1 # > 0 = run the scenario with this index | -1 = not a single scenario
         type: gaussian # Only used if it is not in the scenario file
         # process_noise: [.8, .8] # Excessive
-        process_noise: [.3, .3] # Safe-Horizon
-        # process_noise: [0.0, 0.0] # Deterministic
+        # process_noise: [.3, .3] # Safe-Horizon
+        process_noise: [0.01, 0.01] # Deterministic
         collision_free_spawn: true
         interaction: true
         constant_velocity_predictions: true # If "false" will produce predictions that follow the pedestrian model

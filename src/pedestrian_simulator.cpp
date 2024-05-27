@@ -85,6 +85,15 @@ void PedestrianSimulator::ReadScenario()
         pedestrians_[i]->id_ = i;
 }
 
+void PedestrianSimulator::ResetToStart()
+{
+    for (auto &ped : pedestrians_)
+    {
+        // Reset pedestrians to their starting position
+        ped->ResetSeed();
+    }
+}
+
 void PedestrianSimulator::Reset()
 {
     if (pedsim_manager_)
@@ -445,10 +454,11 @@ void PedestrianSimulator::VisualizePedestrians()
         ped_model.setOrientation(RosTools::angleToQuaternion(angle + M_PI_2));
 
         // Consistent with LMPCC
-        int select = ped->id_;
-        select %= (int)(colors_.size() / 3); // We only have 20 values
-        select = (int)(colors_.size() / 3) - 1 - select;
-        ped_model.setColor(colors_[3 * select + 0], colors_[3 * select + 1], colors_[3 * select + 2], 1.0);
+        // int select = ped->id_;
+        // select %= (int)(colors_.size() / 3); // We only have 20 values
+        // select = (int)(colors_.size() / 3) - 1 - select;
+        // ped_model.setColor(colors_[3 * select + 0], colors_[3 * select + 1], colors_[3 * select + 2], 1.0);
+        ped_model.setColorInt(ped->id_, 1.0, RosTools::Colormap::BRUNO);
 
         ped_model.addPointMarker(Eigen::Vector3d(ped->position_.x, ped->position_.y, 0.));
     }

@@ -21,6 +21,7 @@ public:
 
 public:
     virtual void Reset();
+    virtual void ResetSeed(){};
 
     // If computations should happen before we update the positions of all pedestrians
     virtual void PreUpdateComputations();

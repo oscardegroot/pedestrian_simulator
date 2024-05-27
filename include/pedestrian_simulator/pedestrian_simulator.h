@@ -25,6 +25,7 @@ public:
 
     void Loop();
     void Reset();
+    void ResetToStart();
 
     std::vector<Prediction> GetPedestrians();
     std::vector<Prediction> GetPredictions();

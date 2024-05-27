@@ -23,6 +23,7 @@ public:
     ROSPedestrianSimulator();
 
     void ResetCallback(std_msgs::msg::Empty::SharedPtr msg);
+    void ResetToStartCallback(std_msgs::msg::Empty::SharedPtr msg);
     void VehicleVelocityCallback(geometry_msgs::msg::Twist::SharedPtr msg); /* For pretending that the vehicle is moving! */
 
     /** @brief Shift the origin to the origin of the reference path */
@@ -56,6 +57,7 @@ private:
     rclcpp::Service<std_srvs::srv::Empty>::SharedPtr start_server;
 
     rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr reset_sub_;
+    rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr reset_to_start_sub_;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vehicle_speed_sub_;
     rclcpp::Subscription<nav_msgs::msg::Path>::SharedPtr path_origin_sub_;
     rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr setting_N_sub_;

@@ -10,9 +10,7 @@ SocialForcesPedestrian::SocialForcesPedestrian(const SpawnRandomizer &spawn_rand
     : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp)
 {
     spawn_randomizer_ = spawn_randomizer;
-    cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
-    if (CONFIG.single_scenario_ != -1)
-        cur_seed_ += CONFIG.single_scenario_;
+    ResetSeed();
 
     pedsim_scene_ = pedsim_scene;
 
@@ -90,6 +88,14 @@ void SocialForcesPedestrian::Update(const double dt)
             //     // pedsim_scene_->addWaypoint(pedsim_agent_, goal_.x, goal_.y);
         }
     }
+}
+
+void SocialForcesPedestrian::ResetSeed()
+{
+    cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+    if (CONFIG.single_scenario_ != -1)
+        cur_seed_ += CONFIG.single_scenario_;
+    std::cout << id_ << ": " << cur_seed_ << std::endl;
 }
 
 void SocialForcesPedestrian::Reset()

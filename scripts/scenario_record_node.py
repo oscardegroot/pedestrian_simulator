@@ -21,41 +21,61 @@ class Pedestrian:
 class ScenarioRecorder:
 
     pedestrians = []
+    random_points = []
 
     def __init__(self) -> None:
         pass
     
+    def add_random_point(self, start):
+        self.random_points.append(start)
 
     def add_pedestrian(self, start, goal):
         self.pedestrians.append(Pedestrian(start, goal))
 
-    def to_file(self, file_name):
+    def to_file(self, file_name, random=False):
         path = os.path.dirname(os.path.abspath(__file__))
         file_path = path + "/../scenarios/" + file_name
         # return
 
+        type = "social" if random else "gaussian"
+
         with open(file_path, 'w') as file:
             file.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-            file.write('<tag type="gaussian"/>\n')
+            file.write(f'<tag type="{type}"/>\n')
             file.write('<tag type="velocity" value="1.4"/>\n')
-            for ped in self.pedestrians:
-                file.write('<pedestrian>\n')
-                file.write(f'\t<start x="{ped.start.x:.4f}" y="{ped.start.y:.4f}"/>\n')
-                file.write('\t<path>\n')
-                file.write(f'\t\t<point x="{ped.goal.x:.4f}" y="{ped.goal.y:.4f}"/>\n')
-                file.write('\t</path>\n')
-                file.write('</pedestrian>\n')
-            
-            file.close()
+
+            if not random:
+                for ped in self.pedestrians:
+                    file.write('<pedestrian>\n')
+                    file.write(f'\t<start x="{ped.start.x:.4f}" y="{ped.start.y:.4f}"/>\n')
+                    file.write('\t<path>\n')
+                    file.write(f'\t\t<point x="{ped.goal.x:.4f}" y="{ped.goal.y:.4f}"/>\n')
+                    file.write('\t</path>\n')
+                    file.write('</pedestrian>\n')
+            else:
+                min_x = min(self.random_points, key=lambda x: x.x).x
+                max_x = max(self.random_points, key=lambda x: x.x).x
+                min_y = min(self.random_points, key=lambda x: x.y).y
+                max_y = max(self.random_points, key=lambda x: x.y).y
+                file.write('<random>\n')
+                file.write(f'\t<range_x min="{min_x}" max="{max_x}"/>\n')
+                file.write(f'\t<range_y min="{min_y}" max="{max_y}"/>\n')
+                file.write('\t<range_v min="1.14" max="1.66"/>\n')
+                file.write('\t<goal_inflation value="50.0"/>\n')
+                file.write('</random>\n')
+
+                file.write('<random_pedestrians value="4"/>\n')
+
         print(f"Scenario file saved at {file_path}")
 
 
 class MinimalSubscriber(Node):
 
-    def __init__(self, file_name, divider="autoware"):
+    def __init__(self, file_name, use_random_area, divider="autoware"):
         super().__init__('pedestrian_scenario_recorder')
 
         self.file_name = divider + "/" + file_name + ".xml"
+        self.use_random_area = use_random_area
         self.pose_subscription = self.create_subscription(
             PoseWithCovarianceStamped,
             '/initialpose',
@@ -83,8 +103,14 @@ class MinimalSubscriber(Node):
         end.x = pos.x + math.cos(yaw) * 1.
         end.y = pos.y + math.sin(yaw) * 1.
 
-        self.get_logger().info(f"Pedestrian [Start: {pos.x}, {pos.y} | Goal: {end.x}, {end.y}]")
-        self.recorder.add_pedestrian(pos, end)
+        if not self.use_random_area:
+            self.get_logger().info(f"Pedestrian [Start: {pos.x}, {pos.y} | Goal: {end.x}, {end.y}]")
+            self.recorder.add_pedestrian(pos, end)
+        else:
+            self.recorder.add_random_point(pos)
+            if len(self.recorder.random_points) >= 2:
+                self.recorder.to_file(self.file_name, random=True)
+                self.recorder.random_points = []
 
 
    
@@ -97,7 +123,12 @@ def main(args=None):
     else:
         file_name = "temp"
 
-    minimal_subscriber = MinimalSubscriber(file_name)
+    if len(sys.argv) > 2:
+        use_random_area = sys.argv[2] == "True"
+    else:
+        use_random_area = False
+
+    minimal_subscriber = MinimalSubscriber(file_name, use_random_area)
 
     rclpy.spin(minimal_subscriber)
 

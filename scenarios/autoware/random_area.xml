@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tag type="social"/>
+<tag type="velocity" value="1.4"/>
+<random>
+	<range_x min="94086.6953125" max="94111.9921875"/>
+	<range_y min="61848.91015625" max="61865.4765625"/>
+	<range_v min="1.14" max="1.66"/>
+	<goal_inflation value="50.0"/>
+</random>
+<random_pedestrians value="4"/>

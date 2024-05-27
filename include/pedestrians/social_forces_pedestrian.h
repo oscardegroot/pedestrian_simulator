@@ -29,6 +29,7 @@ public:
     virtual void Update(const double dt);
 
     virtual void Reset();
+    virtual void ResetSeed();
 
 protected:
     bool AddGoalForce(Eigen::Vector2d &force);

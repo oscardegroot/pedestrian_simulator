@@ -33,6 +33,9 @@ void ROSPedestrianSimulator::InitializePublishersAndSubscribers()
     reset_sub_ = this->create_subscription<std_msgs::msg::Empty>(
         "/pedestrian_simulator/reset", 1,
         std::bind(&ROSPedestrianSimulator::ResetCallback, this, std::placeholders::_1));
+    reset_to_start_sub_ = this->create_subscription<std_msgs::msg::Empty>(
+        "/pedestrian_simulator/reset_to_start", 1,
+        std::bind(&ROSPedestrianSimulator::ResetToStartCallback, this, std::placeholders::_1));
     robot_state_sub_ = this->create_subscription<geometry_msgs::msg::PoseStamped>(
         "/robot_state", 1,
         std::bind(&ROSPedestrianSimulator::RobotStateCallback, this, std::placeholders::_1));
@@ -102,6 +105,11 @@ void ROSPedestrianSimulator::ResetCallback(std_msgs::msg::Empty::SharedPtr msg)
     _simulator->Reset();
 }
 
+void ROSPedestrianSimulator::ResetToStartCallback(std_msgs::msg::Empty::SharedPtr msg)
+{
+    (void)msg;
+    _simulator->ResetToStart();
+}
 void ROSPedestrianSimulator::RobotStateCallback(geometry_msgs::msg::PoseStamped::SharedPtr msg)
 {
     _simulator->robot_state_ = RobotState(
