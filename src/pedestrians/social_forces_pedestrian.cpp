@@ -95,7 +95,6 @@ void SocialForcesPedestrian::ResetSeed()
     cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
     if (CONFIG.single_scenario_ != -1)
         cur_seed_ += CONFIG.single_scenario_;
-    std::cout << id_ << ": " << cur_seed_ << std::endl;
 }
 
 void SocialForcesPedestrian::Reset()

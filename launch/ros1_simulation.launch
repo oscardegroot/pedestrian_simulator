@@ -3,6 +3,7 @@
 <launch>
     <arg name="pedestrian_scenario" default="random_social/8_corridor.xml" />
     <arg name="config_file" default="$(find pedestrian_simulator)/config/configuration.yaml"/>
+    <arg name="static" default="false"/>
 
     <rosparam command="load" file="$(arg config_file)"/>
 
@@ -10,5 +11,6 @@
 
     <node pkg="pedestrian_simulator" type="pedestrian_simulator_node" name="pedestrian_simulator" cwd="node" respawn="false" output="screen">
         <param name="node/scenario" value="$(arg pedestrian_scenario)"/>
+        <param name="static" value="$(arg static)"/>
     </node>    
 </launch>  
