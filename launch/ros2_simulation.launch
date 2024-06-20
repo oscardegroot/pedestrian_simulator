@@ -3,9 +3,11 @@
 <launch>
     <arg name="pedestrian_scenario" default="random_social/8_corridor.xml" />
     <arg name="config_file" default="$(find-pkg-share pedestrian_simulator)/config/ros2_configuration.yaml"/>
+    <arg name="static" default="false"/>
 
     <node pkg="pedestrian_simulator" exec="pedestrian_simulator_node" name="pedestrian_simulator" respawn="false" output="screen">
         <param from="$(var config_file)"/>
         <param name="pedestrian_simulator.node.scenario" value="$(var pedestrian_scenario)"/>
+        <param name="pedestrian_simulator.static" value="$(var static)"/>
     </node>
 </launch>  
