@@ -97,12 +97,17 @@ void XMLReader::ReadXML(const std::string &file)
         rapidxml::xml_node<> *start_point = ped->first_node("start");
 
         bool random = false;
+        bool static_ped = false;
         for (rapidxml::xml_node<> *tag = ped->first_node("tag"); tag; tag = tag->next_sibling("tag"))
         {
             if (std::string(tag->first_attribute("type")->value()).compare("random") == 0)
             {
                 random = true;
                 break;
+            }
+            else if (std::string(tag->first_attribute("type")->value()).compare("static") == 0)
+            {
+                static_ped = true;
             }
         }
 
@@ -111,10 +116,13 @@ void XMLReader::ReadXML(const std::string &file)
             pedestrians_.emplace_back();
             pedestrians_.back().reset(new Pedestrian(Waypoint(0., 0.), 0.));
             is_random_.push_back(true);
+            is_static_.push_back(false);
         }
         else
         {
             is_random_.push_back(false);
+            is_static_.push_back(static_ped);
+
             // Create a pedestrian
             Waypoint new_waypoint(
                 atof(start_point->first_attribute("x")->value()),

@@ -26,7 +26,7 @@ public:
     std::vector<StaticObstacle> static_obstacles_;
     std::vector<SpawnRandomizer> spawn_randomizers_;
 
-    std::vector<bool> is_random_;
+    std::vector<bool> is_random_, is_static_;
 
     void GetPedestrians(std::vector<std::unique_ptr<Pedestrian>> &pedestrian_ptrs);
 

@@ -48,6 +48,10 @@ void PedestrianSimulator::ReadScenario()
                 int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
                 pedestrians_.back().reset(new RandomGaussianPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id));
             }
+            else if (xml_reader_->is_static_[ped_id])
+            {
+                pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, 0., xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
+            }
             else
             {
                 pedestrians_.back().reset(new GaussianPedestrian(xml_reader_->pedestrians_[ped_id]->start_, CONFIG.ped_velocity_, xml_reader_->pedestrians_[ped_id]->goal_, ped_id));
