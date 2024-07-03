@@ -21,11 +21,11 @@
 	<tag type="static"/>
 
 </pedestrian>
-<pedestrian>
+<!-- <pedestrian>
 	<start x="94083.4609" y="61843.2461"/>
 	<path>
 		<point x="94083.8528" y="61842.3261"/>
 	</path>
 	<tag type="static"/>
 
-</pedestrian>
+</pedestrian> -->
