@@ -16,7 +16,7 @@
         type: gaussian # Only used if it is not in the scenario file
         # process_noise: [.8, .8] # Excessive
         # process_noise: [.3, .3] # Safe-Horizon
-        process_noise: [0.01, 0.01] # Deterministic
+        process_noise: [0.0001, 0.0001] # Deterministic
         collision_free_spawn: true
         interaction: true
         constant_velocity_predictions: true # If "false" will produce predictions that follow the pedestrian model

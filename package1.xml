@@ -30,6 +30,7 @@
   <depend>pedsim_original</depend>
   <depend>mpc_planner_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>message_filters</depend>
 
   <export>
     <build_type>catkin</build_type>
