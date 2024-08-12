@@ -31,6 +31,7 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(node, "pedestrian_simulator/pedestrians/collision_free_spawn", collision_free_spawn_, true);
   retrieveParameter(node, "pedestrian_simulator/pedestrians/constant_velocity_predictions", constant_velocity_predictions_, true);
   retrieveParameter(node, "pedestrian_simulator/pedestrians/interaction", interaction_, false);
+  retrieveParameter(node, "pedestrian_simulator/pedestrians/respawn", respawn_peds_, false);
 
   retrieveParameter(node, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
   // retrieveParameter(node, "pedestrian_simulator/pedestrians/velocity", ped_velocity_);

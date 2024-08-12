@@ -31,6 +31,8 @@ public:
     virtual void Reset();
     virtual void ResetSeed();
 
+    virtual unsigned int GetSeed() { return cur_seed_; }
+
 protected:
     bool AddGoalForce(Eigen::Vector2d &force);
 

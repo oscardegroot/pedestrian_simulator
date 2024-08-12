@@ -57,7 +57,7 @@ public:
   std::string scenario_file_;
 
   bool use_path_origin_;
-
+  bool respawn_peds_;
   int seed_;
   int single_scenario_;
   std::vector<double> process_noise_;

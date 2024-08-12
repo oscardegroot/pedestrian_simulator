@@ -273,8 +273,17 @@ std::vector<Prediction> PedestrianSimulator::GetSocialPredictions()
     for (auto &pedestrian : pedestrians_)
     {
         if (pedestrian->done_) // Agents that reached their goal dissappear
+        {
+            // bool spawn_new = true;
+            // if (spawn_new)
+            // {
+            //     std::cout << "new ped spawned\n";
+            //     std::cout << pedestrian->id_ << std::endl;
+            //     int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
+            //     pedestrian.reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], pedestrian->GetSeed() + 1, pedsim_manager_->GetScene()));
+            // }
             continue;
-
+        }
         Ped::Tagent *a = pedsim_prediction_manager_->AddAgent(pedestrian->GetPosition()(0),
                                                               pedestrian->GetPosition()(1),
                                                               pedestrian->goal_.x,
@@ -336,8 +345,22 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
     unsigned int id = 0;
     for (auto &ped : pedestrians_)
     {
-        if (ped->done_)
+        if (ped->done_) // Agents that reached their goal dissappear
+        {
+            if (CONFIG.respawn_peds_)
+            {
+                int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
+                unsigned int ped_id = ped->id_;
+                ped.reset(new SocialForcesPedestrian(
+                    xml_reader_->spawn_randomizers_[random_select],
+                    ((SocialForcesPedestrian *)(ped.get()))->GetSeed() + 1,
+                    pedsim_manager_->GetScene()));
+                ped->id_ = ped_id;
+                ((SocialForcesPedestrian *)(ped.get()))->LoadOtherPedestrians(&pedestrians_);
+                ((SocialForcesPedestrian *)(ped.get()))->LoadRobot(&robot_state_);
+            }
             continue;
+        }
 
         predictions.emplace_back();
         auto &prediction = predictions.back();
