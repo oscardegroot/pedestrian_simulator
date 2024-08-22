@@ -72,9 +72,8 @@ void PedestrianSimulator::ReadScenario()
         LOG_INFO("Pedestrian Simulator: Spawning social forces pedestrian");
         for (size_t ped_id = 0; ped_id < xml_reader_->pedestrians_.size(); ped_id++)
         {
-            int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id, pedsim_manager_->GetScene(), Eigen::Vector2d(0., 0.)));
+            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_, ped_id, pedsim_manager_->GetScene(), &robot_state_));
         }
 
         for (auto &ped : pedestrians_)
@@ -109,25 +108,28 @@ void PedestrianSimulator::Reset()
         ped->Reset();
     }
 
-    // Check if the start/end point is in collision and regenerate if necessary
-    if (CONFIG.collision_free_spawn_)
-    {
-        for (auto &ped : pedestrians_)
-        {
-            for (auto &other_ped : pedestrians_) // We fix the other pedestrian so we do not change the peds in the outer loop
-            {
-                if (ped->id_ == other_ped->id_)
-                    continue;
-                for (int i = 0; i < 50; i++) // Try 50 times
-                {
-                    if (ped->start_.Distance(other_ped->start_) >= CONFIG.ped_radius_ * 2)
-                        break;
+    LOG_INFO("Done with reset");
 
-                    other_ped->Reset();
-                }
-            }
-        }
-    }
+    // Check if the start/end point is in collision and regenerate if necessary
+    // if (CONFIG.collision_free_spawn_)
+    // {
+    //     for (auto &ped : pedestrians_)
+    //     {
+    //         for (auto &other_ped : pedestrians_) // We fix the other pedestrian so we do not change the peds in the outer loop
+    //         {
+    //             if (ped->id_ == other_ped->id_)
+    //                 continue;
+    //             for (int i = 0; i <= 50; i++) // Try 50 times
+    //             {
+    //                 if (ped->start_.Distance(other_ped->start_) >= CONFIG.ped_radius_ * 2)
+    //                     break;
+
+    //                 if (i < 50)
+    //                     other_ped->Reset();
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 void PedestrianSimulator::Loop()
@@ -356,26 +358,34 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
     std::vector<Prediction> predictions;
 
     unsigned int id = 0;
-    for (auto &ped : pedestrians_)
+    for (size_t i = 0; i < pedestrians_.size(); i++)
     {
+        auto &ped = pedestrians_[i];
         if (ped->done_) // Agents that reached their goal dissappear
         {
+            // ROS_WARN_STREAM("Pedestrian " << ped->id_ << " done");
             if (CONFIG.respawn_peds_)
             {
-                int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
-                unsigned int ped_id = ped->id_;
-                ped.reset(new SocialForcesPedestrian(
-                    xml_reader_->spawn_randomizers_[random_select],
-                    ((SocialForcesPedestrian *)(ped.get()))->GetSeed() + 1,
-                    pedsim_manager_->GetScene(),
-                    robot_state_.pos));
-                ped->id_ = ped_id;
-                ((SocialForcesPedestrian *)(ped.get()))->LoadOtherPedestrians(&pedestrians_);
-                ((SocialForcesPedestrian *)(ped.get()))->LoadRobot(&robot_state_);
+                // unsigned int ped_id = ped->id_;
+                // pedestrians_[i].reset(new SocialForcesPedestrian(
+                //     xml_reader_->spawn_randomizers_,
+                //     ((SocialForcesPedestrian *)(ped.get()))->GetSeed() + 1,
+                //     pedsim_manager_->GetScene(),
+                //     robot_state_.pos));
+                // pedestrians_[i]->id_ = ped_id;
+                // ((SocialForcesPedestrian *)(pedestrians_[i].get()))->LoadOtherPedestrians(&pedestrians_);
+                // ((SocialForcesPedestrian *)(pedestrians_[i].get()))->LoadRobot(&robot_state_);
+                ped->Reset();
             }
-            continue;
+            // continue;
         }
 
+        // if (ped->position_.x != ped->position_.x) // Faulty pedestrians are ignored
+        // {
+        //     ROS_WARN("Ignoring a faulty pedestrian.");
+
+        //     continue;
+        // }
         predictions.emplace_back();
         auto &prediction = predictions.back();
         prediction.id = id;
@@ -495,8 +505,8 @@ void PedestrianSimulator::VisualizePedestrians()
         // select %= (int)(colors_.size() / 3); // We only have 20 values
         // select = (int)(colors_.size() / 3) - 1 - select;
         // ped_model.setColor(colors_[3 * select + 0], colors_[3 * select + 1], colors_[3 * select + 2], 1.0);
-        ped_model.setColorInt(ped->id_, 1.0, RosTools::Colormap::BRUNO);
-
+        // ped_model.setColorInt(ped->id_, 1.0, RosTools::Colormap::BRUNO);
+        ped_model.setColor(25. / 256., 138. / 256., 89. / 256.);
         ped_model.addPointMarker(Eigen::Vector3d(ped->position_.x, ped->position_.y, 0.));
     }
     ped_visual.publish();

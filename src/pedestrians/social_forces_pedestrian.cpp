@@ -6,14 +6,16 @@
 // #include <pedsim_original/ped_agent.h>
 // #include <pedsim_original/ped_waypoint.h>
 
-SocialForcesPedestrian::SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp,
-                                               Ped::Tscene *pedsim_scene, const Eigen::Vector2d &robot_pos)
-    : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp), robot_pos_(robot_pos)
+SocialForcesPedestrian::SocialForcesPedestrian(std::vector<SpawnRandomizer> &spawn_randomizers, int seed_mp,
+                                               Ped::Tscene *pedsim_scene, RobotState *robot_state)
+    : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp)
 {
-    spawn_randomizer_ = spawn_randomizer;
+    spawn_randomizers_ = &spawn_randomizers;
+
     ResetSeed();
 
     pedsim_scene_ = pedsim_scene;
+    robot_state_ = robot_state;
 
     Reset();
 }
@@ -27,6 +29,7 @@ SocialForcesPedestrian::SocialForcesPedestrian(const SocialForcesPedestrian &oth
     cur_seed_ = other.cur_seed_;
     random_generator_.reset(new RosTools::RandomGenerator(*other.random_generator_));
     robot_state_ = other.robot_state_;
+    robot_pos_ = other.robot_pos_;
 
     position_ = other.position_;
     twist_ = other.twist_;
@@ -34,6 +37,7 @@ SocialForcesPedestrian::SocialForcesPedestrian(const SocialForcesPedestrian &oth
     goal_ = other.goal_;
     noisy_twist_ = other.noisy_twist_;
     velocity_ = other.velocity_;
+    done_ = other.done_;
 }
 
 void SocialForcesPedestrian::LoadOtherPedestrians(std::vector<std::unique_ptr<Pedestrian>> *other_peds) { other_peds_ = other_peds; };
@@ -93,27 +97,35 @@ void SocialForcesPedestrian::Update(const double dt)
 
 void SocialForcesPedestrian::ResetSeed()
 {
-    cur_seed_ = seed_mp_ * 10000 + CONFIG.seed_; // At initialization: define the start seed of this ped
+    cur_seed_ = seed_mp_ * 100 + CONFIG.seed_; // At initialization: define the start seed of this ped
     if (CONFIG.single_scenario_ != -1)
         cur_seed_ += CONFIG.single_scenario_;
 }
 
 void SocialForcesPedestrian::Reset()
 {
+    // LOG_INFO("Reset");
+
     done_ = false;
     cur_seed_++;
     random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
-    for (int i = 0; i < 30; i++)
+    for (int i = 0; i < 50; i++)
     {
+        int random_select = random_generator_->Int(spawn_randomizers_->size() - 1);
+        spawn_randomizer_ = (*spawn_randomizers_)[random_select];
         start_ = spawn_randomizer_.GenerateStart(random_generator_.get()); // Generate a position
-        if (RosTools::distance(Eigen::Vector2d(start_.x, start_.y), robot_pos_) >= 10.0)
-            break; // Accept it only if it is not spawning near the robot
 
-        if (i == 29)
+        // std::cout << i << ": " << RosTools::distance(Eigen::Vector2d(start_.x, start_.y), robot_pos_) << std::endl;
+        if (RosTools::distance(Eigen::Vector2d(start_.x, start_.y), robot_state_->pos) >= 5.0)
         {
-            start_.x = 100;
-            start_.y = 100;
+            break; // Accept it only if it is not spawning near the robot
+        }
+        if (i == 49)
+        {
+            ROS_WARN("FAILED TO SPAWN AWAY FROM THE ROBOT");
+            // done_ = true;
+            // start_ = Waypoint(100., 100.);
         }
     }
 
@@ -160,7 +172,7 @@ Waypoint SocialForcesPedestrian::GetGoal(Waypoint start, double min_travel_time)
     Waypoint goal = spawn_randomizer_.GenerateGoal(random_generator_.get());
     Waypoint best_goal;
     double best_dist = 0.;
-    for (int i = 0; start_.Distance(goal) < velocity_ * spawn_randomizer_.GetMinTravelTime() && i < 1000; i++) // Make sure the goal is far enough away (20s)
+    for (int i = 0; start_.Distance(goal) < velocity_ * spawn_randomizer_.GetMinTravelTime() && i < 50; i++) // Make sure the goal is far enough away (20s)
     {
         if (start_.Distance(goal) > best_dist)
         {
@@ -170,9 +182,9 @@ Waypoint SocialForcesPedestrian::GetGoal(Waypoint start, double min_travel_time)
 
         goal = spawn_randomizer_.GenerateGoal(random_generator_.get());
 
-        if (i == 999)
+        if (i == 49)
         {
-            // LOG_ERROR("Could not find a goal far enough away from the start position!");
+            LOG_ERROR("Could not find a goal far enough away from the start position!");
             return best_goal;
         }
     }

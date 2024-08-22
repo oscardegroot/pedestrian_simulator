@@ -123,7 +123,7 @@ bool ROSPedestrianSimulator::startCallback(std_srvs::Empty::Request &req, std_sr
 
 void ROSPedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 {
-    // LOG_INFO("PedestrianSimulator: Reset callback");
+    LOG_INFO("PedestrianSimulator: Reset callback");
     _simulator->Reset();
 }
 
@@ -198,15 +198,19 @@ void ROSPedestrianSimulator::SettingHzCallback(const std_msgs::Float32 &msg)
 
 void ROSPedestrianSimulator::Loop(const ros::TimerEvent &event)
 {
+    // LOG_INFO("loop0");
     _simulator->Loop();
 
+    // LOG_INFO("loop1");
     std::vector<Prediction> obstacles = _simulator->GetPedestrians();
     derived_object_msgs::ObjectArray obstacles_msg = PredictionsToObjectArray(obstacles);
     obstacle_pub_.publish(obstacles_msg);
+    // LOG_INFO("loop2");
 
     std::vector<Prediction> predictions = _simulator->GetPredictions();
     mpc_planner_msgs::ObstacleArray predictions_msg = PredictionsToObstacleArray(predictions);
     obstacle_trajectory_prediction_pub_.publish(predictions_msg);
+    // LOG_INFO("loop3");
 }
 
 mpc_planner_msgs::ObstacleArray ROSPedestrianSimulator::PredictionsToObstacleArray(const std::vector<Prediction> &predictions)

@@ -11,8 +11,8 @@
 class SocialForcesPedestrian : public Pedestrian
 {
 public:
-    SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp,
-                           Ped::Tscene *pedsim_scene, const Eigen::Vector2d &robot_pos);
+    SocialForcesPedestrian(std::vector<SpawnRandomizer> &spawn_randomizer, int seed_mp,
+                           Ped::Tscene *pedsim_scene, RobotState *robot_state);
 
     /** @brief copy constructor */
     SocialForcesPedestrian(const SocialForcesPedestrian &other);
@@ -47,6 +47,7 @@ protected:
     Eigen::Vector2d robot_pos_;
 
     SpawnRandomizer spawn_randomizer_;
+    std::vector<SpawnRandomizer> *spawn_randomizers_;
     std::vector<std::unique_ptr<Pedestrian>> *other_peds_;
     Eigen::Vector2d other_ped_force_;
     RobotState *robot_state_;
