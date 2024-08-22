@@ -108,8 +108,6 @@ void PedestrianSimulator::Reset()
         ped->Reset();
     }
 
-    LOG_INFO("Done with reset");
-
     // Check if the start/end point is in collision and regenerate if necessary
     // if (CONFIG.collision_free_spawn_)
     // {

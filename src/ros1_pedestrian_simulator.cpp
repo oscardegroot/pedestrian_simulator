@@ -123,7 +123,7 @@ bool ROSPedestrianSimulator::startCallback(std_srvs::Empty::Request &req, std_sr
 
 void ROSPedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 {
-    LOG_INFO("PedestrianSimulator: Reset callback");
+    // LOG_INFO("PedestrianSimulator: Reset callback");
     _simulator->Reset();
 }
 
