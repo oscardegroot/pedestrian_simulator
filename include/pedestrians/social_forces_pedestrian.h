@@ -11,7 +11,8 @@
 class SocialForcesPedestrian : public Pedestrian
 {
 public:
-    SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp, Ped::Tscene *pedsim_scene);
+    SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp,
+                           Ped::Tscene *pedsim_scene, const Eigen::Vector2d &robot_pos);
 
     /** @brief copy constructor */
     SocialForcesPedestrian(const SocialForcesPedestrian &other);
@@ -43,6 +44,7 @@ protected:
     Waypoint GetGoal(Waypoint start, double min_travel_time);
     std::unique_ptr<RosTools::RandomGenerator> random_generator_;
     int seed_mp_, cur_seed_;
+    Eigen::Vector2d robot_pos_;
 
     SpawnRandomizer spawn_randomizer_;
     std::vector<std::unique_ptr<Pedestrian>> *other_peds_;

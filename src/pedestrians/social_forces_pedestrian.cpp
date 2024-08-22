@@ -6,8 +6,9 @@
 // #include <pedsim_original/ped_agent.h>
 // #include <pedsim_original/ped_waypoint.h>
 
-SocialForcesPedestrian::SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp, Ped::Tscene *pedsim_scene)
-    : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp)
+SocialForcesPedestrian::SocialForcesPedestrian(const SpawnRandomizer &spawn_randomizer, int seed_mp,
+                                               Ped::Tscene *pedsim_scene, const Eigen::Vector2d &robot_pos)
+    : Pedestrian(Waypoint(0., 0.), 0.), seed_mp_(seed_mp), robot_pos_(robot_pos)
 {
     spawn_randomizer_ = spawn_randomizer;
     ResetSeed();
@@ -103,7 +104,19 @@ void SocialForcesPedestrian::Reset()
     cur_seed_++;
     random_generator_.reset(new RosTools::RandomGenerator(cur_seed_));
 
-    start_ = spawn_randomizer_.GenerateStart(random_generator_.get());
+    for (int i = 0; i < 30; i++)
+    {
+        start_ = spawn_randomizer_.GenerateStart(random_generator_.get()); // Generate a position
+        if (RosTools::distance(Eigen::Vector2d(start_.x, start_.y), robot_pos_) >= 10.0)
+            break; // Accept it only if it is not spawning near the robot
+
+        if (i == 29)
+        {
+            start_.x = 100;
+            start_.y = 100;
+        }
+    }
+
     // velocity_ = spawn_randomizer_.GenerateVelocity(random_generator_.get());
     pedsim_agent_ = new Ped::Tagent();
     velocity_ = pedsim_agent_->getvmax(); // Determined by libpedsim

@@ -74,7 +74,7 @@ void PedestrianSimulator::ReadScenario()
         {
             int random_select = random_generator_.Int(xml_reader_->spawn_randomizers_.size() - 1);
             pedestrians_.emplace_back();
-            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id, pedsim_manager_->GetScene()));
+            pedestrians_.back().reset(new SocialForcesPedestrian(xml_reader_->spawn_randomizers_[random_select], ped_id, pedsim_manager_->GetScene(), Eigen::Vector2d(0., 0.)));
         }
 
         for (auto &ped : pedestrians_)
@@ -116,8 +116,15 @@ void PedestrianSimulator::Reset()
         {
             for (auto &other_ped : pedestrians_) // We fix the other pedestrian so we do not change the peds in the outer loop
             {
-                while (ped->id_ != other_ped->id_ && ped->start_.Distance(other_ped->start_) < CONFIG.ped_radius_ * 2)
+                if (ped->id_ == other_ped->id_)
+                    continue;
+                for (int i = 0; i < 50; i++) // Try 50 times
+                {
+                    if (ped->start_.Distance(other_ped->start_) >= CONFIG.ped_radius_ * 2)
+                        break;
+
                     other_ped->Reset();
+                }
             }
         }
     }
@@ -172,6 +179,8 @@ std::vector<Prediction> PedestrianSimulator::GetPedestrians()
 
     return predictions;
 }
+
+std::vector<StaticObstacle> PedestrianSimulator::GetStaticObstacles() { return xml_reader_->static_obstacles_; }
 
 std::vector<Prediction> PedestrianSimulator::GetPredictions()
 {
@@ -358,7 +367,8 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
                 ped.reset(new SocialForcesPedestrian(
                     xml_reader_->spawn_randomizers_[random_select],
                     ((SocialForcesPedestrian *)(ped.get()))->GetSeed() + 1,
-                    pedsim_manager_->GetScene()));
+                    pedsim_manager_->GetScene(),
+                    robot_state_.pos));
                 ped->id_ = ped_id;
                 ((SocialForcesPedestrian *)(ped.get()))->LoadOtherPedestrians(&pedestrians_);
                 ((SocialForcesPedestrian *)(ped.get()))->LoadRobot(&robot_state_);

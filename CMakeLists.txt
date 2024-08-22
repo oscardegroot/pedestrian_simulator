@@ -12,9 +12,30 @@ set(DEPENDENCIES
   roslib
   std_srvs
   message_filters
+  message_generation
+  gazebo_msgs
+  std_msgs
 )
 
 find_package(catkin REQUIRED COMPONENTS ${DEPENDENCIES})
+
+
+catkin_python_setup()
+
+
+add_service_files(
+  FILES
+  SpawnWall.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+catkin_package(
+  CATKIN_DEPENDS message_runtime std_msgs gazebo_msgs
+)
 
 include_directories(
   include
@@ -55,7 +76,14 @@ target_link_libraries(collision_checker_node ${PROJECT_NAME} ${catkin_LIBRARIES}
 
 add_definitions(-DMPC_PLANNER_ROS)
 
+
+
 install(TARGETS ${PROJECT_NAME}_node
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+catkin_install_python(PROGRAMS
+  scripts/spawn_walls.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -14,9 +14,13 @@ void Config::Init() // const std::string& node_handle_name
   auto node = rclcpp::Node::make_shared("guidance_planner"); // Create a node
 #endif
   retrieveParameter(node, "pedestrian_simulator/node/debug_output", debug_output_, true);
+  retrieveParameter(node, "pedestrian_simulator/node/scenario_package_name", scenario_package_name_, std::string("pedestrian_simulator"));
   retrieveParameter(node, "pedestrian_simulator/node/scenario", scenario_file_);
   retrieveParameter(node, "pedestrian_simulator/node/update_frequency", update_frequency_, 20.);
   delta_t_ = 1.0 / ((double)update_frequency_);
+
+  retrieveParameter(node, "pedestrian_simulator/gazebo/enable", gazebo_enable_, false);
+  retrieveParameter(node, "pedestrian_simulator/gazebo/add_static_obstacles", gazebo_add_static_obstacles_, false);
 
   retrieveParameter(node, "pedestrian_simulator/node/pretend_to_be_optitrack", pretend_to_be_optitrack_, false);
 

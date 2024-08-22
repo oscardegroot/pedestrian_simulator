@@ -55,6 +55,7 @@ public:
   int horizon_N_;
 
   std::string scenario_file_;
+  std::string scenario_package_name_;
 
   bool use_path_origin_;
   bool respawn_peds_;
@@ -68,6 +69,7 @@ public:
   bool interaction_;
   double ped_radius_;
 
+  bool gazebo_enable_, gazebo_add_static_obstacles_;
   bool collision_free_spawn_;
 
   double p_binomial_;

@@ -1,9 +1,13 @@
 pedestrian_simulator:
   static: false
+  gazebo:
+    enable: true
+    add_static_obstacles: true
   node:
     debug_output: false
     pretend_to_be_optitrack: false
     scenario: random_social/8_corridor.xml
+    # scenario_package_name: pedestrian_simulator
     update_frequency: 50
     prediction_step: 0.2
     horizon: 50

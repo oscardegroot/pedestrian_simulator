@@ -15,7 +15,7 @@ struct Prediction
     std::vector<double> major_axis;
     std::vector<double> minor_axis;
 
-    Prediction(){};
+    Prediction() {};
 
     void Add(const Eigen::Vector2d &p, const double a, const Eigen::Vector2d &v,
              const double _major_axis = 0, const double _minor_axis = 0)
@@ -33,10 +33,10 @@ struct Waypoint
     double x, y;
     double og_x, og_y;
 
-    Waypoint(){};
+    Waypoint() {};
 
     Waypoint(double x, double y)
-        : x(x), y(y), og_x(x), og_y(y){};
+        : x(x), y(y), og_x(x), og_y(y) {};
 
     double Distance(Waypoint &other)
     {
@@ -79,10 +79,10 @@ struct RobotState
     Eigen::Vector2d pos;
     Eigen::Vector2d vel;
 
-    RobotState(){};
+    RobotState() {};
 
-    RobotState(const Eigen::Vector2d &pos, const double angle, double velocity)
-        : pos(pos)
+    RobotState(const Eigen::Vector2d &_pos, const double angle, double velocity)
+        : pos(_pos)
     {
         vel(0) = std::cos(angle) * velocity;
         vel(1) = std::sin(angle) * velocity;
@@ -95,7 +95,22 @@ struct StaticObstacle
     double max_x, max_y;
 
     StaticObstacle(double _min_x, double _min_y,
-                   double _max_x, double _max_y) : min_x(_min_x), min_y(_min_y), max_x(_max_x), max_y(_max_y) {}
+                   double _max_x, double _max_y) : min_x(_min_x), min_y(_min_y), max_x(_max_x), max_y(_max_y)
+    {
+        // Fix swapped min/max values
+        double temp_min_x = std::min(min_x, max_x);
+        double temp_max_x = std::max(min_x, max_x);
+        double temp_min_y = std::min(min_y, max_y);
+        double temp_max_y = std::max(min_y, max_y);
+
+        min_x = temp_min_x;
+        max_x = temp_max_x;
+        min_y = temp_min_y;
+        max_y = temp_max_y;
+    }
+
+    double XSize() const { return max_x - min_x; }
+    double YSize() const { return max_y - min_y; }
 };
 
 typedef std::vector<Waypoint> Path;

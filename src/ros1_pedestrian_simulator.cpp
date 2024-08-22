@@ -4,6 +4,8 @@
 #include <pedestrian_simulator/types.h>
 #include <pedestrian_simulator/configuration.h>
 
+#include <pedestrian_simulator/SpawnWall.h>
+
 #include <ros_tools/visuals.h>
 #include <ros_tools/convertions.h>
 #include <ros_tools/logging.h>
@@ -40,6 +42,50 @@ void ROSPedestrianSimulator::InitializePublishersAndSubscribers()
     start_server = _nh.advertiseService("/pedestrian_simulator/start", &ROSPedestrianSimulator::startCallback, this);
 }
 
+void ROSPedestrianSimulator::InitGazebo()
+{
+    // Create a service client
+    ros::ServiceClient client = _nh.serviceClient<pedestrian_simulator::SpawnWall>("spawn_wall");
+
+    // Wait for the service to be available
+    if (!client.waitForExistence(ros::Duration(5.0)))
+    {
+        ROS_ERROR("Service /spawn_wall is not available.");
+        return;
+    }
+
+    int walls = 0;
+    for (auto &obs : _simulator->GetStaticObstacles())
+    {
+        // Create a service request object
+        pedestrian_simulator::SpawnWall srv;
+
+        // Set request parameters
+        srv.request.name = "wall" + std::to_string(walls);
+        walls++;
+        srv.request.position = {obs.min_x + obs.XSize() / 2., obs.min_y + obs.YSize() / 2., 0.};
+        srv.request.size = {obs.XSize(), obs.YSize(), 2.0};
+        srv.request.orientation = {0., 0., 0., 1.};
+
+        // Call the service
+        if (client.call(srv))
+        {
+            if (srv.response.success)
+            {
+                // ROS_INFO("Successfully spawned wall: %s", srv.response.message.c_str());
+            }
+            else
+            {
+                ROS_ERROR("Failed to spawn wall: %s", srv.response.message.c_str());
+            }
+        }
+        else
+        {
+            ROS_ERROR("Failed to call service /spawn_wall");
+        }
+    }
+}
+
 bool ROSPedestrianSimulator::startCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 
@@ -66,6 +112,10 @@ bool ROSPedestrianSimulator::startCallback(std_srvs::Empty::Request &req, std_sr
 
     LOG_INFO("Pedestrian Simulator [horizon = " << CONFIG.horizon_N_ << ", dt = " << CONFIG.prediction_step_ << ", Hz = " << CONFIG.update_frequency_ << "]");
 
+    // Add the static obstacles to gazebo
+    if (CONFIG.gazebo_enable_)
+        InitGazebo();
+
     // Implement the service server logic here
     timer_ = _nh.createTimer(ros::Duration(1.0 / CONFIG.update_frequency_), &ROSPedestrianSimulator::Loop, this);
     return true;
@@ -79,10 +129,11 @@ void ROSPedestrianSimulator::ResetCallback(const std_msgs::Empty &msg)
 
 void ROSPedestrianSimulator::RobotStateCallback(const geometry_msgs::PoseStamped::ConstPtr &msg)
 {
+    ROS_INFO_ONCE("Pedestrian Simulator is receiving the robot state");
     _simulator->SetRobotState(RobotState(
         Eigen::Vector2d(msg->pose.position.x, msg->pose.position.y),
         RosTools::quaternionToAngle(msg->pose.orientation),
-        0.));
+        msg->pose.position.z));
 }
 
 void ROSPedestrianSimulator::VehicleVelocityCallback(const geometry_msgs::Twist &msg)

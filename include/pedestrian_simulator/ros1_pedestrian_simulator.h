@@ -43,6 +43,7 @@ private:
     ros::Timer timer_;
 
     void InitializePublishersAndSubscribers();
+    void InitGazebo();
 
     derived_object_msgs::ObjectArray PredictionsToObjectArray(const std::vector<Prediction> &predictions);
     mpc_planner_msgs::ObstacleArray PredictionsToObstacleArray(const std::vector<Prediction> &predictions);

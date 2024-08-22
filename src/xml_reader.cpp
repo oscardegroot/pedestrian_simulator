@@ -12,7 +12,7 @@
 void XMLReader::Read()
 {
 
-    std::string map_file = getPackagePath("pedestrian_simulator") + "/scenarios/" + CONFIG.scenario_file_;
+    std::string map_file = getPackagePath(CONFIG.scenario_package_name_) + "/scenarios/" + CONFIG.scenario_file_;
     LOG_VALUE("Pedestrian Scenario", map_file);
     Read(map_file);
 }
@@ -145,12 +145,105 @@ void XMLReader::ReadXML(const std::string &file)
         }
     }
 
-    // For all pedestrians in the file
+    // Static obs
     for (rapidxml::xml_node<> *obs = doc.first_node("obstacle"); obs; obs = obs->next_sibling("obstacle"))
     {
         static_obstacles_.emplace_back(atof(obs->first_attribute("x1")->value()),
                                        atof(obs->first_attribute("y1")->value()),
                                        atof(obs->first_attribute("x2")->value()),
                                        atof(obs->first_attribute("y2")->value()));
+    }
+
+    // Static obs size
+    for (rapidxml::xml_node<> *obs = doc.first_node("obstacle_size"); obs; obs = obs->next_sibling("obstacle_size"))
+    {
+        double x = atof(obs->first_attribute("x")->value());
+        double y = atof(obs->first_attribute("y")->value());
+        double length_x = atof(obs->first_attribute("length_x")->value());
+        double length_y = atof(obs->first_attribute("length_y")->value());
+        static_obstacles_.emplace_back(x, y, x + length_x, y + length_y);
+    }
+
+    // Static obs size
+    for (rapidxml::xml_node<> *obs = doc.first_node("hallway_x"); obs; obs = obs->next_sibling("hallway_x"))
+    {
+
+        double x = atof(obs->first_attribute("x")->value());
+        double y = atof(obs->first_attribute("y")->value());
+        double length = atof(obs->first_attribute("length")->value());
+        double width = atof(obs->first_attribute("width")->value());
+
+        double c = length > 0. ? width / 2. : -width / 2.;
+        static_obstacles_.emplace_back(x + c, y - width / 2., x + length - c, y - width / 2.);
+        static_obstacles_.emplace_back(x + c, y + width / 2., x + length - c, y + width / 2.);
+    }
+
+    for (rapidxml::xml_node<> *obs = doc.first_node("hallway_y"); obs; obs = obs->next_sibling("hallway_y"))
+    {
+
+        double x = atof(obs->first_attribute("x")->value());
+        double y = atof(obs->first_attribute("y")->value());
+        double length = atof(obs->first_attribute("length")->value());
+        double width = atof(obs->first_attribute("width")->value());
+
+        double c = length > 0. ? width / 2. : -width / 2.;
+        static_obstacles_.emplace_back(x - width / 2., y + c, x - width / 2., y + length - c);
+        static_obstacles_.emplace_back(x + width / 2., y + c, x + width / 2., y + length - c);
+    }
+
+    for (rapidxml::xml_node<> *obs = doc.first_node("door_x"); obs; obs = obs->next_sibling("door_x"))
+    {
+
+        double x = atof(obs->first_attribute("x")->value());
+        double y = atof(obs->first_attribute("y")->value());
+        double obstruct = atof(obs->first_attribute("obstruct")->value());
+        double width = atof(obs->first_attribute("width")->value());
+
+        static_obstacles_.emplace_back(x, y - width / 2., x, y - width / 2. + obstruct / 2.);
+        static_obstacles_.emplace_back(x, y + width / 2., x, y + width / 2. - obstruct / 2.);
+    }
+
+    for (rapidxml::xml_node<> *obs = doc.first_node("wall_off"); obs; obs = obs->next_sibling("wall_off"))
+    {
+
+        double x = atof(obs->first_attribute("x")->value());
+        double y = atof(obs->first_attribute("y")->value());
+        double width = atof(obs->first_attribute("width")->value());
+        double left = atof(obs->first_attribute("left")->value());
+        double up = atof(obs->first_attribute("up")->value());
+        double right = atof(obs->first_attribute("right")->value());
+        double down = atof(obs->first_attribute("down")->value());
+
+        if (left == 1)
+            static_obstacles_.emplace_back(x - width / 2., y - width / 2., x - width / 2., y + width / 2.);
+        if (right == 1)
+            static_obstacles_.emplace_back(x + width / 2., y - width / 2., x + width / 2., y + width / 2.);
+        if (up == 1)
+            static_obstacles_.emplace_back(x - width / 2., y + width / 2., x + width / 2., y + width / 2.);
+        if (down == 1)
+            static_obstacles_.emplace_back(x - width / 2., y - width / 2., x + width / 2., y - width / 2.);
+    }
+
+    // Static obs size
+    for (rapidxml::xml_node<> *obs = doc.first_node("intersection"); obs; obs = obs->next_sibling("intersection"))
+    {
+
+        double x = atof(obs->first_attribute("x")->value());
+        double y = atof(obs->first_attribute("y")->value());
+        double length = atof(obs->first_attribute("length")->value());
+        double width = atof(obs->first_attribute("width")->value());
+        static_obstacles_.emplace_back(x + width / 2., y + width / 2., x + width / 2 + length, y + width / 2.);
+        static_obstacles_.emplace_back(x + width / 2., y + width / 2., x + width / 2, y + width / 2. + length);
+
+        static_obstacles_.emplace_back(x + width / 2., y - width / 2., x + width / 2 + length, y - width / 2.);
+        static_obstacles_.emplace_back(x + width / 2., y - width / 2., x + width / 2, y - width / 2. - length);
+
+        static_obstacles_.emplace_back(x - width / 2., y + width / 2., x - width / 2 - length, y + width / 2.);
+        static_obstacles_.emplace_back(x - width / 2., y + width / 2., x - width / 2, y + width / 2. + length);
+
+        static_obstacles_.emplace_back(x - width / 2., y - width / 2., x - width / 2 - length, y - width / 2.);
+        static_obstacles_.emplace_back(x - width / 2., y - width / 2., x - width / 2, y - width / 2. - length);
+
+        // static_obstacles_.emplace_back(x - width / 2., y - width / 2., x - width / 2 - length, y - width / 2. - length);
     }
 }

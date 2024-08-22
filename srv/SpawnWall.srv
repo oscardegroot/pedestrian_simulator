@@ -1,0 +1,7 @@
+string name         # Name of the wall model
+float32[3] position # [x, y, z] position
+float32[3] size     # [length, width, height]
+float32[4] orientation # [x, y, z, w] quaternion for orientation
+---
+bool success        # Whether the wall was spawned successfully
+string message      # Additional information
