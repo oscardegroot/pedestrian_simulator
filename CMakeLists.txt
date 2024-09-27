@@ -83,7 +83,7 @@ install(TARGETS ${PROJECT_NAME}_node
 )
 
 catkin_install_python(PROGRAMS
-  scripts/spawn_walls.py
+  scripts/${PROJECT_NAME}/spawn_walls.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

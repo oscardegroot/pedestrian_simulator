@@ -1,3 +1,5 @@
+[![ROS1 - Build](https://github.com/oscardegroot/ros_tools/actions/workflows/ros1.yml/badge.svg)](https://github.com/oscardegroot/ros_tools/actions/workflows/ros1.yml)
+
 # Pedestrian Simulator
 This repository implements a pedestrian simulator based on the social forces implementation of [`libpedsim`](https://github.com/chgloor/pedsim). It features 
 
