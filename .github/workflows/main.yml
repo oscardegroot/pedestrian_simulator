@@ -26,5 +26,5 @@ jobs:
           env: # either pass all entries explicitly
             ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
             ROS_REPO: ${{ matrix.ROS_REPO }}
-            TARGET_WORKSPACE: $TARGET_REPO_PATH github:oscardegroot/ros_tools#main github:oscardegroot/pedsim_original#main github:oscardegroot/asr_rapidxml#main
+            TARGET_WORKSPACE: $TARGET_REPO_PATH github:oscardegroot/ros_tools#main github:oscardegroot/pedsim_original#main github:oscardegroot/asr_rapidxml#main github:tud-amr/mpc_planner#main
 
