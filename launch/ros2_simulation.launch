@@ -10,4 +10,7 @@
         <param name="pedestrian_simulator.node.scenario" value="$(var pedestrian_scenario)"/>
         <param name="pedestrian_simulator.static" value="$(var static)"/>
     </node>
+
+    <node pkg="pedestrian_simulator" exec="ros2_collision_checker_node" name="ros2_collision_checker_node" respawn="false" output="screen"/>
+
 </launch>  

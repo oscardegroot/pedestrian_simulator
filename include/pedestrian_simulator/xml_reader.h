@@ -47,6 +47,8 @@ private:
     void Read(const std::string &file);
 
     void ReadXML(const std::string &file);
+
+    std::string package_name = "jackal_socialsim";
 };
 
 #endif // __XMLREADER_H__

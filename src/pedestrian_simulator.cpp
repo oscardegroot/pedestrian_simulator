@@ -110,14 +110,14 @@ void PedestrianSimulator::Reset()
     }
 
     // Check if the start/end point is in collision and regenerate if necessary
-    if (CONFIG.collision_free_spawn_)
+    if (CONFIG.collision_free_spawn_) /** @note: Can be broken*/
     {
         for (auto &ped : pedestrians_)
         {
             for (auto &other_ped : pedestrians_) // We fix the other pedestrian so we do not change the peds in the outer loop
             {
                 while (ped->id_ != other_ped->id_ && ped->start_.Distance(other_ped->start_) < CONFIG.ped_radius_ * 2)
-                    other_ped->Reset();
+                    other_ped->Reset(); // Does not remove the pedsim agent from the scene I think
             }
         }
     }
@@ -276,8 +276,8 @@ std::vector<Prediction> PedestrianSimulator::GetSocialPredictions()
 
     for (auto &pedestrian : pedestrians_)
     {
-        if (pedestrian->done_) // Agents that reached their goal dissappear
-            continue;
+        // if (pedestrian->done_) // Agents that reached their goal dissappear
+        // continue;
 
         Ped::Tagent *a = pedsim_prediction_manager_->AddAgent(pedestrian->GetPosition()(0),
                                                               pedestrian->GetPosition()(1),
@@ -340,8 +340,8 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
     unsigned int id = 0;
     for (auto &ped : pedestrians_)
     {
-        if (ped->done_)
-            continue;
+        // if (ped->done_)
+        // continue;
 
         predictions.emplace_back();
         auto &prediction = predictions.back();
@@ -451,8 +451,8 @@ void PedestrianSimulator::VisualizePedestrians()
 
     for (auto &ped : pedestrians_) // Publish a pedestrian model
     {
-        if (ped->done_)
-            continue;
+        // if (ped->done_)
+        // continue;
         Eigen::Vector2d rotated_twist = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_(0), ped->twist_(1));
         double angle = std::atan2(rotated_twist(1), rotated_twist(0));
         ped_model.setOrientation(RosTools::angleToQuaternion(angle + M_PI_2));

@@ -18,6 +18,7 @@ set(DEPENDENCIES
   pedsim_original
   asr_rapidxml
   tf2_ros
+  message_filters
 )
 
 # find dependencies
@@ -69,6 +70,9 @@ ament_target_dependencies(${PROJECT_NAME} ${DEPENDENCIES})
 add_executable(${PROJECT_NAME}_node src/ros2_pedestrian_simulator.cpp)
 target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME})
 
+add_executable(ros2_collision_checker_node src/ros2_collision_checker_node.cpp)
+ament_target_dependencies(ros2_collision_checker_node ${DEPENDENCIES})
+
 ## INSTALL ##
 install(
   TARGETS 
@@ -80,7 +84,9 @@ install(
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS ${PROJECT_NAME}_node
+install(TARGETS 
+  ${PROJECT_NAME}_node
+  ros2_collision_checker_node
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch

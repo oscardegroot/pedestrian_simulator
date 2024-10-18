@@ -5,6 +5,8 @@
 
 #include <rapidxml_utils.hpp>
 
+#include <vector>
+
 namespace RosTools
 {
     class RandomGenerator;
@@ -15,7 +17,7 @@ struct Range
     double min;
     double max;
 
-    Range(){};
+    Range() {};
     Range(double _min, double _max)
     {
         min = _min;
@@ -37,12 +39,17 @@ public:
     Waypoint GenerateStart(RosTools::RandomGenerator *random_generator);
     Waypoint GenerateGoal(RosTools::RandomGenerator *random_generator);
     double GenerateVelocity(RosTools::RandomGenerator *random_generator);
+    Waypoint GeneratePointInRectangle(RosTools::RandomGenerator *random_generator);
 
-    double GetGoalRange() const { return goal_range_; }
+    double GetGoalRange() const
+    {
+        return goal_range_;
+    }
     double GetMinTravelTime() const { return min_travel_time_; }
 
 public:
     void ReadFrom(rapidxml::xml_node<> *tag);
+    void ReadFromSquare(rapidxml::xml_node<> *tag);
 
 private:
     Range range_x_, range_y_, range_v_;
@@ -50,6 +57,9 @@ private:
     double goal_inflation_ = 1.;
     double goal_range_;
     double min_travel_time_;
+
+    bool use_square_{false};
+    std::vector<Eigen::Vector2d> square_points_;
 
     void ReadRange(rapidxml::xml_node<> *tag, const std::string &&name, Range &range);
 };

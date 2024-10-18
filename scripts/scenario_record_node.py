@@ -53,16 +53,20 @@ class ScenarioRecorder:
                     file.write('\t</path>\n')
                     file.write('</pedestrian>\n')
             else:
-                min_x = min(self.random_points, key=lambda x: x.x).x
-                max_x = max(self.random_points, key=lambda x: x.x).x
-                min_y = min(self.random_points, key=lambda x: x.y).y
-                max_y = max(self.random_points, key=lambda x: x.y).y
-                file.write('<random>\n')
-                file.write(f'\t<range_x min="{min_x}" max="{max_x}"/>\n')
-                file.write(f'\t<range_y min="{min_y}" max="{max_y}"/>\n')
-                file.write('\t<range_v min="1.14" max="1.66"/>\n')
-                file.write('\t<goal_inflation value="50.0"/>\n')
-                file.write('</random>\n')
+
+                # min_x = min(self.random_points, key=lambda x: x.x).x
+                # max_x = max(self.random_points, key=lambda x: x.x).x
+                # min_y = min(self.random_points, key=lambda x: x.y).y
+                # max_y = max(self.random_points, key=lambda x: x.y).y
+                # file.write(f'\t<range_x min="{min_x}" max="{max_x}"/>\n')
+                # file.write(f'\t<range_y min="{min_y}" max="{max_y}"/>\n')
+                # file.write('\t<range_v min="1.14" max="1.66"/>\n')
+                # file.write('\t<goal_inflation value="50.0"/>\n')
+
+                file.write('<random_square>\n')
+                for i in range(4):
+                    file.write(f'\t<p{i + 1} x="{self.random_points[i].x}" y="{self.random_points[i].y}"/>\n')
+                file.write('</random_square>\n')
 
                 file.write('<random_pedestrians value="4"/>\n')
 
@@ -108,7 +112,7 @@ class MinimalSubscriber(Node):
             self.recorder.add_pedestrian(pos, end)
         else:
             self.recorder.add_random_point(pos)
-            if len(self.recorder.random_points) >= 2:
+            if len(self.recorder.random_points) >= 4:
                 self.recorder.to_file(self.file_name, random=True)
                 self.recorder.random_points = []
 

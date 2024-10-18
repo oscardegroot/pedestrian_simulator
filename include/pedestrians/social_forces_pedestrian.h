@@ -15,6 +15,7 @@ public:
 
     /** @brief copy constructor */
     SocialForcesPedestrian(const SocialForcesPedestrian &other);
+    ~SocialForcesPedestrian();
 
     /** @brief Link to other pedestrians to move around them */
     virtual void LoadOtherPedestrians(std::vector<std::unique_ptr<Pedestrian>> *other_peds);

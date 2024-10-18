@@ -12,7 +12,7 @@
 void XMLReader::Read()
 {
 
-    std::string map_file = getPackagePath("pedestrian_simulator") + "/scenarios/" + CONFIG.scenario_file_;
+    std::string map_file = getPackagePath(package_name) + "/scenarios/" + CONFIG.scenario_file_;
     LOG_VALUE("Pedestrian Scenario", map_file);
     Read(map_file);
 }
@@ -24,8 +24,8 @@ void XMLReader::Read(const std::string &file_name)
 
     // If the path does not contain the package, add it
     std::string map_file;
-    if (file_name.find("//pedestrian_simulator//") != std::string::npos)
-        map_file = getPackagePath("pedestrian_simulator") + "/" + file_name;
+    if (file_name.find("//" + package_name + "//") != std::string::npos)
+        map_file = getPackagePath(package_name) + "/" + file_name;
     else
         map_file = file_name;
 
@@ -56,6 +56,12 @@ void XMLReader::ReadXML(const std::string &file)
     {
         spawn_randomizers_.emplace_back();
         spawn_randomizers_.back().ReadFrom(tag);
+    }
+
+    for (rapidxml::xml_node<> *tag = doc.first_node("random_square"); tag; tag = tag->next_sibling("random_square"))
+    {
+        spawn_randomizers_.emplace_back();
+        spawn_randomizers_.back().ReadFromSquare(tag);
     }
 
     // Read tags

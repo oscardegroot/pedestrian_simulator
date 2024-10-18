@@ -28,6 +28,7 @@
   <depend>ros_tools</depend>
   <depend>pedsim_original</depend>
   <depend>mpc_planner_msgs</depend>
+  <depend>message_filters</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
