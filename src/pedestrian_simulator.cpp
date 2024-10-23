@@ -157,6 +157,9 @@ std::vector<Prediction> PedestrianSimulator::GetPedestrians()
     unsigned int id = 0;
     for (auto &ped : pedestrians_)
     {
+        if(ped->done_)
+            continue;
+            
         predictions.emplace_back();
         auto &prediction = predictions.back();
         prediction.id = id;
@@ -276,8 +279,8 @@ std::vector<Prediction> PedestrianSimulator::GetSocialPredictions()
 
     for (auto &pedestrian : pedestrians_)
     {
-        // if (pedestrian->done_) // Agents that reached their goal dissappear
-        // continue;
+        if (pedestrian->done_) // Agents that reached their goal dissappear
+            continue;
 
         Ped::Tagent *a = pedsim_prediction_manager_->AddAgent(pedestrian->GetPosition()(0),
                                                               pedestrian->GetPosition()(1),
@@ -340,8 +343,8 @@ std::vector<Prediction> PedestrianSimulator::GetGaussianPredictions()
     unsigned int id = 0;
     for (auto &ped : pedestrians_)
     {
-        // if (ped->done_)
-        // continue;
+        if (ped->done_)
+        continue;
 
         predictions.emplace_back();
         auto &prediction = predictions.back();
@@ -451,8 +454,8 @@ void PedestrianSimulator::VisualizePedestrians()
 
     for (auto &ped : pedestrians_) // Publish a pedestrian model
     {
-        // if (ped->done_)
-        // continue;
+        if (ped->done_)
+            continue;
         Eigen::Vector2d rotated_twist = CONFIG.origin_R_ * Eigen::Vector2d(ped->twist_(0), ped->twist_(1));
         double angle = std::atan2(rotated_twist(1), rotated_twist(0));
         ped_model.setOrientation(RosTools::angleToQuaternion(angle + M_PI_2));

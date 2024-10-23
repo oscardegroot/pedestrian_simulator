@@ -89,9 +89,9 @@ void SocialForcesPedestrian::Update(const double dt)
             Eigen::Vector2d(position_.x, position_.y),
             Eigen::Vector2d(goal_.x, goal_.y));
 
-        if (dist_to_goal < 2.) // spawn_randomizer_.GetGoalRange() + 1.)
+        if (dist_to_goal < 4.) // spawn_randomizer_.GetGoalRange() + 1.)
         {
-            // done_ = true;
+            done_ = true;
 
             //     goal_ = GetGoal(goal_, spawn_randomizer_.GetMinTravelTime()); // spawn_randomizer_.GenerateGoal(random_generator_.get());
             //     pedsim_agent_->addWaypoint(new Ped::Twaypoint(goal_.x, goal_.y, spawn_randomizer_.GetGoalRange()));
