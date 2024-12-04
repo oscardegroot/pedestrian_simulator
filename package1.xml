@@ -21,7 +21,12 @@
   <depend>pedsim_original</depend>
   <depend>mpc_planner_msgs</depend>
   <depend>std_srvs</depend>
+  <depend>gazebo_msgs</depend>
   <depend>message_filters</depend>
+  <depend>derived_object_msgs</depend>
+
+  <depend>message_generation</depend>
+  <exec_depend>message_runtime</exec_depend>
 
   <export>
     <build_type>catkin</build_type>
