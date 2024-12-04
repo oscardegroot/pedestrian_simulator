@@ -3,7 +3,6 @@
   <name>pedestrian_simulator</name>
   <version>0.0.0</version>
   <description>The pedestrian_simulator package</description>
-
   <maintainer email="o.m.degroot@tudelft.nl">Oscar de Groot</maintainer>
   <license>Apache 2.0</license>
 

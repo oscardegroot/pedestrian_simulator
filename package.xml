@@ -3,7 +3,6 @@
   <name>pedestrian_simulator</name>
   <version>0.0.0</version>
   <description>The pedestrian_simulator package</description>
-
   <maintainer email="o.m.degroot@tudelft.nl">Oscar de Groot</maintainer>
   <license>Apache 2.0</license>
 
@@ -24,6 +23,7 @@
   <depend>std_srvs</depend>
   <depend>gazebo_msgs</depend>
   <depend>message_filters</depend>
+  <depend>derived_object_msgs</depend>
 
   <depend>message_generation</depend>
   <exec_depend>message_runtime</exec_depend>

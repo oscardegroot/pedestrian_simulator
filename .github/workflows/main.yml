@@ -5,6 +5,7 @@ on: # rebuild any PRs and main branch changes
   push:
     branches:
       - main
+      - tmpc-release # Note: this is the branch used in mpc_planner_ws
 
 jobs:
 
@@ -21,7 +22,13 @@ jobs:
           # include: # add additional configurations
             # - {ROS_DISTRO: kinetic, ROS_REPO: testing}
       steps:
+        - name: Extract branch name
+          shell: bash
+          run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
+          id: extract_branch
         - uses: actions/checkout@v4 # clone target repository
+          with:
+            ref: ${{ steps.extract_branch.outputs.branch }}
         - uses: 'ros-industrial/industrial_ci@master' # run industrial_ci
           env: # either pass all entries explicitly
             ROS_DISTRO: ${{ matrix.ROS_DISTRO }}

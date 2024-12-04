@@ -24,6 +24,8 @@ Clone this repo
 git clone https://github.com/oscardegroot/pedestrian_simulator.git
 ```
 
+> **Note:** To use ROS2, run `python3 switch_to_ros.py 2` in the base folder of `pedestrian_simulator` and `ros_tools`.
+
 Install dependencies from `catkin_ws`
 
 ```bash
