@@ -11,7 +11,7 @@
         horizon: 50
         use_path_origin: false
       pedestrians:
-        seed: 3 #6 # > 0,  -1 = random!
+        seed: 6 # > 0,  -1 = random!
         single_scenario: -1 # > 0 = run the scenario with this index | -1 = not a single scenario
         type: gaussian # Only used if it is not in the scenario file
         # process_noise: [.8, .8] # Excessive

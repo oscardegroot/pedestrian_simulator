@@ -6,12 +6,12 @@ Config::~Config()
 }
 
 // read predicitve configuration paramter from paramter server
-void Config::Init() // const std::string& node_handle_name
+void Config::Init()  // const std::string& node_handle_name
 {
 #ifdef MPC_PLANNER_ROS
   ros::NodeHandle node;
 #else
-  auto node = rclcpp::Node::make_shared("guidance_planner"); // Create a node
+  auto node = rclcpp::Node::make_shared("guidance_planner");  // Create a node
 #endif
   retrieveParameter(node, "pedestrian_simulator/node/debug_output", debug_output_, true);
   retrieveParameter(node, "pedestrian_simulator/node/scenario", scenario_file_);
@@ -24,12 +24,13 @@ void Config::Init() // const std::string& node_handle_name
   retrieveParameter(node, "pedestrian_simulator/node/horizon", horizon_N_);
   retrieveParameter(node, "pedestrian_simulator/node/use_path_origin", use_path_origin_);
 
-  retrieveParameter(node, "obstacles/radius", ped_radius_, 0.5);
+  retrieveParameter(node, "obstacles/radius", ped_radius_, 2.0);  // 0.5);
 
   retrieveParameter(node, "pedestrian_simulator/pedestrians/seed", seed_);
   retrieveParameter(node, "pedestrian_simulator/pedestrians/single_scenario", single_scenario_, -1);
   retrieveParameter(node, "pedestrian_simulator/pedestrians/collision_free_spawn", collision_free_spawn_, true);
-  retrieveParameter(node, "pedestrian_simulator/pedestrians/constant_velocity_predictions", constant_velocity_predictions_, true);
+  retrieveParameter(node, "pedestrian_simulator/pedestrians/constant_velocity_predictions",
+                    constant_velocity_predictions_, true);
   retrieveParameter(node, "pedestrian_simulator/pedestrians/interaction", interaction_, false);
 
   retrieveParameter(node, "pedestrian_simulator/pedestrians/process_noise", process_noise_);
